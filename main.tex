@@ -1,0 +1,170 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[margin=0.8in]{geometry}
+
+\usepackage{color}
+\usepackage{amsmath}
+%\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{amsthm}
+\usepackage{stmaryrd}
+\usepackage[all]{xy}
+\usepackage{multirow}
+\usepackage{paralist}
+\usepackage{hhline}
+\usepackage{bm}
+
+\usepackage{wasysym}
+\usepackage{extarrows}
+\usepackage{tikz}
+
+\input{notations}
+
+% add new commands for comments here
+\newcommand{\yx}[1]{\textit{\color{blue}[YX] : #1}}
+
+\newcommand{\modify}[1]{{\color{red}#1}}
+
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{stmaryrd}
+\usepackage{hyperref}
+
+\usepackage{braket}
+
+
+\title{\textbf{DiracDec C++/Coq Implementation\cite{ExampleCitation}}}
+\author{Yingte Xu}
+
+\begin{document}
+
+\maketitle
+
+%%%%%%%%%%%%%%%%
+\section{Scalar: Minimal Example}
+
+We first consider a minimal example of the scalars.
+
+\subsection{Modeling AC by Sequence}
+The problem is presented in the normal AC term-rewriting setting, with a minor modification of flattening the AC symbols. This is the model implemented in Coq, and we consider the 
+C++ optimization only as a efficient searching algorithm for the rewriting trace.
+
+\newcommand{\ZERO}{\mathsf{0}}
+\newcommand{\ONE}{\mathsf{1}}
+\newcommand{\ADDS}{\mathsf{ADDS}}
+\newcommand{\MLTS}{\mathsf{MLTS}}
+\newcommand{\CONJ}{\mathsf{CONJ}}
+
+\begin{definition}[scalar syntax]
+    The syntax for scalars is defined as follows.
+    \[ 
+    S ::= \ZERO\ |\ \ONE\ |\ \ADDS ( S^+ )\ |\ \MLTS ( S^+ )\ |\ \CONJ(S).
+    \]
+    Here $S^+$ means a sequence of one or more $S$ terms, i.e., AC symbols are flattened and have indefinite arities.
+\end{definition}
+
+The rewriting rules are presented as follows.
+
+\begin{figure}[h]
+    \begin{align*}
+        & \text{(R-FLATTEN)} &&
+        \textcolor{gray}{\text{A special rule to flatten all AC symbols within one call.}} \\
+        & \text{(R-ADDSID)} &&
+        \ADDS(a) \to a \\
+        & \text{(R-ADDS0)} &&
+        \ADDS((seq:\_ \_)\ \ZERO) \to \ADDS(seq) \\
+        & && \textcolor{gray}{\text{This rule removes all $\ZERO$ occurances and keeps the order of remaining subterms.}} \\
+        & \text{(R-MLTSID)} &&
+        \MLTS(a) \to a \\
+        & \text{(R-MLTS0)} &&
+        \MLTS((seq: \_ \_)\ \ZERO) \to \ZERO \\
+        & \text{(R-MLTS1)} &&
+        \MLTS((seq: \_ \_)\ \ONE) \to \MLTS(seq) \\
+        & && \textcolor{gray}{\text{Similar to (R-ADDS0).}} \\
+        & \text{(R-MLTS2)} &&
+        \MLTS((seq1: \_ \_ \_)\ \ADDS(a_1\ a_2 \cdots a_n)\ (seq2: \_ \_ \_)) \\
+        & && \to \ADDS(\MLTS(seq1\ a_1\ seq2)\ \MLTS(seq1\ a_2\ seq2) \cdots \MLTS(seq1\ a_n\ seq2)) \\
+        & && \textcolor{gray}{\text{This rule matches the first $\ADDS$ subterm in the list. $seq1$ or $seq2$ can be empty, but not both.}} \\
+        & \text{(R-CONJ0)} &&
+        \CONJ(\ZERO) \to \ZERO \\
+        & \text{(R-CONJ1)} &&
+        \CONJ(\ONE) \to \ONE \\
+        & \text{(R-CONJ2)} &&
+        \CONJ(\ADDS(a_1\ a_2\ \cdots a_n)) \to \ADDS(\CONJ(a_1)\ \CONJ(a_2) \cdots \CONJ(a_n)) \\
+        & \text{(R-CONJ3)} &&
+        \CONJ(\MLTS(a_1\ a_2\ \cdots a_n)) \to \MLTS(\CONJ(a_1)\ \CONJ(a_2) \cdots \CONJ(a_n)) \\
+        & \text{(R-CONJ4)} &&
+        \CONJ(\CONJ(a)) \to a
+    \end{align*}
+\end{figure}
+
+Notice that all the rules behaves the same as in the term count mapping implementation in C++. That is, the transformation from sequence representation to mapping representaiton commutes with all rewritings.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Rewriting Control and Intermediate Language}
+The associativity is already handled by the (R-FLATTEN) rule. In order to decide two terms $A$ and $B$ are equivalent under commutativity, we need to proof that $A$ can be transformed into $B$ with a structured permutation, which is described by the \textit{permutation tree}.
+
+\begin{definition}[permutation tree]
+    The syntax for permutation trees are inductively defined below:
+    \[
+    P ::= \mathsf{E}\ |\ [(i:P)^+].
+    \]
+    Here $i$ represents positive numbers.
+\end{definition}
+We always only consider \textit{well-formed} permutation trees. That is, if $P \equiv [i_1:P_1\ i_2:P_2\ \cdots\ i_n:P_n]$, then $\{i_1, ... i_n\}$ forms the set of integers from $0$ to $n-1$.
+
+We can transform a term A with a suitable permutation tree. The transformation is defined as
+
+\begin{align*}
+    \texttt{apply}(A, P) :=\ & \texttt{match}\ P\ \texttt{with} \\
+    & \quad |\ \textsf{E} \Rightarrow A \\
+    & \quad |\ [i_1:P_1\ \cdots\ i_n:P_n] \Rightarrow \texttt{A.head}(\texttt{apply(A.args[$i_1$], $P_1$)}\ \cdots\ \texttt{apply(A.args[$i_n$], $P_n$)}) \\
+    & \texttt{end}
+\end{align*}
+
+
+% \subsection{Coq Implementation}
+% The following abilities should be implemented on the Coq side:
+% \begin{itemize}
+%     \item \textbf{Deciding $E$}. For the C++ implementation, the data structure itself already reflects $E$. Therefore, on the Coq side, this should also be decided automatically, implemneted as a lemma 
+%     \[
+%         \texttt{EQ\_E : forall (A\ B: Term), Optional(A = B)}
+%     \]
+%     \item \textbf{The computational function to output the equivalence lemma for all rules.} For example, for the (R-ADDS0) rule, there should be such a lemma:
+%     \[
+%         \texttt{E\_R\_ADDS0 : forall (A\ B: Term), Optional(A = B)}
+%     \]
+%     which outputs the proof for the equivalence proof when $A$ matches the left side of (R-ADDS0) and is rewriten into B.
+% \end{itemize}
+
+% With these Coq implementations, the C++ can output the script for equivalence proof in the following format:
+
+% \begin{align*}
+%     & \texttt{rewrite (EQ\_E S1 T1).}\\
+%     & \texttt{rewrite (EQ\_RULE1 A1 B1).}\\
+%     & \texttt{rewrite (EQ\_E S2 T2).}\\
+%     & \texttt{rewrite (EQ\_RULE2 A2 B2).}\\
+%     & \texttt{rewrite (EQ\_E S3 T3).}\\
+%     & \texttt{rewrite (EQ\_RULE3 A3 B3).}\\
+%     & \cdots
+% \end{align*}
+
+% where at each step, the C++ solver rewrites the subterm \texttt{Ai} using rule \texttt{RULEi}. The Coq prover will synchronize with C++ solver, because both systems replace all occurances of $Ai$ into $Bi$.
+
+% \yx{Actually the \texttt{B} inputs can be inferred and is not necessary.}
+
+% \yx{Question: How to decide the subterms \texttt{Si} and \texttt{Ti}.}
+
+% \yx{Question: The syntax for terms that Coq accepts.}
+
+% \section{About Typing}
+% I plan to implement a typing system in C++, replicating the one in Coq.
+
+
+
+
+\bibliographystyle{plain}
+\bibliography{ref}
+
+\end{document}
