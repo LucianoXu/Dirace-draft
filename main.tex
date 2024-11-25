@@ -97,6 +97,7 @@ The rewriting rules are presented as follows.
         & \text{(R-CONJ4)} &&
         \CONJ(\CONJ(a)) \to a
     \end{align*}
+    \caption{The rewriting rules for scalars.}
 \end{figure}
 
 Notice that all the rules behaves the same as in the term count mapping implementation in C++. That is, the transformation from sequence representation to mapping representaiton commutes with all rewritings.
@@ -158,11 +159,274 @@ We can transform a term A with a suitable permutation tree. The transformation i
 
 % \yx{Question: The syntax for terms that Coq accepts.}
 
-% \section{About Typing}
-% I plan to implement a typing system in C++, replicating the one in Coq.
+\clearpage
+\section{Typing System}
+The typing system modifies the one for Calculus of Construction, adding special symbols for Dirac notations.
+According to the CoC typing rules, the environment and context can be modeled by as two stacks. It is obvious that popping assumptions/definitions from any context or from a environment with empty context will not destroy the well-formedness.
+
+One important reason for using dependent type is that, the types of Dirac notatinos (i.e., ket, bra and operators) depends on the basis.
+
+\newcommand{\reduce}{\triangleright}
+
+\newcommand{\SORT}{\mathsf{Sort}}
+\newcommand{\WF}{\mathcal{WF}}
+\newcommand{\Type}{\mathsf{Type}}
+\newcommand{\BaseS}{\mathsf{Base}}
 
 
+\newcommand{\SType}{\mathcal{S}}
+\newcommand{\KType}{\mathcal{K}}
+\newcommand{\BType}{\mathcal{B}}
+\newcommand{\OType}{\mathcal{O}}
 
+\newcommand{\ZEROK}{\mathbf{0}_\mathcal{K}}
+\newcommand{\ZEROB}{\mathbf{0}_\mathcal{B}}
+\newcommand{\ZEROO}{\mathbf{0}_\mathcal{O}}
+\newcommand{\ONEO}{\mathbf{1}_\mathcal{O}}
+
+\begin{figure}[h]
+    \begin{gather*}
+        \textbf{W-Empty} \qquad
+        \frac{}{\WF([])[]}\\
+        \\
+        \textbf{W-Local-Assum} \qquad
+        \frac{E[\Gamma]\vdash T:s \qquad s \in \mathcal{S} \qquad x \notin \Gamma}{\WF(E)[\Gamma::(x:T)]}
+        \qquad \qquad
+        \textbf{W-Local-Def} \qquad
+        \frac{E[\Gamma]\vdash t : T \qquad x \notin \Gamma}{\WF(E)[\Gamma ::(x:=t:T)]} \\
+        \\
+        \textbf{W-Global-Assum} \qquad
+        \frac{E[]\vdash T:s \qquad s \in \mathcal{S} \qquad c \notin E}{\WF(E; c:T)[]}
+        \qquad \qquad
+        \textbf{W-Global-Def} \qquad
+        \frac{E[]\vdash t:T \qquad c \notin E}{\WF(E; c:=t:T)[]} \\
+        \\
+        \textbf{Ax-Type} \qquad
+        \frac{\WF(E)[\Gamma]}{E[\Gamma]\vdash \Type(i):\Type(i+1)} \\
+        \\
+        \textbf{Var} \qquad
+        \frac{\WF(E)[\Gamma] \qquad (x:T) \in \Gamma \text{ or } (x := t : T) \in \Gamma \text{ for some $t$}}{E[\Gamma] \vdash x : T} \\
+        \\
+        \textbf{Const} \qquad
+        \frac{\WF(E)[\Gamma] \qquad (c:T) \in E \text{ or } (c := t : T) \in E \text{ for some $t$}}{E[\Gamma] \vdash c : T} \\
+        \\
+        \textbf{Prod-Type} \qquad
+        \frac{E[\Gamma] \vdash T:\Type(i)\qquad E[\Gamma::(x:T)]\vdash U:\Type(i)}{E[\Gamma] \vdash \forall x: T, U : \Type(i)} \\
+        \\
+        \textbf{Lam} \qquad
+        \frac{E[\Gamma] \vdash \forall x:T, U : s \qquad E[\Gamma :: (x:T)]\vdash t : U}{E[\Gamma] \vdash \lambda x:T . t : \forall x : T, U} \\
+        \\
+        \textbf{App} \qquad
+        \frac{E[\Gamma] \vdash t:\forall x:U, T \qquad E[\Gamma] \vdash u:U}{E[\Gamma] \vdash (t\ u):T\{x/u\}} \\
+        \\
+        \textbf{Subtyping} \qquad
+        \frac{E[\Gamma] \vdash U : s \qquad E[\Gamma] \vdash t : T \qquad E[\Gamma] \vdash T \leq_{\beta\delta\eta} U}{E[\Gamma]\vdash t:U}
+    \end{gather*}
+    \caption{
+    The typing rules for CoC. 
+    We only consider computational types, removing the sorts of $\mathsf{Set}$ and $\mathsf{Prop}$.}
+\end{figure}
+
+\begin{figure}[h]
+    \begin{gather*}
+        \frac{E[\Gamma]\vdash t =_{\beta\delta\eta} u}{E[\Gamma]\vdash t \leq_{\beta\delta\eta} u} 
+        \qquad
+        \frac{i \leq j}{E[\Gamma] \vdash \Type(i) \leq_{\beta\delta\eta} \Type(j)}
+        \qquad
+        \frac{E[\Gamma] \vdash T =_{\beta\delta\eta} U \qquad E[\Gamma :: (x:T)]\vdash T' \leq_{\beta\delta\eta} U'}{E[\Gamma] \vdash \forall x : T, T' \leq_{\beta\delta\eta} \forall x : U, U'}
+    \end{gather*}
+    \caption{The rules to decide subtyping.}
+\end{figure}
+
+\begin{figure}[h]
+    \begin{gather*}
+        \textbf{Type-Base} \qquad
+        \frac{\WF(E)[\Gamma]}{E[\Gamma]\vdash \BaseS : \Type(1)} 
+        \qquad \qquad
+        \textbf{Type-Scalar} \qquad
+        \frac{\WF(E)[\Gamma]}{E[\Gamma]\vdash \SType : \Type(1)} \\
+        \\
+        \textbf{Type-Ket} \qquad
+        \frac{E[\Gamma]\vdash \sigma : \BaseS}{E[\Gamma]\vdash \KType(\sigma) : \Type(1)}
+        \qquad \qquad
+        \textbf{Type-Bra} \qquad
+        \frac{E[\Gamma]\vdash \sigma : \BaseS}{E[\Gamma]\vdash \BType(\sigma) : \Type(1)} \\
+        \\
+        \textbf{Type-Opt} \qquad
+        \frac{E[\Gamma]\vdash \sigma : \BaseS \qquad E[\Gamma]\vdash \tau : \BaseS}{E[\Gamma]\vdash \OType(\sigma, \tau) : \Type(1)}
+    \end{gather*}
+    \caption{Typing rules for Dirac notation types.}
+\end{figure}
+
+\begin{figure}[h]
+    \begin{gather*}
+        \textbf{Sca-0} \qquad
+        \frac{\WF(E)[\Gamma]}{E[\Gamma] \vdash 0 : \SType}
+        \qquad \qquad
+        \textbf{Sca-1} \qquad
+        \frac{\WF(E)[\Gamma]}{E[\Gamma] \vdash 1 : \SType}
+        \qquad \qquad
+        \textbf{Sca-Delta} \qquad
+        \frac{            
+            \begin{aligned}
+                & E[\Gamma]\vdash \sigma : \BaseS \\
+                & E[\Gamma]\vdash s : \sigma \qquad E[\Gamma]\vdash t : \sigma
+            \end{aligned}} {E[\Gamma] \vdash \delta_{s, t} : \SType} \\
+        \\
+        \textbf{Sca-Add} \qquad
+        \frac{E[\Gamma]\vdash a : \SType \qquad E[\Gamma]\vdash b : \SType}{E[\Gamma]\vdash a + b : \SType}
+        \qquad \qquad
+        \textbf{Sca-Mul} \qquad
+        \frac{E[\Gamma]\vdash a : \SType \qquad E[\Gamma]\vdash b : \SType}{E[\Gamma]\vdash a \times b : \SType} \\
+        \\
+        \textbf{Sca-Conj} \qquad
+        \frac{E[\Gamma] \vdash a : \SType}{E[\Gamma] \vdash a^*:\SType}
+        \qquad \qquad
+        \textbf{Sca-Dot} \qquad
+        \frac{E[\Gamma]\vdash B : \BType(\sigma) \qquad E[\Gamma]\vdash K : \KType(\sigma)}{E[\Gamma] \vdash B \cdot K : \SType}
+    \end{gather*}
+    \caption{Scalar typing rules.}
+\end{figure}
+
+\begin{figure}[h]
+    \begin{gather*}
+        \textbf{Base-Def} \qquad
+        \frac{\WF(E)[\Gamma] \qquad \text{for all $i$, } a_i \notin \Gamma \text{ and } a_i \notin E}
+        {E[\Gamma]\vdash \{a_1, a_2, \cdots, a_n\} : \BaseS} \\
+        \\
+        \textbf{Base-Element} \qquad
+        \frac{\WF(E)[\Gamma] \qquad c \in \{a_1, a_2, \cdots a_n\}}{E[\Gamma]\vdash c : \{a_1, a_2, \cdots, a_n\}} \\
+        \\
+        \textbf{Base-Prod} \qquad
+        \frac{E[\Gamma]\vdash \sigma : \BaseS \qquad E[\Gamma]\vdash \tau : \BaseS}{E[\Gamma]\vdash \sigma \times \tau : \BaseS} \\
+        \\
+        \textbf{Pair-Base} \qquad
+        \frac{
+            \begin{aligned}
+                & E[\Gamma]\vdash \sigma : \BaseS \qquad E[\Gamma]\vdash s : \sigma \\
+                & E[\Gamma]\vdash \tau : \BaseS \qquad E[\Gamma]\vdash t : \tau
+            \end{aligned}} {E[\Gamma]\vdash (s, t) : \sigma \times \tau} 
+        \textbf{}
+    \end{gather*}
+    \caption{
+    Typing rules for bases. 
+    Here the definitions $\{a_1, a_2, \cdots a_n\}$ of different order elements are equivalent.}
+\end{figure}
+
+
+\begin{figure}[h]
+    \begin{gather*}
+        \textbf{Ket-0} \qquad
+        \frac{E[\Gamma] \vdash \sigma : \BaseS}{E[\Gamma] \vdash \ZEROK(\sigma) : \KType(\sigma)} 
+        \qquad \qquad
+        \textbf{Ket-Base} \qquad
+        \frac{E[\Gamma] \vdash \sigma : \BaseS \qquad E[\Gamma]\vdash t : \sigma}{E[\Gamma] \vdash \ket{t} : \KType(\sigma)} \\
+        \\
+        \textbf{Ket-Adj} \qquad
+        \frac{E[\Gamma] \vdash B : \BType(\sigma)}{E[\Gamma] \vdash B^\dagger : \KType(\sigma)} 
+        \qquad \qquad
+        \textbf{Ket-Sca} \qquad
+        \frac{E[\Gamma] \vdash a : \SType \qquad E[\Gamma] \vdash K : \KType(\sigma)}{E[\Gamma] \vdash a.K : \KType(\sigma)} \\
+        \\
+        \textbf{Ket-Add} \qquad
+        \frac{E[\Gamma] \vdash K_1 : \KType(\sigma) \qquad E[\Gamma] \vdash K_2 : \KType(\sigma)}{E[\Gamma] \vdash K_1 + K_2 : \KType(\sigma)} \\
+        \\
+        \textbf{Ket-Dot} \qquad
+        \frac{E[\Gamma] \vdash O : \OType(\sigma, \tau) \qquad E[\Gamma] \vdash K : \KType(\tau)}{E[\Gamma] \vdash O \cdot K : \KType(\sigma)} \\
+        \\
+        \textbf{Ket-Tsr} \qquad
+        \frac{E[\Gamma] \vdash K_1 : \KType(\sigma) \qquad E[\Gamma] \vdash K_2 : \KType(\tau)} {E[\Gamma] \vdash K_1 \otimes K_2 : \KType(\sigma \times \tau)}
+    \end{gather*}
+    \caption{Ket typing rules.}
+\end{figure}
+
+\begin{figure}[h]
+    \begin{gather*}
+        \textbf{Bra-0} \qquad
+        \frac{E[\Gamma] \vdash \sigma : \BaseS}{E[\Gamma] \vdash \ZEROB(\sigma) : \BType(\sigma)} 
+        \qquad \qquad
+        \textbf{Bra-Base} \qquad
+        \frac{E[\Gamma] \vdash \sigma : \BaseS \qquad E[\Gamma]\vdash t : \sigma}{E[\Gamma] \vdash \bra{t} : \BType(\sigma)} \\
+        \\
+        \textbf{Bra-Adj} \qquad
+        \frac{E[\Gamma] \vdash K : \KType(\sigma)}{E[\Gamma] \vdash K^\dagger : \BType(\sigma)} 
+        \qquad \qquad
+        \textbf{Bra-Sca} \qquad
+        \frac{E[\Gamma] \vdash a : \SType \qquad E[\Gamma] \vdash B : \BType(\sigma)}{E[\Gamma] \vdash a.B : \BType(\sigma)} \\
+        \\
+        \textbf{Bra-Add} \qquad
+        \frac{E[\Gamma] \vdash B_1 : \BType(\sigma) \qquad E[\Gamma] \vdash B_2 : \BType(\sigma)}{E[\Gamma] \vdash B_1 + B_2 : \BType(\sigma)} \\
+        \\
+        \textbf{Bra-Dot} \qquad
+        \frac{E[\Gamma] \vdash B : \KType(\sigma) \qquad E[\Gamma] \vdash O : \OType(\sigma, \tau)}{E[\Gamma] \vdash B \cdot O : \BType(\tau)} \\
+        \\
+        \textbf{Bra-Tsr} \qquad
+        \frac{E[\Gamma] \vdash B_1 : \BType(\sigma) \qquad E[\Gamma] \vdash B_2 : \BType(\tau)} {E[\Gamma] \vdash B_1 \otimes B_2 : \BType(\sigma \times \tau)}
+    \end{gather*}
+    \caption{Bra typing rules.}
+\end{figure}
+
+
+\begin{figure}[h]
+    \begin{gather*}
+        \textbf{Opt-0} \qquad
+        \frac{E[\Gamma] \vdash \sigma : \BaseS \qquad E[\Gamma] \vdash \tau : \BaseS}{E[\Gamma] \vdash \ZEROO(\sigma, \tau) : \OType(\sigma, \tau)} 
+        \qquad \qquad
+        \textbf{Opt-1} \qquad
+        \frac{E[\Gamma] \vdash \sigma : \BaseS}{E[\Gamma] \vdash \ONEO(\sigma) : \OType(\sigma, \sigma)} \\
+        \\
+        \textbf{Opt-Adj} \qquad
+        \frac{E[\Gamma] \vdash O : \OType(\sigma, \tau)}{E[\Gamma] \vdash O^\dagger : \OType(\tau, \sigma)} 
+        \qquad \qquad
+        \textbf{Opt-Sca} \qquad
+        \frac{E[\Gamma] \vdash a : \SType \qquad E[\Gamma] \vdash O : \OType(\sigma, \tau)}{E[\Gamma] \vdash a.O : \OType(\sigma, \tau)} \\
+        \\
+        \textbf{Opt-Add} \qquad
+        \frac{E[\Gamma] \vdash O_1 : \OType(\sigma, \tau) \qquad E[\Gamma] \vdash O_2 : \OType(\sigma, \tau)}{E[\Gamma] \vdash O_1 + O_2 : \OType(\sigma, \tau)} \\
+        \\
+        \textbf{Opt-Outer} \qquad
+        \frac{E[\Gamma]\vdash K : \KType(\sigma) \qquad E[\Gamma]\vdash B : \BType(\tau)}{E[\Gamma]\vdash K \cdot B : \OType(\sigma, \tau)} \\
+        \\
+        \textbf{Opt-Dot} \qquad
+        \frac{E[\Gamma] \vdash O_1 : \OType(\sigma, \tau) \qquad E[\Gamma] \vdash O_2 : \OType(\tau, \rho)}{E[\Gamma] \vdash O_1 \cdot O_2 : \OType(\sigma, \rho)} \\
+        \\
+        \textbf{Opt-Tsr} \qquad
+        \frac{E[\Gamma] \vdash O_1 : \OType(\sigma_1, \tau_1) \qquad E[\Gamma] \vdash O_2 : \OType(\sigma_2, \tau_2)} {E[\Gamma] \vdash O_1 \otimes O_2 : \OType(\sigma_1 \times \sigma_2, \tau_1 \times \tau_2)}
+    \end{gather*}
+    \caption{Operator typing rules.}
+\end{figure}
+
+\clearpage
+\section{Conversions and Reductions}
+\begin{figure}[h]
+    \begin{gather*}
+        \textbf{Alpha} \qquad \text{(bound variable renaming)}
+        \qquad \qquad
+        \textbf{Beta} \qquad
+        \frac{}{E[\Gamma] \vdash ((\lambda x:T.t)\ u) \reduce_\beta t\{x/u\}} \\
+        \\
+        \textbf{Delta-Local} \qquad
+        \frac{\WF(E)[\Gamma] \qquad (x:=t:T) \in \Gamma}{E[\Gamma] \vdash x \reduce_\Delta t} 
+        \qquad
+        \textbf{Delta-Global} \qquad
+        \frac{\WF(E)[\Gamma] \qquad (c:=t:T) \in E}{E[\Gamma] \vdash c \reduce_\delta t} \\
+        \\
+        \textbf{Eta} \qquad
+        \frac{E[\Gamma]\vdash t : \forall x : T , U}{E[\Gamma] \vdash t =_\eta \lambda x : T . (t\ x)}
+    \end{gather*}
+    \caption{Conversions and reductions in CoC.}
+\end{figure}
+
+\begin{figure}[h]
+    \begin{gather*}
+        \cdots
+    \end{gather*}
+    \caption{Dirac notation reduction rules}
+\end{figure}
+
+About big operators: maybe we should use the "sum operators"?
+
+\clearpage
 
 \bibliographystyle{plain}
 \bibliography{ref}
