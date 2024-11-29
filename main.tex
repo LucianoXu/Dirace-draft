@@ -14,6 +14,8 @@
 \usepackage{paralist}
 \usepackage{hhline}
 \usepackage{bm}
+\usepackage{longtable}
+\usepackage{makecell}
 
 \usepackage{wasysym}
 \usepackage{extarrows}
@@ -50,16 +52,49 @@ We first consider a minimal example of the scalars.
 The problem is presented in the normal AC term-rewriting setting, with a minor modification of flattening the AC symbols. This is the model implemented in Coq, and we consider the 
 C++ optimization only as a efficient searching algorithm for the rewriting trace.
 
+
+
+\newcommand{\reduce}{\triangleright}
+
+\newcommand{\Sort}{\mathsf{Sort}}
+\newcommand{\WF}{\mathcal{WF}}
+
+\newcommand{\Type}{\mathsf{Type}}
+\newcommand{\BaseS}{\mathsf{Base}}
+
+\newcommand{\SType}{\mathcal{S}}
+\newcommand{\KType}{\mathcal{K}}
+\newcommand{\BType}{\mathcal{B}}
+\newcommand{\OType}{\mathcal{O}}
+
+\newcommand{\ZEROK}{\mathbf{0}_\mathcal{K}}
+\newcommand{\ZEROB}{\mathbf{0}_\mathcal{B}}
+\newcommand{\ZEROO}{\mathbf{0}_\mathcal{O}}
+
+\newcommand{\PAIR}{\mathsf{PAIR}}
+
 \newcommand{\ZERO}{\mathsf{0}}
 \newcommand{\ONE}{\mathsf{1}}
 \newcommand{\ADDS}{\mathsf{ADDS}}
-\newcommand{\MLTS}{\mathsf{MLTS}}
+\newcommand{\ADD}{\mathsf{ADD}}
+\newcommand{\MULS}{\mathsf{MULS}}
+\newcommand{\MUL}{\mathsf{MUL}}
 \newcommand{\CONJ}{\mathsf{CONJ}}
+\newcommand{\CJG}{\mathsf{CJG}}
+\newcommand{\ADJ}{\mathsf{ADJ}}
+\newcommand{\DELTA}{\mathsf{DELTA}}
+\newcommand{\DOT}{\mathsf{DOT}}
+\newcommand{\SCR}{\mathsf{SCR}}
+\newcommand{\TSR}{\mathsf{TSR}}
+\newcommand{\KET}{\mathsf{KET}}
+\newcommand{\BRA}{\mathsf{BRA}}
+\newcommand{\ONEO}{\mathbf{1}_\mathcal{O}}
+
 
 \begin{definition}[scalar syntax]
     The syntax for scalars is defined as follows.
     \[ 
-    S ::= \ZERO\ |\ \ONE\ |\ \ADDS ( S^+ )\ |\ \MLTS ( S^+ )\ |\ \CONJ(S).
+    S ::= \ZERO\ |\ \ONE\ |\ \ADDS ( S^+ )\ |\ \MULS ( S^+ )\ |\ \CONJ(S).
     \]
     Here $S^+$ means a sequence of one or more $S$ terms, i.e., AC symbols are flattened and have indefinite arities.
 \end{definition}
@@ -75,16 +110,16 @@ The rewriting rules are presented as follows.
         & \text{(R-ADDS0)} &&
         \ADDS((seq:\_ \_)\ \ZERO) \to \ADDS(seq) \\
         & && \textcolor{gray}{\text{This rule removes all $\ZERO$ occurances and keeps the order of remaining subterms.}} \\
-        & \text{(R-MLTSID)} &&
-        \MLTS(a) \to a \\
-        & \text{(R-MLTS0)} &&
-        \MLTS((seq: \_ \_)\ \ZERO) \to \ZERO \\
-        & \text{(R-MLTS1)} &&
-        \MLTS((seq: \_ \_)\ \ONE) \to \MLTS(seq) \\
+        & \text{(R-MULSID)} &&
+        \MULS(a) \to a \\
+        & \text{(R-MULS0)} &&
+        \MULS((seq: \_ \_)\ \ZERO) \to \ZERO \\
+        & \text{(R-MULS1)} &&
+        \MULS((seq: \_ \_)\ \ONE) \to \MULS(seq) \\
         & && \textcolor{gray}{\text{Similar to (R-ADDS0).}} \\
-        & \text{(R-MLTS2)} &&
-        \MLTS((seq1: \_ \_ \_)\ \ADDS(a_1\ a_2 \cdots a_n)\ (seq2: \_ \_ \_)) \\
-        & && \to \ADDS(\MLTS(seq1\ a_1\ seq2)\ \MLTS(seq1\ a_2\ seq2) \cdots \MLTS(seq1\ a_n\ seq2)) \\
+        & \text{(R-MULS2)} &&
+        \MULS((seq1: \_ \_ \_)\ \ADDS(a_1\ a_2 \cdots a_n)\ (seq2: \_ \_ \_)) \\
+        & && \to \ADDS(\MULS(seq1\ a_1\ seq2)\ \MULS(seq1\ a_2\ seq2) \cdots \MULS(seq1\ a_n\ seq2)) \\
         & && \textcolor{gray}{\text{This rule matches the first $\ADDS$ subterm in the list. $seq1$ or $seq2$ can be empty, but not both.}} \\
         & \text{(R-CONJ0)} &&
         \CONJ(\ZERO) \to \ZERO \\
@@ -93,7 +128,7 @@ The rewriting rules are presented as follows.
         & \text{(R-CONJ2)} &&
         \CONJ(\ADDS(a_1\ a_2\ \cdots a_n)) \to \ADDS(\CONJ(a_1)\ \CONJ(a_2) \cdots \CONJ(a_n)) \\
         & \text{(R-CONJ3)} &&
-        \CONJ(\MLTS(a_1\ a_2\ \cdots a_n)) \to \MLTS(\CONJ(a_1)\ \CONJ(a_2) \cdots \CONJ(a_n)) \\
+        \CONJ(\MULS(a_1\ a_2\ \cdots a_n)) \to \MULS(\CONJ(a_1)\ \CONJ(a_2) \cdots \CONJ(a_n)) \\
         & \text{(R-CONJ4)} &&
         \CONJ(\CONJ(a)) \to a
     \end{align*}
@@ -120,7 +155,7 @@ We can transform a term A with a suitable permutation tree. The transformation i
 \begin{align*}
     \texttt{apply}(A, P) :=\ & \texttt{match}\ P\ \texttt{with} \\
     & \quad |\ \textsf{E} \Rightarrow A \\
-    & \quad |\ [i_1:P_1\ \cdots\ i_n:P_n] \Rightarrow \texttt{A.head}(\texttt{apply(A.args[$i_1$], $P_1$)}\ \cdots\ \texttt{apply(A.args[$i_n$], $P_n$)}) \\
+    & \quad |\ [i_1:P_1\ \cdots\ i_n:P_n] \Rightarrow \texttt{A.head}(\texttt{apply(A.args[$i_1$], $P_{i_1}$)}\ \cdots\ \texttt{apply(A.args[$i_n$], $P_{i_n}$)}) \\
     & \texttt{end}
 \end{align*}
 
@@ -160,52 +195,57 @@ We can transform a term A with a suitable permutation tree. The transformation i
 % \yx{Question: The syntax for terms that Coq accepts.}
 
 \clearpage
+
+
+\section{Language Syntax}
+\begin{definition}[syntax]
+    The syntax for Dirac notation types is defined as 
+    \begin{align*}
+        T ::=\ & x\ |\ \SType\ |\ \KType(\sigma)\ |\ \BType(\sigma)\ |\ \OType(\sigma_1, \sigma_2)\ |\ T_1 \to T_2, \\
+        \sigma ::=\ & x\ |\ \sigma_1 \times \sigma_2.
+    \end{align*}
+    The syntax for Dirac notation terms is defined as
+    \begin{align*}
+        e ::=\ & x\ |\ (e_1, e_2) \\
+        & |\ 0\ |\ 1\ |\ e_1 + \cdots + e_n \ |\ e_1 \times \cdots \times e_n\ |\ e^* \ |\ \delta_{e_1, e_2}\ \\
+        & |\ \ZEROK(\sigma)\ |\ \ZEROB(\sigma)\ |\ \ZEROO(\sigma_1, \sigma_2)\ |\ \ONEO(\sigma) \\
+        & |\ \ket{e}\ |\ \bra{t}\ |\ e^\dagger\ |\ e_1.e_2\ |\ e_1 \cdot e_2\ |\ e_1 \otimes e_2.
+    \end{align*}
+\end{definition}
+ % after consideration I still think keep DOT as binary is the best choice. It reduces the unstability of complicated matching in sequences.
+
 \section{Typing System}
 The typing system modifies the one for Calculus of Construction, adding special symbols for Dirac notations.
 According to the CoC typing rules, the environment and context can be modeled by as two stacks. It is obvious that popping assumptions/definitions from any context or from a environment with empty context will not destroy the well-formedness.
 
 One important reason for using dependent type is that, the types of Dirac notatinos (i.e., ket, bra and operators) depends on the basis.
 
-\newcommand{\reduce}{\triangleright}
-
-\newcommand{\Sort}{\mathsf{Sort}}
-\newcommand{\WF}{\mathcal{WF}}
-\newcommand{\Type}{\mathsf{Type}}
-\newcommand{\BaseS}{\mathsf{Base}}
-
-
-\newcommand{\SType}{\mathcal{S}}
-\newcommand{\KType}{\mathcal{K}}
-\newcommand{\BType}{\mathcal{B}}
-\newcommand{\OType}{\mathcal{O}}
-
-\newcommand{\ZEROK}{\mathbf{0}_\mathcal{K}}
-\newcommand{\ZEROB}{\mathbf{0}_\mathcal{B}}
-\newcommand{\ZEROO}{\mathbf{0}_\mathcal{O}}
-\newcommand{\ONEO}{\mathbf{1}_\mathcal{O}}
 
 \begin{figure}[h]
     \begin{gather*}
         \textbf{W-Empty} \qquad
-        \frac{}{\WF([])}\\
+        \frac{}{\WF([])}
+        \qquad \qquad
+        \textbf{W-Assum-Type} \qquad
+        \frac{\WF(\Gamma) \qquad T \notin \Gamma}{\WF(\Gamma; T:\Type)}\\
         \\
-        \textbf{W-Assum} \qquad
-        \frac{E\vdash T:\Type \qquad c \notin E}{\WF(E; c:T)}
+        \textbf{W-Assum-Term} \qquad
+        \frac{\Gamma\vdash T:\Type \qquad x \notin \Gamma}{\WF(\Gamma; x:T)}
         \qquad \qquad
         \textbf{W-Def} \qquad
-        \frac{E\vdash t:T \qquad c \notin E}{\WF(E; c:=t:T)} \\
+        \frac{\Gamma\vdash t:T \qquad x \notin \Gamma}{\WF(\Gamma; x:=t:T)} \\
         \\
-        \textbf{Const} \qquad
-        \frac{\WF(E) \qquad (c:T) \in E \text{ or } (c := t : T) \in E \text{ for some $t$}}{E \vdash c : T} \\
+        \textbf{Var} \qquad
+        \frac{\WF(\Gamma) \qquad (x:T) \in \Gamma \text{ or } (x := t : T) \in \Gamma \text{ for some $t$}}{\Gamma \vdash x : T} \\
         \\
         \textbf{Arrow} \qquad
-        \frac{E \vdash T:\Type \qquad E \vdash U:\Type}{E \vdash T \to U : \Type} \\
+        \frac{\Gamma \vdash T:\Type \qquad \Gamma \vdash U:\Type}{\Gamma \vdash T \to U : \Type} \\
         \\
         \textbf{Lam} \qquad
-        \frac{E;x:T \vdash t : U}{E \vdash (\lambda x:T . t) : T \to U}
+        \frac{\Gamma;x:T \vdash t : U}{\Gamma \vdash (\lambda x:T . t) : T \to U}
         \qquad \qquad
         \textbf{App} \qquad
-        \frac{E \vdash t:U \to T \qquad E \vdash u:U}{E \vdash (t\ u):T}
+        \frac{\Gamma \vdash t:U \to T \qquad \Gamma \vdash u:U}{\Gamma \vdash (t\ u):T}
     \end{gather*}
     \caption{The typing rules for the typed lambda calculus with environment.}
 \end{figure}
@@ -213,22 +253,22 @@ One important reason for using dependent type is that, the types of Dirac notati
 \begin{figure}[h]
     \begin{gather*}
         \textbf{Type-Base} \qquad
-        \frac{\WF(E)}{E \vdash \BaseS : \Type} 
+        \frac{\WF(\Gamma)}{\Gamma \vdash \BaseS : \Type} 
         \qquad \qquad
         \textbf{Base-Subtype} \qquad
-        \frac{E \vdash T : \BaseS}{E \vdash T : \Type} \\
+        \frac{\Gamma \vdash T : \BaseS}{\Gamma \vdash T : \Type} \\
         \\
         \textbf{Type-Ket} \qquad
-        \frac{E \vdash \sigma : \BaseS}{E \vdash \KType(\sigma) : \Type}
+        \frac{\Gamma \vdash \sigma : \BaseS}{\Gamma \vdash \KType(\sigma) : \Type}
         \qquad \qquad
         \textbf{Type-Bra} \qquad
-        \frac{E \vdash \sigma : \BaseS}{E \vdash \BType(\sigma) : \Type} \\
+        \frac{\Gamma \vdash \sigma : \BaseS}{\Gamma \vdash \BType(\sigma) : \Type} \\
         \\
         \textbf{Type-Opt} \qquad
-        \frac{E \vdash \sigma : \BaseS \qquad E \vdash \tau : \BaseS}{E \vdash \OType(\sigma, \tau) : \Type}
+        \frac{\Gamma \vdash \sigma : \BaseS \qquad \Gamma \vdash \tau : \BaseS}{\Gamma \vdash \OType(\sigma, \tau) : \Type}
         \qquad \qquad
         \textbf{Type-Scalar} \qquad
-        \frac{\WF(E)}{E \vdash \SType : \Type}
+        \frac{\WF(\Gamma)}{\Gamma \vdash \SType : \Type}
     \end{gather*}
     \caption{Typing rules for Dirac notation types.}
 \end{figure}
@@ -236,51 +276,52 @@ One important reason for using dependent type is that, the types of Dirac notati
 \begin{figure}[h]
     \begin{gather*}
         \textbf{Sca-0} \qquad
-        \frac{\WF(E)}{E \vdash 0 : \SType}
+        \frac{\WF(\Gamma)}{\Gamma \vdash 0 : \SType}
         \qquad \qquad
         \textbf{Sca-1} \qquad
-        \frac{\WF(E)}{E \vdash 1 : \SType}
+        \frac{\WF(\Gamma)}{\Gamma \vdash 1 : \SType}
         \qquad \qquad
         \textbf{Sca-Delta} \qquad
         \frac{            
             \begin{aligned}
-                & E\vdash \sigma : \BaseS \\
-                & E\vdash s : \sigma \qquad E\vdash t : \sigma
-            \end{aligned}} {E \vdash \delta_{s, t} : \SType} \\
+                & \Gamma\vdash \sigma : \BaseS \\
+                & \Gamma\vdash s : \sigma \qquad \Gamma\vdash t : \sigma
+            \end{aligned}} {\Gamma \vdash \delta_{s, t} : \SType} \\
         \\
         \textbf{Sca-Add} \qquad
-        \frac{E\vdash a : \SType \qquad E\vdash b : \SType}{E\vdash a + b : \SType}
+        \frac{\Gamma\vdash a_i : \SType \text{ for all $i$}}{\Gamma\vdash a_1 + \cdots + a_n : \SType}
         \qquad \qquad
         \textbf{Sca-Mul} \qquad
-        \frac{E\vdash a : \SType \qquad E\vdash b : \SType}{E\vdash a \times b : \SType} \\
+        \frac{\Gamma\vdash a_i : \SType \text{ for all $i$}}{\Gamma\vdash a_1 \times \cdots \times a_n : \SType} \\
         \\
         \textbf{Sca-Conj} \qquad
-        \frac{E \vdash a : \SType}{E \vdash a^*:\SType}
+        \frac{\Gamma \vdash a : \SType}{\Gamma \vdash a^*:\SType}
         \qquad \qquad
         \textbf{Sca-Dot} \qquad
-        \frac{E\vdash B : \BType(\sigma) \qquad E\vdash K : \KType(\sigma)}{E \vdash B \cdot K : \SType}
+        \frac{\Gamma\vdash B : \BType(\sigma) \qquad \Gamma\vdash K : \KType(\sigma)}{\Gamma \vdash B \cdot K : \SType}
     \end{gather*}
     \caption{Scalar typing rules.}
 \end{figure}
 
 \begin{figure}[h]
     \begin{gather*}
-        \textbf{Base-Def} \qquad
-        \frac{\WF(E) \qquad a_i \notin E \text{ for all $i$}}
-        {E\vdash \{a_1, a_2, \cdots, a_n\} : \BaseS}
-        \qquad \qquad
-        \textbf{Base-Element} \qquad
-        \frac{\WF(E) \qquad c \in \{a_1, a_2, \cdots a_n\}}{E\vdash c : \{a_1, a_2, \cdots, a_n\}} \\
-        \\
+        % this two rules can be considered later
+        % \textbf{Base-Def} \qquad
+        % \frac{\WF(\Gamma) \qquad a_i \notin \Gamma \text{ for all $i$}}
+        % {\Gamma\vdash \{a_1, a_2, \cdots, a_n\} : \BaseS}
+        % \qquad \qquad
+        % \textbf{Base-Element} \qquad
+        % \frac{\WF(\Gamma) \qquad c \in \{a_1, a_2, \cdots a_n\}}{\Gamma\vdash c : \{a_1, a_2, \cdots, a_n\}} \\
+        % \\
         \textbf{Base-Prod} \qquad
-        \frac{E\vdash \sigma : \BaseS \qquad E\vdash \tau : \BaseS}{E\vdash \sigma \times \tau : \BaseS}
+        \frac{\Gamma\vdash \sigma : \BaseS \qquad \Gamma\vdash \tau : \BaseS}{\Gamma\vdash \sigma \times \tau : \BaseS}
         \qquad \qquad
         \textbf{Pair-Base} \qquad
         \frac{
             \begin{aligned}
-                & E\vdash \sigma : \BaseS \qquad E\vdash s : \sigma \\
-                & E\vdash \tau : \BaseS \qquad E\vdash t : \tau
-            \end{aligned}} {E\vdash (s, t) : \sigma \times \tau} 
+                & \Gamma\vdash \sigma : \BaseS \qquad \Gamma\vdash s : \sigma \\
+                & \Gamma\vdash \tau : \BaseS \qquad \Gamma\vdash t : \tau
+            \end{aligned}} {\Gamma\vdash (s, t) : \sigma \times \tau} 
         \textbf{}
     \end{gather*}
     \caption{Typing rules for bases. }
@@ -290,25 +331,25 @@ One important reason for using dependent type is that, the types of Dirac notati
 \begin{figure}[h]
     \begin{gather*}
         \textbf{Ket-0} \qquad
-        \frac{E \vdash \sigma : \BaseS}{E \vdash \ZEROK(\sigma) : \KType(\sigma)} 
+        \frac{\Gamma \vdash \sigma : \BaseS}{\Gamma \vdash \ZEROK(\sigma) : \KType(\sigma)} 
         \qquad \qquad
         \textbf{Ket-Base} \qquad
-        \frac{E \vdash \sigma : \BaseS \qquad E\vdash t : \sigma}{E \vdash \ket{t} : \KType(\sigma)} \\
+        \frac{\Gamma \vdash \sigma : \BaseS \qquad \Gamma\vdash t : \sigma}{\Gamma \vdash \ket{t} : \KType(\sigma)} \\
         \\
         \textbf{Ket-Adj} \qquad
-        \frac{E \vdash B : \BType(\sigma)}{E \vdash B^\dagger : \KType(\sigma)} 
+        \frac{\Gamma \vdash B : \BType(\sigma)}{\Gamma \vdash B^\dagger : \KType(\sigma)} 
         \qquad \qquad
         \textbf{Ket-Sca} \qquad
-        \frac{E \vdash a : \SType \qquad E \vdash K : \KType(\sigma)}{E \vdash a.K : \KType(\sigma)} \\
+        \frac{\Gamma \vdash a : \SType \qquad \Gamma \vdash K : \KType(\sigma)}{\Gamma \vdash a.K : \KType(\sigma)} \\
         \\
         \textbf{Ket-Add} \qquad
-        \frac{E \vdash K_1 : \KType(\sigma) \qquad E \vdash K_2 : \KType(\sigma)}{E \vdash K_1 + K_2 : \KType(\sigma)}
+        \frac{\Gamma \vdash K_i : \KType(\sigma) \text{ for all $i$}}{\Gamma \vdash K_1 + \cdots + K_n : \KType(\sigma)}
         \qquad \qquad
         \textbf{Ket-Dot} \qquad
-        \frac{E \vdash O : \OType(\sigma, \tau) \qquad E \vdash K : \KType(\tau)}{E \vdash O \cdot K : \KType(\sigma)} \\
+        \frac{\Gamma \vdash O : \OType(\sigma, \tau) \qquad \Gamma \vdash K : \KType(\tau)}{\Gamma \vdash O \cdot K : \KType(\sigma)} \\
         \\
         \textbf{Ket-Tsr} \qquad
-        \frac{E \vdash K_1 : \KType(\sigma) \qquad E \vdash K_2 : \KType(\tau)} {E \vdash K_1 \otimes K_2 : \KType(\sigma \times \tau)}
+        \frac{\Gamma \vdash K_1 : \KType(\sigma) \qquad \Gamma \vdash K_2 : \KType(\tau)} {\Gamma \vdash K_1 \otimes K_2 : \KType(\sigma \times \tau)}
     \end{gather*}
     \caption{Ket typing rules.}
 \end{figure}
@@ -316,25 +357,25 @@ One important reason for using dependent type is that, the types of Dirac notati
 \begin{figure}[h]
     \begin{gather*}
         \textbf{Bra-0} \qquad
-        \frac{E \vdash \sigma : \BaseS}{E \vdash \ZEROB(\sigma) : \BType(\sigma)} 
+        \frac{\Gamma \vdash \sigma : \BaseS}{\Gamma \vdash \ZEROB(\sigma) : \BType(\sigma)} 
         \qquad \qquad
         \textbf{Bra-Base} \qquad
-        \frac{E \vdash \sigma : \BaseS \qquad E\vdash t : \sigma}{E \vdash \bra{t} : \BType(\sigma)} \\
+        \frac{\Gamma \vdash \sigma : \BaseS \qquad \Gamma\vdash t : \sigma}{\Gamma \vdash \bra{t} : \BType(\sigma)} \\
         \\
         \textbf{Bra-Adj} \qquad
-        \frac{E \vdash K : \KType(\sigma)}{E \vdash K^\dagger : \BType(\sigma)} 
+        \frac{\Gamma \vdash K : \KType(\sigma)}{\Gamma \vdash K^\dagger : \BType(\sigma)} 
         \qquad \qquad
         \textbf{Bra-Sca} \qquad
-        \frac{E \vdash a : \SType \qquad E \vdash B : \BType(\sigma)}{E \vdash a.B : \BType(\sigma)} \\
+        \frac{\Gamma \vdash a : \SType \qquad \Gamma \vdash B : \BType(\sigma)}{\Gamma \vdash a.B : \BType(\sigma)} \\
         \\
         \textbf{Bra-Add} \qquad
-        \frac{E \vdash B_1 : \BType(\sigma) \qquad E \vdash B_2 : \BType(\sigma)}{E \vdash B_1 + B_2 : \BType(\sigma)}
+        \frac{\Gamma \vdash B_i : \BType(\sigma) \text{ for all $i$}}{\Gamma \vdash B_1 + \cdots + B_n : \BType(\sigma)}
         \qquad \qquad
         \textbf{Bra-Dot} \qquad
-        \frac{E \vdash B : \KType(\sigma) \qquad E \vdash O : \OType(\sigma, \tau)}{E \vdash B \cdot O : \BType(\tau)} \\
+        \frac{\Gamma \vdash B : \KType(\sigma) \qquad \Gamma \vdash O : \OType(\sigma, \tau)}{\Gamma \vdash B \cdot O : \BType(\tau)} \\
         \\
         \textbf{Bra-Tsr} \qquad
-        \frac{E \vdash B_1 : \BType(\sigma) \qquad E \vdash B_2 : \BType(\tau)} {E \vdash B_1 \otimes B_2 : \BType(\sigma \times \tau)}
+        \frac{\Gamma \vdash B_1 : \BType(\sigma) \qquad \Gamma \vdash B_2 : \BType(\tau)} {\Gamma \vdash B_1 \otimes B_2 : \BType(\sigma \times \tau)}
     \end{gather*}
     \caption{Bra typing rules.}
 \end{figure}
@@ -343,28 +384,28 @@ One important reason for using dependent type is that, the types of Dirac notati
 \begin{figure}[h]
     \begin{gather*}
         \textbf{Opt-0} \qquad
-        \frac{E \vdash \sigma : \BaseS \qquad E \vdash \tau : \BaseS}{E \vdash \ZEROO(\sigma, \tau) : \OType(\sigma, \tau)} 
+        \frac{\Gamma \vdash \sigma : \BaseS \qquad \Gamma \vdash \tau : \BaseS}{\Gamma \vdash \ZEROO(\sigma, \tau) : \OType(\sigma, \tau)} 
         \qquad \qquad
         \textbf{Opt-1} \qquad
-        \frac{E \vdash \sigma : \BaseS}{E \vdash \ONEO(\sigma) : \OType(\sigma, \sigma)} \\
+        \frac{\Gamma \vdash \sigma : \BaseS}{\Gamma \vdash \ONEO(\sigma) : \OType(\sigma, \sigma)} \\
         \\
         \textbf{Opt-Adj} \qquad
-        \frac{E \vdash O : \OType(\sigma, \tau)}{E \vdash O^\dagger : \OType(\tau, \sigma)} 
+        \frac{\Gamma \vdash O : \OType(\sigma, \tau)}{\Gamma \vdash O^\dagger : \OType(\tau, \sigma)} 
         \qquad \qquad
         \textbf{Opt-Sca} \qquad
-        \frac{E \vdash a : \SType \qquad E \vdash O : \OType(\sigma, \tau)}{E \vdash a.O : \OType(\sigma, \tau)} \\
+        \frac{\Gamma \vdash a : \SType \qquad \Gamma \vdash O : \OType(\sigma, \tau)}{\Gamma \vdash a.O : \OType(\sigma, \tau)} \\
         \\
         \textbf{Opt-Add} \qquad
-        \frac{E \vdash O_1 : \OType(\sigma, \tau) \qquad E \vdash O_2 : \OType(\sigma, \tau)}{E \vdash O_1 + O_2 : \OType(\sigma, \tau)}
+        \frac{\Gamma \vdash O_i : \OType(\sigma, \tau) \text{ for all $i$}}{\Gamma \vdash O_1 + \cdots + O_n : \OType(\sigma, \tau)}
         \qquad \qquad
         \textbf{Opt-Outer} \qquad
-        \frac{E\vdash K : \KType(\sigma) \qquad E\vdash B : \BType(\tau)}{E\vdash K \cdot B : \OType(\sigma, \tau)} \\
+        \frac{\Gamma\vdash K : \KType(\sigma) \qquad \Gamma\vdash B : \BType(\tau)}{\Gamma\vdash K \cdot B : \OType(\sigma, \tau)} \\
         \\
         \textbf{Opt-Dot} \qquad
-        \frac{E \vdash O_1 : \OType(\sigma, \tau) \qquad E \vdash O_2 : \OType(\tau, \rho)}{E \vdash O_1 \cdot O_2 : \OType(\sigma, \rho)} \\
+        \frac{\Gamma \vdash O_1 : \OType(\sigma, \tau) \qquad \Gamma \vdash O_2 : \OType(\tau, \rho)}{\Gamma \vdash O_1 \cdot O_2 : \OType(\sigma, \rho)} \\
         \\
         \textbf{Opt-Tsr} \qquad
-        \frac{E \vdash O_1 : \OType(\sigma_1, \tau_1) \qquad E \vdash O_2 : \OType(\sigma_2, \tau_2)} {E \vdash O_1 \otimes O_2 : \OType(\sigma_1 \times \sigma_2, \tau_1 \times \tau_2)}
+        \frac{\Gamma \vdash O_1 : \OType(\sigma_1, \tau_1) \qquad \Gamma \vdash O_2 : \OType(\sigma_2, \tau_2)} {\Gamma \vdash O_1 \otimes O_2 : \OType(\sigma_1 \times \sigma_2, \tau_1 \times \tau_2)}
     \end{gather*}
     \caption{Operator typing rules.}
 \end{figure}
@@ -376,25 +417,110 @@ One important reason for using dependent type is that, the types of Dirac notati
         \textbf{Alpha} \qquad \text{(bound variable renaming)}
         \qquad \qquad
         \textbf{Beta} \qquad
-        \frac{}{E \vdash ((\lambda x:T.t)\ u) \reduce_\beta t\{x/u\}} \\
+        \frac{}{\Gamma \vdash ((\lambda x:T.t)\ u)\ \reduce_\beta\ t\{x/u\}} \\
         \\
         \textbf{Delta} \qquad
-        \frac{\WF(E) \qquad (c:=t:T) \in E}{E \vdash c \reduce_\delta t}
+        \frac{\WF(\Gamma) \qquad (c:=t:T) \in \Gamma}{\Gamma \vdash c\ \reduce_\delta\ t}
         \qquad \qquad
         \textbf{Eta} \qquad
-        \frac{E\vdash t : T \to U}{E \vdash \lambda x : T . (t\ x) \reduce_\eta t}
+        \frac{\Gamma\vdash t : T \to U}{\Gamma \vdash \lambda x : T . (t\ x)\ \reduce_\eta\ t}
     \end{gather*}
     \caption{Conversions and reductions for the typed lambda calculus.}
 \end{figure}
 
-\begin{figure}[h]
-    \begin{gather*}
-        \cdots
-    \end{gather*}
-    \caption{Dirac notation reduction rules}
-\end{figure}
+\renewcommand{\arraystretch}{1.2} % Increases row height by 50%
+\begin{longtable}{cl}
+    \caption{sefsefsef}\\
+    \hline
+    \textbf{Rule} & \textbf{Description} \\
+    \hline
+    \endfirsthead
+
+    \hline
+    \textbf{Rule} & \textbf{Description} \\
+    \hline
+    \endhead
+
+    \hline
+    \multicolumn{2}{r}{\textit{Continued on the next page}} \\
+    \hline
+    \endfoot
+
+    \hline
+    \endlastfoot
+
+    %
+    R-FLAT
+    & $\ADD(a_1 \cdots \ADD(b_1 \cdots b_m) \cdots a_n)\ \reduce \ADD(a_1 \cdots b_1 \cdots b_m \cdots a_n)$ \\
+    & $\MUL(a_1 \cdots \MUL(b_1 \cdots b_m) \cdots a_n)\ \reduce \MUL(a_1 \cdots b_1 \cdots b_m \cdots a_n)$ \\
+    & \textcolor{gray}{A special rule to flatten all AC symbols within one call.} \\
+    %
+    R-ADDID 
+    & $\ADD(a) \ \reduce\ a$ \\
+    %
+    R-ADDS0 
+    & $\ADD(a_1 \cdots \ZERO \cdots a_n) \ \reduce\ \ADD(a_1 \cdots a_n)$ \\
+    & \textcolor{gray}{This rule removes all $\ZERO$ occurances and keeps the order of remaining subterms.} \\
+    R-MULID 
+    & $\MUL(a) \ \reduce\ a$ \\
+    %
+    R-MUL0
+    & $\MUL(a_1 \cdots \ZERO \cdots a_n) \ \reduce\ \ZERO$ \\
+    %
+    R-MUL1
+    & $\MUL(a_1 \cdots \ONE \cdots a_n) \ \reduce\ \MUL(a_1 \cdots a_n)$ \\
+    & \textcolor{gray}{Similar to (R-ADDS0).} \\
+    %
+    R-MUL2
+    & $\MUL(b_1 \cdots \ADD(a_1\ a_2 \cdots a_n) \cdots b_m)$ \\
+    & $\reduce\ \ADD(\MUL(b_1 \cdots a_1\cdots b_m)\ \MUL(b_1 \cdots a_2\cdots b_m) \cdots \MUL(b_1\cdots a_n \cdots b_m))$ \\
+    & \textcolor{gray}{This rule matches the first $\ADD$ subterm in the list.} \\
+    %
+    R-CJG0
+    & $\CJG(\ZERO) \ \reduce\ \ZERO$ \\
+    %
+    R-CJG1
+    & $\CJG(\ONE) \ \reduce\ \ONE$ \\
+    %
+    R-CJG2
+    & $ \CJG(\ADD(a_1\ \cdots a_n)) \ \reduce\ \ADD(\CJG(a_1) \cdots \CJG(a_n))$ \\
+    %
+    R-CJG3
+    & $ \CJG(\MUL(a_1\ \cdots a_n)) \ \reduce\ \MUL(\CJG(a_1) \cdots \CJG(a_n))$ \\
+    %
+    R-CJG4
+    & $ \CJG(\CJG(a)) \ \reduce\ a$ \\
+    % 
+    R-DELTA0
+    & $ \DELTA(a\ a) \ \reduce\ \ONE$ \\
+    %
+    R-DELTA1
+    & $ \DELTA(\PAIR(a\ b)\ \PAIR(c\ d)) \ \reduce\ \MUL(\DELTA(a\ c)\ \DELTA(b\ d))$ \\
+    %
+    R-KET0
+    & $[\Gamma \vdash K : \KType(\sigma)]\vdash[\Gamma \vdash \SCR(\ZERO\ K)\ \reduce\ \ZEROK(\sigma)]$ \\
+\end{longtable}
 
 About big operators: maybe we should use the "sum operators"?
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{\texttt{Diracoq} language}
+
+\begin{align*}
+    cmd ::=&\ \texttt{Def}(\texttt{ID}\ term) \\
+        &|\ \texttt{Def}(\texttt{ID}\ term\ type) \\
+        &|\ \texttt{Var}(\texttt{ID}\ term) \\
+        &|\ \texttt{Check}(term) \\
+        &|\ \texttt{Show}(\texttt{ID}) \\
+        &|\ \texttt{ShowAll} \\
+        &|\ \texttt{Normalize}(term) \\
+        &|\ \texttt{CheckEq}(term\ term) \\
+    type ::=&\ \texttt{Type}\ |\ \texttt{Arrow}(type\ type) \\
+            &|\ \texttt{Base} \\
+    term ::=&\ \texttt{Type}\ |\ \texttt{fun}(\texttt{ID}\ type\ term)\ |\ \texttt{apply}(term\ term)\ |\ \texttt{ID} \\
+\end{align*}
 
 \clearpage
 
