@@ -16,6 +16,7 @@
 \usepackage{bm}
 \usepackage{longtable}
 \usepackage{makecell}
+\usepackage{mdframed}
 
 \usepackage{wasysym}
 \usepackage{extarrows}
@@ -35,24 +36,27 @@
 
 \usepackage{braket}
 
+% framed environment
+\newmdenv[
+  skipabove=5pt,
+  skipbelow=5pt,
+  leftmargin=0pt,
+  rightmargin=0pt,
+  innerleftmargin=5pt,
+  innerrightmargin=5pt,
+  innertopmargin=5pt,
+  innerbottommargin=5pt,
+  linecolor=black,
+]{framedeq}
+
 
 \title{\textbf{DiracDec C++/Coq Implementation\cite{ExampleCitation}}}
-\author{Yingte Xu}
 
 \begin{document}
 
 \maketitle
 
 %%%%%%%%%%%%%%%%
-\section{Scalar: Minimal Example}
-
-We first consider a minimal example of the scalars.
-
-\subsection{Modeling AC by Sequence}
-The problem is presented in the normal AC term-rewriting setting, with a minor modification of flattening the AC symbols. This is the model implemented in Coq, and we consider the 
-C++ optimization only as a efficient searching algorithm for the rewriting trace.
-
-
 
 \newcommand{\reduce}{\triangleright}
 
@@ -89,112 +93,12 @@ C++ optimization only as a efficient searching algorithm for the rewriting trace
 \newcommand{\KET}{\mathsf{KET}}
 \newcommand{\BRA}{\mathsf{BRA}}
 \newcommand{\ONEO}{\mathbf{1}_\mathcal{O}}
-
-
-\begin{definition}[scalar syntax]
-    The syntax for scalars is defined as follows.
-    \[ 
-    S ::= \ZERO\ |\ \ONE\ |\ \ADDS ( S^+ )\ |\ \MULS ( S^+ )\ |\ \CONJ(S).
-    \]
-    Here $S^+$ means a sequence of one or more $S$ terms, i.e., AC symbols are flattened and have indefinite arities.
-\end{definition}
-
-The rewriting rules are presented as follows.
-
-\begin{figure}[h]
-    \begin{align*}
-        & \text{(R-FLATTEN)} &&
-        \textcolor{gray}{\text{A special rule to flatten all AC symbols within one call.}} \\
-        & \text{(R-ADDSID)} &&
-        \ADDS(a) \to a \\
-        & \text{(R-ADDS0)} &&
-        \ADDS((seq:\_ \_)\ \ZERO) \to \ADDS(seq) \\
-        & && \textcolor{gray}{\text{This rule removes all $\ZERO$ occurances and keeps the order of remaining subterms.}} \\
-        & \text{(R-MULSID)} &&
-        \MULS(a) \to a \\
-        & \text{(R-MULS0)} &&
-        \MULS((seq: \_ \_)\ \ZERO) \to \ZERO \\
-        & \text{(R-MULS1)} &&
-        \MULS((seq: \_ \_)\ \ONE) \to \MULS(seq) \\
-        & && \textcolor{gray}{\text{Similar to (R-ADDS0).}} \\
-        & \text{(R-MULS2)} &&
-        \MULS((seq1: \_ \_ \_)\ \ADDS(a_1\ a_2 \cdots a_n)\ (seq2: \_ \_ \_)) \\
-        & && \to \ADDS(\MULS(seq1\ a_1\ seq2)\ \MULS(seq1\ a_2\ seq2) \cdots \MULS(seq1\ a_n\ seq2)) \\
-        & && \textcolor{gray}{\text{This rule matches the first $\ADDS$ subterm in the list. $seq1$ or $seq2$ can be empty, but not both.}} \\
-        & \text{(R-CONJ0)} &&
-        \CONJ(\ZERO) \to \ZERO \\
-        & \text{(R-CONJ1)} &&
-        \CONJ(\ONE) \to \ONE \\
-        & \text{(R-CONJ2)} &&
-        \CONJ(\ADDS(a_1\ a_2\ \cdots a_n)) \to \ADDS(\CONJ(a_1)\ \CONJ(a_2) \cdots \CONJ(a_n)) \\
-        & \text{(R-CONJ3)} &&
-        \CONJ(\MULS(a_1\ a_2\ \cdots a_n)) \to \MULS(\CONJ(a_1)\ \CONJ(a_2) \cdots \CONJ(a_n)) \\
-        & \text{(R-CONJ4)} &&
-        \CONJ(\CONJ(a)) \to a
-    \end{align*}
-    \caption{The rewriting rules for scalars.}
-\end{figure}
-
-Notice that all the rules behaves the same as in the term count mapping implementation in C++. That is, the transformation from sequence representation to mapping representaiton commutes with all rewritings.
+\newcommand{\OUTER}{\mathsf{OUTER}}
+\newcommand{\MULK}{\mathsf{MULK}}
+\newcommand{\MULB}{\mathsf{MULB}}
+\newcommand{\MULO}{\mathsf{MULO}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Rewriting Control and Intermediate Language}
-The associativity is already handled by the (R-FLATTEN) rule. In order to decide two terms $A$ and $B$ are equivalent under commutativity, we need to proof that $A$ can be transformed into $B$ with a structured permutation, which is described by the \textit{permutation tree}.
-
-\begin{definition}[permutation tree]
-    The syntax for permutation trees are inductively defined below:
-    \[
-    P ::= \mathsf{E}\ |\ [(i:P)^+].
-    \]
-    Here $i$ represents positive numbers.
-\end{definition}
-We always only consider \textit{well-formed} permutation trees. That is, if $P \equiv [i_1:P_1\ i_2:P_2\ \cdots\ i_n:P_n]$, then $\{i_1, ... i_n\}$ forms the set of integers from $0$ to $n-1$.
-
-We can transform a term A with a suitable permutation tree. The transformation is defined as
-
-\begin{align*}
-    \texttt{apply}(A, P) :=\ & \texttt{match}\ P\ \texttt{with} \\
-    & \quad |\ \textsf{E} \Rightarrow A \\
-    & \quad |\ [i_1:P_1\ \cdots\ i_n:P_n] \Rightarrow \texttt{A.head}(\texttt{apply(A.args[$i_1$], $P_{i_1}$)}\ \cdots\ \texttt{apply(A.args[$i_n$], $P_{i_n}$)}) \\
-    & \texttt{end}
-\end{align*}
-
-
-% \subsection{Coq Implementation}
-% The following abilities should be implemented on the Coq side:
-% \begin{itemize}
-%     \item \textbf{Deciding $E$}. For the C++ implementation, the data structure itself already reflects $E$. Therefore, on the Coq side, this should also be decided automatically, implemneted as a lemma 
-%     \[
-%         \texttt{EQ\_E : forall (A\ B: Term), Optional(A = B)}
-%     \]
-%     \item \textbf{The computational function to output the equivalence lemma for all rules.} For example, for the (R-ADDS0) rule, there should be such a lemma:
-%     \[
-%         \texttt{E\_R\_ADDS0 : forall (A\ B: Term), Optional(A = B)}
-%     \]
-%     which outputs the proof for the equivalence proof when $A$ matches the left side of (R-ADDS0) and is rewriten into B.
-% \end{itemize}
-
-% With these Coq implementations, the C++ can output the script for equivalence proof in the following format:
-
-% \begin{align*}
-%     & \texttt{rewrite (EQ\_E S1 T1).}\\
-%     & \texttt{rewrite (EQ\_RULE1 A1 B1).}\\
-%     & \texttt{rewrite (EQ\_E S2 T2).}\\
-%     & \texttt{rewrite (EQ\_RULE2 A2 B2).}\\
-%     & \texttt{rewrite (EQ\_E S3 T3).}\\
-%     & \texttt{rewrite (EQ\_RULE3 A3 B3).}\\
-%     & \cdots
-% \end{align*}
-
-% where at each step, the C++ solver rewrites the subterm \texttt{Ai} using rule \texttt{RULEi}. The Coq prover will synchronize with C++ solver, because both systems replace all occurances of $Ai$ into $Bi$.
-
-% \yx{Actually the \texttt{B} inputs can be inferred and is not necessary.}
-
-% \yx{Question: How to decide the subterms \texttt{Si} and \texttt{Ti}.}
-
-% \yx{Question: The syntax for terms that Coq accepts.}
-
-\clearpage
 
 
 \section{Language Syntax}
@@ -207,20 +111,21 @@ We can transform a term A with a suitable permutation tree. The transformation i
     The syntax for Dirac notation terms is defined as
     \begin{align*}
         e ::=\ & x\ |\ (e_1, e_2) \\
-        & |\ 0\ |\ 1\ |\ e_1 + \cdots + e_n \ |\ e_1 \times \cdots \times e_n\ |\ e^* \ |\ \delta_{e_1, e_2}\ \\
+        & |\ 0\ |\ 1\ |\ \ADDS(e_1 \cdots e_n) \ |\ e_1 \times \cdots \times e_n\ |\ e^* \ |\ \delta_{e_1, e_2}\ |\ \DOT(e_1\ e_2) \\
         & |\ \ZEROK(\sigma)\ |\ \ZEROB(\sigma)\ |\ \ZEROO(\sigma_1, \sigma_2)\ |\ \ONEO(\sigma) \\
-        & |\ \ket{e}\ |\ \bra{t}\ |\ e^\dagger\ |\ e_1.e_2\ |\ e_1 \cdot e_2\ |\ e_1 \otimes e_2.
+        & |\ \ket{e}\ |\ \bra{t}\ |\ e^\dagger\ |\ e_1.e_2\ |\ \ADD(e_1 \cdots e_n)\ |\ e_1 \otimes e_2 \\
+        & |\ \MULK(e_1\ e_2)\ |\ \MULB(e_1\ e_2)\ |\ \OUTER(e_1\ e_2)\ |\ \MULO(e_1\ e_2).
     \end{align*}
 \end{definition}
  % after consideration I still think keep DOT as binary is the best choice. It reduces the unstability of complicated matching in sequences.
 
+Compared to [?], this syntax for Dirac notations merges the symbols with overlapped properties, such as the addition and scaling symbols for ket, bra and operator.
+Here $\ADDS$ and $\ADD$ are two different AC symbols representing the scalar addition and the linear algebra addition respectively. They will be denoted as $a_1 + \cdots + a_n$ and $X_1 + \cdots + X_n$.
+There are five kinds of linear algebra multiplications among ket, bra and operator, whose properties are similar but still diverge to some extent. For example, the rules $(O_1 \cdot O_2) \cdot K\ \reduce\ O_1 \cdot (O_2 \cdot K)$ and $B \cdot (O_1 \cdot O_2) \ \reduce\ (B \cdot O_1) \cdot O_2$ indicate that the sorting of multiplication sequences depends on the subterm types. To avoid frequent but unnecessary type checkings, we encode the typing information by using five different symbols, namely $\DOT$, $\MULK$, $\MULB$, $\OUTER$ and $\MULO$. They are denoted as $B\cdot K$, $K_1 \cdot K_2$, $B_1 \cdot B_2$, $K \cdot B$ and $O_1 \cdot O_2$, respectively.
+ 
 \section{Typing System}
-The typing system modifies the one for Calculus of Construction, adding special symbols for Dirac notations.
-According to the CoC typing rules, the environment and context can be modeled by as two stacks. It is obvious that popping assumptions/definitions from any context or from a environment with empty context will not destroy the well-formedness.
-
-One important reason for using dependent type is that, the types of Dirac notatinos (i.e., ket, bra and operators) depends on the basis.
-
-
+The type checking of Dirac notations involves maintaining a well-formed context $\Gamma$, which specifies the definitions and typing assumtpions for variables.
+Notice that the type checking $\Gamma \vdash t : T$ is decidable.
 \begin{figure}[h]
     \begin{gather*}
         \textbf{W-Empty} \qquad
@@ -339,13 +244,13 @@ One important reason for using dependent type is that, the types of Dirac notati
         \textbf{Ket-Adj} \qquad
         \frac{\Gamma \vdash B : \BType(\sigma)}{\Gamma \vdash B^\dagger : \KType(\sigma)} 
         \qquad \qquad
-        \textbf{Ket-Sca} \qquad
+        \textbf{Ket-Scr} \qquad
         \frac{\Gamma \vdash a : \SType \qquad \Gamma \vdash K : \KType(\sigma)}{\Gamma \vdash a.K : \KType(\sigma)} \\
         \\
         \textbf{Ket-Add} \qquad
         \frac{\Gamma \vdash K_i : \KType(\sigma) \text{ for all $i$}}{\Gamma \vdash K_1 + \cdots + K_n : \KType(\sigma)}
         \qquad \qquad
-        \textbf{Ket-Dot} \qquad
+        \textbf{Ket-MulK} \qquad
         \frac{\Gamma \vdash O : \OType(\sigma, \tau) \qquad \Gamma \vdash K : \KType(\tau)}{\Gamma \vdash O \cdot K : \KType(\sigma)} \\
         \\
         \textbf{Ket-Tsr} \qquad
@@ -365,13 +270,13 @@ One important reason for using dependent type is that, the types of Dirac notati
         \textbf{Bra-Adj} \qquad
         \frac{\Gamma \vdash K : \KType(\sigma)}{\Gamma \vdash K^\dagger : \BType(\sigma)} 
         \qquad \qquad
-        \textbf{Bra-Sca} \qquad
+        \textbf{Bra-Scr} \qquad
         \frac{\Gamma \vdash a : \SType \qquad \Gamma \vdash B : \BType(\sigma)}{\Gamma \vdash a.B : \BType(\sigma)} \\
         \\
         \textbf{Bra-Add} \qquad
         \frac{\Gamma \vdash B_i : \BType(\sigma) \text{ for all $i$}}{\Gamma \vdash B_1 + \cdots + B_n : \BType(\sigma)}
         \qquad \qquad
-        \textbf{Bra-Dot} \qquad
+        \textbf{Bra-MulB} \qquad
         \frac{\Gamma \vdash B : \KType(\sigma) \qquad \Gamma \vdash O : \OType(\sigma, \tau)}{\Gamma \vdash B \cdot O : \BType(\tau)} \\
         \\
         \textbf{Bra-Tsr} \qquad
@@ -392,7 +297,7 @@ One important reason for using dependent type is that, the types of Dirac notati
         \textbf{Opt-Adj} \qquad
         \frac{\Gamma \vdash O : \OType(\sigma, \tau)}{\Gamma \vdash O^\dagger : \OType(\tau, \sigma)} 
         \qquad \qquad
-        \textbf{Opt-Sca} \qquad
+        \textbf{Opt-Scr} \qquad
         \frac{\Gamma \vdash a : \SType \qquad \Gamma \vdash O : \OType(\sigma, \tau)}{\Gamma \vdash a.O : \OType(\sigma, \tau)} \\
         \\
         \textbf{Opt-Add} \qquad
@@ -401,7 +306,7 @@ One important reason for using dependent type is that, the types of Dirac notati
         \textbf{Opt-Outer} \qquad
         \frac{\Gamma\vdash K : \KType(\sigma) \qquad \Gamma\vdash B : \BType(\tau)}{\Gamma\vdash K \cdot B : \OType(\sigma, \tau)} \\
         \\
-        \textbf{Opt-Dot} \qquad
+        \textbf{Opt-MulO} \qquad
         \frac{\Gamma \vdash O_1 : \OType(\sigma, \tau) \qquad \Gamma \vdash O_2 : \OType(\tau, \rho)}{\Gamma \vdash O_1 \cdot O_2 : \OType(\sigma, \rho)} \\
         \\
         \textbf{Opt-Tsr} \qquad
@@ -428,9 +333,12 @@ One important reason for using dependent type is that, the types of Dirac notati
     \caption{Conversions and reductions for the typed lambda calculus.}
 \end{figure}
 
-\renewcommand{\arraystretch}{1.2} % Increases row height by 50%
-\begin{longtable}{cl}
-    \caption{sefsefsef}\\
+\yx{Alpha rule will be implemented by renaming, and we can leave it for the future.}
+
+\newenvironment{ruletable}[1]
+{
+    \begin{longtable}{cl}
+    \caption{#1}\\
     \hline
     \textbf{Rule} & \textbf{Description} \\
     \hline
@@ -448,63 +356,429 @@ One important reason for using dependent type is that, the types of Dirac notati
 
     \hline
     \endlastfoot
+}
+{
+    \end{longtable}
+}
 
+\renewcommand{\arraystretch}{1.2} % Increases row height by 50%
+
+\begin{ruletable}{The special flattening rule.}
     %
-    R-FLAT
-    & $\ADD(a_1 \cdots \ADD(b_1 \cdots b_m) \cdots a_n)\ \reduce \ADD(a_1 \cdots b_1 \cdots b_m \cdots a_n)$ \\
-    & $\MUL(a_1 \cdots \MUL(b_1 \cdots b_m) \cdots a_n)\ \reduce \MUL(a_1 \cdots b_1 \cdots b_m \cdots a_n)$ \\
-    & \textcolor{gray}{A special rule to flatten all AC symbols within one call.} \\
+    R-FLATTEN
+    & $a_1 + \cdots + (b_1 + \cdots + b_m) + \cdots + a_n\ \reduce\ a_1 + \cdots + b_1 + \cdots + b_m + \cdots + a_n$ \\
+    & $a_1 \times \cdots \times (b_1 \times \cdots \times b_m) \times \cdots \times a_n\ \reduce\ a_1 \times \cdots \times b_1 \times \cdots \times b_m \times \cdots \times a_n$ \\
+    & $X_1 + \cdots + (X_1' + \cdots + X_m') + \cdots + X_n\ \reduce\ X_1 + \cdots + X_1' + \cdots + X_m' + \cdots + X_n$ \\
+    & \textcolor{gray}{A special rule to flatten all AC symbols within one call.}    
+\end{ruletable}
+
+\begin{ruletable}{Rules for scalar addition and multiplication.}
     %
-    R-ADDID 
-    & $\ADD(a) \ \reduce\ a$ \\
+    R-ADDSID 
+    & $+(a) \ \reduce\ a$ \\
+    & \textcolor{gray}{Reduce the term if the AC symbol $+$ only has one argument.} \\
+    %
+    R-MULSID 
+    & $\times(a) \ \reduce\ a$ \\
+    & \textcolor{gray}{Similar to (R-ADDSID).} \\
     %
     R-ADDS0 
-    & $\ADD(a_1 \cdots \ZERO \cdots a_n) \ \reduce\ \ADD(a_1 \cdots a_n)$ \\
+    & $a_1 + \cdots + 0 + \cdots + a_n \ \reduce\ a_1 + \cdots + a_n$ \\
     & \textcolor{gray}{This rule removes all $\ZERO$ occurances and keeps the order of remaining subterms.} \\
-    R-MULID 
-    & $\MUL(a) \ \reduce\ a$ \\
     %
-    R-MUL0
-    & $\MUL(a_1 \cdots \ZERO \cdots a_n) \ \reduce\ \ZERO$ \\
+    R-MULS0
+    & $a_1 \times \cdots \times 0 \times \cdots \times a_n \ \reduce\ 0$ \\
     %
-    R-MUL1
-    & $\MUL(a_1 \cdots \ONE \cdots a_n) \ \reduce\ \MUL(a_1 \cdots a_n)$ \\
+    R-MULS1
+    & $a_1 \times \cdots \times \ONE \times \cdots \times a_n \ \reduce\ a_1 \times \cdots \times a_n$ \\
     & \textcolor{gray}{Similar to (R-ADDS0).} \\
     %
-    R-MUL2
-    & $\MUL(b_1 \cdots \ADD(a_1\ a_2 \cdots a_n) \cdots b_m)$ \\
-    & $\reduce\ \ADD(\MUL(b_1 \cdots a_1\cdots b_m)\ \MUL(b_1 \cdots a_2\cdots b_m) \cdots \MUL(b_1\cdots a_n \cdots b_m))$ \\
-    & \textcolor{gray}{This rule matches the first $\ADD$ subterm in the list.} \\
+    R-MULS2
+    & $b_1 \times \cdots \times (a_1 + \cdots + a_n) \times \cdots \times b_m$ \\
+    & $\reduce\ (b_1 \times \cdots \times a_1 \times \cdots \times b_m) + \cdots + (b_1 \times \cdots \times a_n \times \cdots \times b_m)$ \\
+    & \textcolor{gray}{This rule matches the first scalar addition subterm in the list.} \\
+\end{ruletable}
+
+\begin{ruletable}{Rules for other scalar symbols.}
     %
-    R-CJG0
-    & $\CJG(\ZERO) \ \reduce\ \ZERO$ \\
+    R-CONJ0
+    & $0^* \ \reduce\ 0$ \\
     %
-    R-CJG1
-    & $\CJG(\ONE) \ \reduce\ \ONE$ \\
+    R-CONJ1
+    & $1^* \ \reduce\ 1$ \\
     %
-    R-CJG2
-    & $ \CJG(\ADD(a_1\ \cdots a_n)) \ \reduce\ \ADD(\CJG(a_1) \cdots \CJG(a_n))$ \\
+    R-CONJ2
+    & $(a_1 + \cdots + a_n)^* \ \reduce\ a_1^* + \cdots + a_n^*$ \\
     %
-    R-CJG3
-    & $ \CJG(\MUL(a_1\ \cdots a_n)) \ \reduce\ \MUL(\CJG(a_1) \cdots \CJG(a_n))$ \\
+    R-CONJ3
+    & $(a_1 \times \cdots \times a_n)^* \ \reduce\ a_1^* \times \cdots \times a_n^*$ \\
     %
-    R-CJG4
-    & $ \CJG(\CJG(a)) \ \reduce\ a$ \\
+    R-CONJ4
+    & $ (a^*)^* \ \reduce\ a$ \\
     % 
+    R-CONJ5
+    & $ \delta_{s, t}^* \ \reduce\ \delta_{s, t}$ \\
+    %
+    R-CONJ6
+    & $ (B \cdot K)^* \ \reduce\ K^\dagger \cdot B^\dagger $ \\
+    %
+    R-DOT0
+    & $ \ZEROB(\sigma) \cdot K \ \reduce\ 0 $ \\
+    %
+    R-DOT1
+    & $ B \cdot \ZEROK(\sigma) \ \reduce\ 0 $ \\
+    %
+    R-DOT2
+    & $ (a.B) \cdot K \ \reduce\ a \times (B \cdot K) $ \\
+    %
+    R-DOT3
+    & $ B \cdot (a.K) \ \reduce\ a \times (B \cdot K) $ \\
+    %
+    R-DOT4
+    & $ (B_1 + \cdots + B_n) \cdot K \ \reduce\ B_1 \cdot K + \cdots + B_n \cdot K $ \\
+    %
+    R-DOT5
+    & $ B \cdot (K_1 + \cdots + K_n) \ \reduce\ B \cdot K_1 + \cdots + B \cdot K_n $ \\
+    %
+    R-DOT6
+    & $ \bra{s} \cdot \ket{t} \ \reduce\ \delta_{s, t} $ \\
+    %
+    R-DOT7
+    & $ (B_1 \otimes B_2) \cdot \ket{(s, t)} \ \reduce\ (B_1 \cdot \ket{s}) \times (B_2 \cdot \ket{t}) $ \\
+    %
+    R-DOT8
+    & $ \bra{(s, t)} \cdot (K_1 \otimes K_2) \ \reduce\ (\bra{s} \cdot K_1) \times (\bra{t} \cdot K_2) $ \\
+    %
+    R-DOT9
+    & $ (B_1 \otimes B_2) \cdot (K_1 \otimes K_2) \ \reduce\ (B_1 \cdot K_1) \times (B_2 \cdot K_2) $ \\
+    %
+    R-DOT10
+    & $ (B \cdot O) \cdot K \ \reduce\ B \cdot (O \cdot K) $ \\
+    %
+    R-DOT11
+    & $ \bra{(s, t)} \cdot ((O_1 \otimes O_2) \cdot K) \ \reduce\ ((\bra{s} \cdot O_1) \otimes (\bra{t} \cdot O_2)) \cdot K $ \\
+    %
+    R-DOT12
+    & $ (B_1 \otimes B_2) \cdot ((O_1 \otimes O_2) \cdot K) \ \reduce\ ((B_1 \cdot O_1) \otimes (B_2 \cdot O_2)) \cdot K $ \\
+    %
     R-DELTA0
-    & $ \DELTA(a\ a) \ \reduce\ \ONE$ \\
+    & $ \delta_{a, a} \ \reduce\ 1$ \\
     %
     R-DELTA1
-    & $ \DELTA(\PAIR(a\ b)\ \PAIR(c\ d)) \ \reduce\ \MUL(\DELTA(a\ c)\ \DELTA(b\ d))$ \\
-    %
-    R-KET0
-    & $[\Gamma \vdash K : \KType(\sigma)]\vdash[\Gamma \vdash \SCR(\ZERO\ K)\ \reduce\ \ZEROK(\sigma)]$ \\
-\end{longtable}
+    & $ \delta_{(a, b), (c, d)} \ \reduce\ \delta_{a, c} \times \delta_{b, d}$ \\
+\end{ruletable}
 
-About big operators: maybe we should use the "sum operators"?
+
+\begin{ruletable}{Rules for linear algebra scaling.}
+    %
+    R-SCR0
+    & $ 1.X \ \reduce\ X $ \\
+    %
+    R-SCR1
+    & $ a.(b.X) \ \reduce\ (a \times b).X $ \\
+    %
+    R-SCR2
+    & $ a.(X_1 + \cdots + X_n) \ \reduce\ a.X_1 + \cdots + a.X_n $ \\
+    %
+    R-SCRK0
+    & $ K : \KType(\sigma) \Rightarrow 0.K \ \reduce\ \ZEROK(\sigma)$ \\
+    %
+    R-SCRK1
+    & $ a.\ZEROK(\sigma) \ \reduce\ \ZEROK(\sigma) $ \\
+    % 
+    R-SCRB0
+    & $ B : \BType(\sigma) \Rightarrow 0.B \ \reduce\ \ZEROB(\sigma)$ \\
+    % 
+    R-SCRB1
+    & $ a.\ZEROB(\sigma) \ \reduce\ \ZEROB(\sigma) $ \\
+    % 
+    R-SCRO0
+    & $ O : \OType(\sigma, \tau) \Rightarrow 0.O \ \reduce\ \ZEROO(\sigma, \tau)$ \\
+    % 
+    R-SCRO1
+    & $ a.\ZEROO(\sigma, \tau) \ \reduce\ \ZEROO(\sigma, \tau) $ \\
+\end{ruletable}
+
+\begin{ruletable}{Rules for linear algebra addition. }
+    %
+    R-ADDID
+    & $+(X) \ \reduce\ X$ \\
+    & \textcolor{gray}{Reduce the term if the AC symbol $+$ only has one argument.} \\
+    %
+    R-ADD0
+    & $a_1 + \cdots + X + \cdots + X + \cdots + a_n \ \reduce\ a_1 + \cdots + a_n + \cdots + (1+1).X$ \\
+    & \textcolor{gray}{\makecell[l]{This rule matches the first $X$ in the list satisfying the pattern. \\ The result $(1+1).X$ will be placed at the end of the list.}} \\
+    %
+    R-ADD1
+    & $a_1 + \cdots + X + \cdots + a.X + \cdots + a_n \ \reduce\ a_1 + \cdots + a_n + (1+a).X$ \\
+    & \textcolor{gray}{Similar to (R-ADD0).} \\
+    %
+    R-ADD2
+    & $a_1 + \cdots + a.X + \cdots + X + \cdots + a_n \ \reduce\ a_1 + \cdots + a_n + (a+1).X$ \\
+    & \textcolor{gray}{Similar to (R-ADD0).} \\
+    %
+    R-ADD3
+    & $a_1 + \cdots + a.X + \cdots + b.X + \cdots + a_n \ \reduce\ a_1 + \cdots + a_n + (a+b).X$ \\
+    & \textcolor{gray}{Similar to (R-ADD0).} \\
+    %
+    R-ADDK0
+    & $K_1 + \cdots + \ZEROK(\sigma) + \cdots + K_n\ \reduce K_1 + \cdots + K_n$ \\
+    & \textcolor{gray}{Similar to (R-ADDS0).} \\
+    %
+    R-ADDB0
+    & $B_1 + \cdots + \ZEROB(\sigma) + \cdots + B_n \ \reduce\ B_1 + \cdots + B_n$ \\
+    & \textcolor{gray}{Similar to (R-ADDS0).} \\
+    %
+    R-ADDO0
+    & $O_1 + \cdots + \ZEROO(\sigma, \tau) + \cdots + O_n \ \reduce\ O_1 + \cdots + O_n$ 
+    \\
+    & \textcolor{gray}{Similar to (R-ADDS0).} \\
+\end{ruletable}
+
+\begin{ruletable}{Rules for adjoint.}
+    %
+    R-ADJ0
+    & $ (X^\dagger)^\dagger \ \reduce\ X $ \\
+    %
+    R-ADJ1
+    & $ (a.X)^\dagger \ \reduce\ (a^*).(X^\dagger) $ \\
+    %
+    R-ADJ2
+    & $ (X_1 + \cdots + X_n)^\dagger \ \reduce\ X_1^\dagger + \cdots + X_n^\dagger $ \\
+    %
+    R-ADJK0
+    & $ \ZEROB(\sigma)^\dagger \ \reduce\ \ZEROK(\sigma) $ \\
+    %
+    R-ADJK1
+    & $ \bra{t}^\dagger \ \reduce\ \ket{t} $ \\
+    %
+    R-ADJK2
+    & $ (B \cdot O)^\dagger\ \reduce\ O^\dagger \cdot B^\dagger $ \\
+    %
+    R-ADJK3
+    & $ (B_1 \otimes B_2)^\dagger \ \reduce\ B_1^\dagger \otimes B_2^\dagger $ \\
+    %
+    R-ADJB0
+    & $ \ZEROK(\sigma)^\dagger \ \reduce\ \ZEROB(\sigma) $ \\
+    %
+    R-ADJB1
+    & $ \ket{t}^\dagger \ \reduce\ \bra{t} $ \\
+    %
+    R-ADJB2
+    & $ (O \cdot K)^\dagger\ \reduce\ K^\dagger \cdot O^\dagger $ \\
+    %
+    R-ADJB3
+    & $ (K_1 \otimes K_2)^\dagger \ \reduce\ K_1^\dagger \otimes K_2^\dagger $ \\
+    %
+    R-ADJO0
+    & $ \ZEROO(\sigma, \tau)^\dagger \ \reduce\ \ZEROO(\tau, \sigma) $ \\
+    %
+    R-ADJO1
+    & $ \ONEO(\sigma)^\dagger \ \reduce\ \ONEO(\sigma)$ \\
+    %
+    R-ADJO2
+    & $ (K \cdot B)^\dagger \ \reduce\ B^\dagger \cdot K^\dagger$ \\
+    %
+    R-ADJO3
+    & $ (O_1 \cdot O_2)^\dagger \ \reduce\ O_2^\dagger \cdot O_1^\dagger $ \\
+    %
+    R-ADJO4
+    & $ (O_1 \otimes O_2)^\dagger \ \reduce\ O_1^\dagger \otimes O_2^\dagger $ 
+\end{ruletable}
+
+\begin{ruletable}{Rules for tensor product.}
+    R-TSR0
+    & $ (a.X_1) \otimes X_2 \ \reduce\ a.(X_1 \otimes X_2) $ \\
+    %
+    R-TSR1
+    & $ X_1 \otimes (a.X_2) \ \reduce\ a.(X_1 \otimes X_2) $ \\
+    %
+    R-TSR2
+    & $ (X_1 + \cdots + X_n) \otimes X' \reduce X_1 \otimes X' + \cdots + X_n \otimes X' $ \\
+    %
+    R-TSR3
+    & $ X' \otimes (X_1 + \cdots + X_n) \reduce X' \otimes X_1 + \cdots + X' \otimes X_n $ \\
+    %
+    R-TSRK0
+    & $ K : \KType(\tau) \Rightarrow \ZEROK(\sigma) \otimes K\ \reduce\ \ZEROK(\sigma \times \tau) $ \\
+    %
+    R-TSRK1
+    & $ K : \KType(\tau) \Rightarrow K \otimes \ZEROK(\sigma)\ \reduce\ \ZEROK(\tau \times \sigma) $ \\
+    %
+    R-TSRK2
+    & $\ket{s} \otimes \ket{t} \ \reduce\ \ket{(s, t)}$ \\
+    %
+    R-TSRB0
+    & $ B : \BType(\tau) \Rightarrow \ZEROB(\sigma) \otimes B\ \reduce\ \ZEROB(\sigma \times \tau) $ \\
+    %
+    R-TSRB1
+    & $ B : \BType(\tau) \Rightarrow B \otimes \ZEROB(\sigma)\ \reduce\ \ZEROB(\tau \times \sigma) $ \\
+    %
+    R-TSRB2
+    & $\bra{s} \otimes \bra{t} \ \reduce\ \bra{(s, t)}$ \\
+    %
+    R-TSRO0
+    & $ O : \OType(\sigma, \tau) \Rightarrow O \otimes \ZEROO(\sigma', \tau') \ \reduce\ \ZEROO(\sigma \times \sigma', \tau \times \tau') $ \\
+    % 
+    R-TSRO1
+    & $ O : \OType(\sigma, \tau) \Rightarrow \ZEROO(\sigma', \tau') \otimes O \ \reduce\ \ZEROO(\sigma' \times \sigma, \tau' \times \tau) $ \\
+    %
+    R-TSRO2
+    & $\ONEO(\sigma) \otimes \ONEO(\tau)\ \reduce\ \ONEO(\sigma \times \tau)$ \\
+    %
+    R-TSRO3
+    & $ (K_1 \cdot B_1) \otimes (K_2 \cdot B_2)\ \reduce\ (K_1 \otimes K_2) \cdot (B_1 \otimes B_2) $ \\
+    %
+\end{ruletable}
+
+\begin{ruletable}{Rule for $O\cdot K$.}
+    %
+    R-MULK0
+    & $ \ZEROO(\sigma, \tau) \cdot K \ \reduce\ \ZEROK(\sigma) $ \\
+    %
+    R-MULK1
+    & $ O : \OType(\sigma, \tau) \Rightarrow O \cdot \ZEROK(\tau) \ \reduce\ \ZEROK(\sigma) $ \\
+    %
+    R-MULK2
+    & $ \ONEO(\sigma) \cdot K \ \reduce K $ \\
+    %
+    R-MULK3
+    & $ (a.O) \cdot K \ \reduce\ a.(O \cdot K) $ \\
+    %
+    R-MULK4
+    & $ O \cdot (a.K) \ \reduce\ a.(O \cdot K) $ \\
+    %
+    R-MULK5
+    & $ (O_1 + \cdots + O_n) \cdot K \ \reduce\ O_1 \cdot K + \cdots + O_n \cdot K $ \\
+    %
+    R-MULK6
+    & $ O \cdot (K_1 + \cdots + K_n) \ \reduce\ O \cdot K_1 + \cdots + O \cdot K_n $ \\
+    %
+    R-MULK7
+    & $ (K_1 \cdot B) \cdot K_2 \ \reduce\ (B \cdot K_2).K_1 $ \\
+    %
+    R-MULK8
+    & $ (O_1 \cdot O_2) \cdot K \ \reduce\ O_1 \cdot (O_2 \cdot K) $ \\
+    %
+    R-MULK9
+    & $ (O_1 \otimes O_2) \cdot ((O_1' \otimes O_2') \cdot K)\ \reduce\ ((O_1 \cdot O_1') \otimes (O_2 \cdot O_2')) \cdot K $ \\
+    %
+    R-MULK10
+    & $ (O_1 \otimes O_2) \cdot \ket{(s, t)}\ \reduce\ (O_1 \cdot \ket{s}) \otimes (O_2 \cdot \ket{t}) $ \\
+    %
+    R-MULK11
+    & $ (O_1 \otimes O_2) \cdot (K_1 \otimes K_2)\ \reduce\ (O_1 \cdot K_1) \otimes (O_2 \cdot K_2) $
+\end{ruletable}
+
+
+\begin{ruletable}{Rule for $B\cdot O$.}
+    %
+    R-MULB0
+    & $ B \cdot \ZEROO(\sigma, \tau) \ \reduce\ \ZEROB(\tau) $ \\
+    %
+    R-MULB1
+    & $ O : \OType(\sigma, \tau) \Rightarrow \ZEROB(\sigma) \cdot O\ \reduce\ \ZEROB(\tau) $ \\
+    %
+    R-MULB2
+    & $ B \cdot \ONEO(\sigma) \ \reduce B $ \\
+    %
+    R-MULB3
+    & $ (a.B) \cdot O \ \reduce\ a.(B \cdot O) $ \\
+    %
+    R-MULB4
+    & $ B \cdot (a.O) \ \reduce\ a.(B \cdot O) $ \\
+    %
+    R-MULB5
+    & $ (B_1 + \cdots + B_n) \cdot O \ \reduce\ B_1 \cdot O + \cdots + B_n \cdot O $ \\
+    %
+    R-MULB6
+    & $ B \cdot (O_1 + \cdots + O_n) \ \reduce\ B \cdot O_1 + \cdots + B \cdot O_n $ \\
+    %
+    R-MULB7
+    & $ B_1 \cdot (K \cdot B_2) \ \reduce\ (B_1 \cdot K).B_2 $ \\
+    %
+    R-MULB8
+    & $ B \cdot (O_1 \cdot O_2) \ \reduce\ (B \cdot O_1) \cdot O_2 $ \\
+    %
+    R-MULB9
+    & $ (B \cdot (O_1' \otimes O_2')) \cdot (O_1 \otimes O_2) \ \reduce\ B \cdot ((O_1' \otimes O_2') \cdot (O_1 \otimes O_2)) $ \\
+    %
+    R-MULB10
+    & $ \bra{(s, t)} \cdot (O_1 \otimes O_2)\ \reduce\ (\bra{s} \cdot O_1) \otimes (\bra{t} \cdot O_2) $ \\
+    %
+    R-MULB11
+    & $ (B_1 \otimes B_2) \cdot (O_1 \otimes O_2)\ \reduce\ (B_1 \cdot O_1) \otimes (B_2 \cdot O_2) $
+\end{ruletable}
+
+\begin{ruletable}{Rules for $K \cdot B$.}
+    %
+    R-OUTER0
+    & $ B : \BType(\tau) \Rightarrow \mathbf{0}_\mathcal{K}(\sigma) \cdot B\ \reduce\ \mathbf{0}_\mathcal{O}(\sigma, \tau) $ \\
+    %
+    R-OUTER1
+    & $ K : \KType(\sigma) \Rightarrow K \cdot \mathbf{0}_\mathcal{B}(\tau)\ \reduce\ \mathbf{0}_\mathcal{O}(\sigma, \tau) $ \\
+    %
+    R-OUTER2
+    & $ (a.K) \cdot B\ \reduce\ a.(K \cdot B) $ \\
+    %
+    R-OUTER3
+    & $ K \cdot (a.B)\ \reduce\ a.(K \cdot B) $ \\
+    %
+    R-OUTER4
+    & $ (K_1 + \cdots + K_n) \cdot B\ \reduce\ K_1 \cdot B + \cdots + K_n \cdot B $ \\
+    %
+    R-OUTER5
+    & $ K \cdot (B_1 + \cdots + B_n)\ \reduce\ K \cdot B_1 + \cdots + K \cdot B_n $ \\
+\end{ruletable}
+
+\begin{ruletable}{Rules for $O_1 \cdot O_2$.}
+    %
+    R-MULO0
+    & $ O : \OType(\tau, \rho) \Rightarrow \ZEROO(\sigma, \tau) \cdot O\ \reduce\ \ZEROO(\sigma, \rho) $ \\
+    %
+    R-MULO1
+    & $ O : \OType(\sigma, \tau) \Rightarrow O \cdot \ZEROO(\tau, \rho)\ \reduce\ \mathbf{0}_\mathcal{O}(\sigma, \rho) $ \\
+    %
+    R-MULO2
+    & $ \ONEO(\sigma) \cdot O \ \reduce\ O $ \\
+    %
+    R-MULO3
+    & $ O \cdot \ONEO(\sigma) \ \reduce\ O $ \\
+    %
+    R-MULO4
+    & $ (K \cdot B) \cdot O \ \reduce\ K \cdot (B \cdot O) $ \\
+    %
+    R-MULO5
+    & $ O \cdot (K \cdot B) \ \reduce\ (O \cdot K) \cdot B $ \\
+    %
+    R-MULO6
+    & $ (a.O_1) \cdot O_2 \ \reduce\ a.(O_1 \cdot O_2) $ \\
+    %
+    R-MULO7
+    & $ O_1 \cdot (a.O_2) \ \reduce\ a.(O_1 \cdot O_2) $ \\
+    %
+    R-MULO8
+    & $ (O_1 + \cdots + O_n) \cdot O'\ \reduce\ O_1 \cdot O' + \cdots + O_n \cdot O' $ \\
+    %
+    R-MULO9
+    & $ O' \cdot (O_1 + \cdots + O_n)\ \reduce\ O' \cdot O_1 + \cdots + O' \cdot O_n $ \\
+    %
+    R-MULO10
+    & $ (O_1 \cdot O_2) \cdot O_3\ \reduce\ O_1 \cdot (O_2 \cdot O_3) $ \\
+    %
+    R-MULO11
+    & $ (O_1 \otimes O_2) \cdot (O_1' \otimes O_2')\ \reduce\ (O_1 \cdot O_1') \otimes (O_2 \cdot O_2') $ \\
+    %
+    R-MULO12
+    & $ (O_1 \otimes O_2) \cdot ((O_1' \otimes O_2') \cdot O_3)\ \reduce\ ((O_1 \cdot O_1') \otimes (O_2 \cdot O_2')) \cdot O_3 $ \\  
+\end{ruletable}
+
+% About big operators: maybe we should use the "sum operators"?
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\clearpage
 
 \section{\texttt{Diracoq} language}
 
@@ -521,6 +795,31 @@ About big operators: maybe we should use the "sum operators"?
             &|\ \texttt{Base} \\
     term ::=&\ \texttt{Type}\ |\ \texttt{fun}(\texttt{ID}\ type\ term)\ |\ \texttt{apply}(term\ term)\ |\ \texttt{ID} \\
 \end{align*}
+
+
+\section{Rewriting Control and Intermediate Language}
+The associativity is already handled by the (R-FLATTEN) rule. In order to decide two terms $A$ and $B$ are equivalent under commutativity, we need to proof that $A$ can be transformed into $B$ with a structured permutation, which is described by the \textit{permutation tree}.
+
+\begin{definition}[permutation tree]
+    The syntax for permutation trees are inductively defined below:
+    \[
+    P ::= \mathsf{E}\ |\ [(i:P)^+].
+    \]
+    Here $i$ represents positive numbers.
+\end{definition}
+We always only consider \textit{well-formed} permutation trees. That is, if $P \equiv [i_1:P_1\ i_2:P_2\ \cdots\ i_n:P_n]$, then $\{i_1, ... i_n\}$ forms the set of integers from $0$ to $n-1$.
+
+We can transform a term A with a suitable permutation tree. The transformation is defined as
+
+\begin{align*}
+    \texttt{apply}(A, P) :=\ & \texttt{match}\ P\ \texttt{with} \\
+    & \quad |\ \textsf{E} \Rightarrow A \\
+    & \quad |\ [i_1:P_1\ \cdots\ i_n:P_n] \Rightarrow \texttt{A.head}(\texttt{apply(A.args[$i_1$], $P_{i_1}$)}\ \cdots\ \texttt{apply(A.args[$i_n$], $P_{i_n}$)}) \\
+    & \texttt{end}
+\end{align*}
+
+
+
 
 \clearpage
 
