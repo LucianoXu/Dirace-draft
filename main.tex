@@ -506,19 +506,19 @@ Notice that the type checking $\Gamma \vdash t : T$ is decidable.
     & \textcolor{gray}{Reduce the term if the AC symbol $+$ only has one argument.} \\
     %
     R-ADD0
-    & $a_1 + \cdots + X + \cdots + X + \cdots + a_n \ \reduce\ a_1 + \cdots + a_n + \cdots + (1+1).X$ \\
+    & $Y_1 + \cdots + X + \cdots + X + \cdots + Y_n \ \reduce\ Y_1 + \cdots + Y_n + \cdots + (1+1).X$ \\
     & \textcolor{gray}{\makecell[l]{This rule matches the first $X$ in the list satisfying the pattern. \\ The result $(1+1).X$ will be placed at the end of the list.}} \\
     %
     R-ADD1
-    & $a_1 + \cdots + X + \cdots + a.X + \cdots + a_n \ \reduce\ a_1 + \cdots + a_n + (1+a).X$ \\
+    & $Y_1 + \cdots + X + \cdots + a.X + \cdots + Y_n \ \reduce\ Y_1 + \cdots + Y_n + (1+a).X$ \\
     & \textcolor{gray}{Similar to (R-ADD0).} \\
     %
     R-ADD2
-    & $a_1 + \cdots + a.X + \cdots + X + \cdots + a_n \ \reduce\ a_1 + \cdots + a_n + (a+1).X$ \\
+    & $Y_1 + \cdots + a.X + \cdots + X + \cdots + Y_n \ \reduce\ Y_1 + \cdots + Y_n + (a+1).X$ \\
     & \textcolor{gray}{Similar to (R-ADD0).} \\
     %
     R-ADD3
-    & $a_1 + \cdots + a.X + \cdots + b.X + \cdots + a_n \ \reduce\ a_1 + \cdots + a_n + (a+b).X$ \\
+    & $Y_1 + \cdots + a.X + \cdots + b.X + \cdots + Y_n \ \reduce\ Y_1 + \cdots + Y_n + (a+b).X$ \\
     & \textcolor{gray}{Similar to (R-ADD0).} \\
     %
     R-ADDK0
@@ -546,6 +546,9 @@ Notice that the type checking $\Gamma \vdash t : T$ is decidable.
     R-ADJ2
     & $ (X_1 + \cdots + X_n)^\dagger \ \reduce\ X_1^\dagger + \cdots + X_n^\dagger $ \\
     %
+    R-ADJ3
+    & $ (X \otimes Y)^\dagger \ \reduce\ X^\dagger \otimes Y^\dagger$ \\
+    %
     R-ADJK0
     & $ \ZEROB(\sigma)^\dagger \ \reduce\ \ZEROK(\sigma) $ \\
     %
@@ -555,9 +558,6 @@ Notice that the type checking $\Gamma \vdash t : T$ is decidable.
     R-ADJK2
     & $ (B \cdot O)^\dagger\ \reduce\ O^\dagger \cdot B^\dagger $ \\
     %
-    R-ADJK3
-    & $ (B_1 \otimes B_2)^\dagger \ \reduce\ B_1^\dagger \otimes B_2^\dagger $ \\
-    %
     R-ADJB0
     & $ \ZEROK(\sigma)^\dagger \ \reduce\ \ZEROB(\sigma) $ \\
     %
@@ -566,9 +566,6 @@ Notice that the type checking $\Gamma \vdash t : T$ is decidable.
     %
     R-ADJB2
     & $ (O \cdot K)^\dagger\ \reduce\ K^\dagger \cdot O^\dagger $ \\
-    %
-    R-ADJB3
-    & $ (K_1 \otimes K_2)^\dagger \ \reduce\ K_1^\dagger \otimes K_2^\dagger $ \\
     %
     R-ADJO0
     & $ \ZEROO(\sigma, \tau)^\dagger \ \reduce\ \ZEROO(\tau, \sigma) $ \\
@@ -581,9 +578,6 @@ Notice that the type checking $\Gamma \vdash t : T$ is decidable.
     %
     R-ADJO3
     & $ (O_1 \cdot O_2)^\dagger \ \reduce\ O_2^\dagger \cdot O_1^\dagger $ \\
-    %
-    R-ADJO4
-    & $ (O_1 \otimes O_2)^\dagger \ \reduce\ O_1^\dagger \otimes O_2^\dagger $ 
 \end{ruletable}
 
 \begin{ruletable}{Rules for tensor product.}
