@@ -70,6 +70,7 @@
 \newcommand{\KType}{\mathcal{K}}
 \newcommand{\BType}{\mathcal{B}}
 \newcommand{\OType}{\mathcal{O}}
+\newcommand{\SET}{\mathsf{Set}}
 
 \newcommand{\ZEROK}{\mathbf{0}_\mathcal{K}}
 \newcommand{\ZEROB}{\mathbf{0}_\mathcal{B}}
@@ -100,12 +101,16 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\section{TODO}
+\begin{itemize}
+    \item The Coq side should be able to decide the alpha-equivalence of terms.
+\end{itemize}
 
 \section{Language Syntax}
 \begin{definition}[syntax]
     The syntax for Dirac notation types is defined as 
     \begin{align*}
-        T ::=\ & x\ |\ \SType\ |\ \KType(\sigma)\ |\ \BType(\sigma)\ |\ \OType(\sigma_1, \sigma_2)\ |\ T_1 \to T_2, \\
+        T ::=\ & x\ |\ \SType\ |\ \KType(\sigma)\ |\ \BType(\sigma)\ |\ \OType(\sigma_1, \sigma_2)\ |\ T_1 \to T_2\ |\ \SET(\sigma), \\
         \sigma ::=\ & x\ |\ \sigma_1 \times \sigma_2.
     \end{align*}
     The syntax for Dirac notation terms is defined as
@@ -114,7 +119,8 @@
         & |\ 0\ |\ 1\ |\ \ADDS(e_1 \cdots e_n) \ |\ e_1 \times \cdots \times e_n\ |\ e^* \ |\ \delta_{e_1, e_2}\ |\ \DOT(e_1\ e_2) \\
         & |\ \ZEROK(\sigma)\ |\ \ZEROB(\sigma)\ |\ \ZEROO(\sigma_1, \sigma_2)\ |\ \ONEO(\sigma) \\
         & |\ \ket{e}\ |\ \bra{t}\ |\ e^\dagger\ |\ e_1.e_2\ |\ \ADD(e_1 \cdots e_n)\ |\ e_1 \otimes e_2 \\
-        & |\ \MULK(e_1\ e_2)\ |\ \MULB(e_1\ e_2)\ |\ \OUTER(e_1\ e_2)\ |\ \MULO(e_1\ e_2).
+        & |\ \MULK(e_1\ e_2)\ |\ \MULB(e_1\ e_2)\ |\ \OUTER(e_1\ e_2)\ |\ \MULO(e_1\ e_2) \\
+        & |\ \mathbf{U}(e)\ |\ e_1 \star e_2\ |\ \sum_{e_1} e_2.
     \end{align*}
 \end{definition}
  % after consideration I still think keep DOT as binary is the best choice. It reduces the unstability of complicated matching in sequences.
@@ -122,6 +128,8 @@
 Compared to [?], this syntax for Dirac notations merges the symbols with overlapped properties, such as the addition and scaling symbols for ket, bra and operator.
 Here $\ADDS$ and $\ADD$ are two different AC symbols representing the scalar addition and the linear algebra addition respectively. They will be denoted as $a_1 + \cdots + a_n$ and $X_1 + \cdots + X_n$.
 There are five kinds of linear algebra multiplications among ket, bra and operator, whose properties are similar but still diverge to some extent. For example, the rules $(O_1 \cdot O_2) \cdot K\ \reduce\ O_1 \cdot (O_2 \cdot K)$ and $B \cdot (O_1 \cdot O_2) \ \reduce\ (B \cdot O_1) \cdot O_2$ indicate that the sorting of multiplication sequences depends on the subterm types. To avoid frequent but unnecessary type checkings, we encode the typing information by using five different symbols, namely $\DOT$, $\MULK$, $\MULB$, $\OUTER$ and $\MULO$. They are denoted as $B\cdot K$, $K_1 \cdot K_2$, $B_1 \cdot B_2$, $K \cdot B$ and $O_1 \cdot O_2$, respectively.
+
+Usually, the sum body is specified by an abstraction. Therefore we use notation $\sum_{i \in s} X$ to denote $\sum_{s} \lambda i . X$.
  
 \section{Typing System}
 The type checking of Dirac notations involves maintaining a well-formed context $\Gamma$, which specifies the definitions and typing assumtpions for variables.
@@ -173,7 +181,10 @@ Notice that the type checking $\Gamma \vdash t : T$ is decidable.
         \frac{\Gamma \vdash \sigma : \BaseS \qquad \Gamma \vdash \tau : \BaseS}{\Gamma \vdash \OType(\sigma, \tau) : \Type}
         \qquad \qquad
         \textbf{Type-Scalar} \qquad
-        \frac{\WF(\Gamma)}{\Gamma \vdash \SType : \Type}
+        \frac{\WF(\Gamma)}{\Gamma \vdash \SType : \Type} \\
+        \\
+        \textbf{Type-Set} \qquad
+        \frac{\Gamma \vdash \sigma : \BaseS}{\Gamma \vdash \SET(\sigma) : \Type}
     \end{gather*}
     \caption{Typing rules for Dirac notation types.}
 \end{figure}
@@ -313,6 +324,36 @@ Notice that the type checking $\Gamma \vdash t : T$ is decidable.
         \frac{\Gamma \vdash O_1 : \OType(\sigma_1, \tau_1) \qquad \Gamma \vdash O_2 : \OType(\sigma_2, \tau_2)} {\Gamma \vdash O_1 \otimes O_2 : \OType(\sigma_1 \times \sigma_2, \tau_1 \times \tau_2)}
     \end{gather*}
     \caption{Operator typing rules.}
+\end{figure}
+
+
+\begin{figure}[h]
+    \begin{gather*}
+        \textbf{Set-U} \qquad
+        \frac{\Gamma \vdash \sigma : \BaseS}{\Gamma \vdash \mathbf{U}(\sigma) : \SET(\sigma)} 
+        \qquad \qquad
+        \textbf{Set-Prod} \qquad
+        \frac{\Gamma \vdash A : \SET(\sigma) \qquad \Gamma \vdash B : \SET(\tau)}{\Gamma \vdash A \star B : \SET(\sigma \times \tau)}
+    \end{gather*}
+    \caption{Set typing rules.}
+\end{figure}
+
+
+\begin{figure}[h]
+    \begin{gather*}
+        \textbf{Sum-Scalar} \qquad
+        \frac{\Gamma \vdash s : \SET(\sigma) \qquad \Gamma \vdash f : \sigma \to \SType}{\Gamma \vdash \sum_{s} f : \SType} 
+        \qquad \qquad
+        \textbf{Sum-Ket} \qquad
+        \frac{\Gamma \vdash s : \SET(\sigma) \qquad \Gamma \vdash f : \sigma \to \KType(\tau)}{\Gamma \vdash \sum_{s} f : \KType(\tau)} \\
+        \\
+        \textbf{Sum-Bra} \qquad
+        \frac{\Gamma \vdash s : \SET(\sigma) \qquad \Gamma \vdash f : \sigma \to \BType(\tau)}{\Gamma \vdash \sum_{s} f : \BType(\tau)} 
+        \qquad \qquad
+        \textbf{Sum-Opt} \qquad
+        \frac{\Gamma \vdash s : \SET(\sigma) \qquad \Gamma \vdash f : \sigma \to \OType(\tau, \rho)}{\Gamma \vdash \sum_{s} f : \OType(\tau, \rho)}
+    \end{gather*}
+    \caption{Sum typing rules.}
 \end{figure}
 
 \clearpage
@@ -767,8 +808,143 @@ Notice that the type checking $\Gamma \vdash t : T$ is decidable.
     & $ (O_1 \otimes O_2) \cdot ((O_1' \otimes O_2') \cdot O_3)\ \reduce\ ((O_1 \cdot O_1') \otimes (O_2 \cdot O_2')) \cdot O_3 $ \\  
 \end{ruletable}
 
-% About big operators: maybe we should use the "sum operators"?
+\begin{ruletable}{Rules for sets.}
+    %
+    R-SET0
+    & $ \mathbf{U}(\sigma) \star \mathbf{U}(\tau) \ \reduce\ \mathbf{U}(\sigma \times \tau) $
+\end{ruletable}
 
+\begin{ruletable}{Rules for sum operators.}
+    %
+    R-SUM-CONST0
+    & $ \sum_{x \in s} 0 \ \reduce\ 0 $ \\
+    %
+    R-SUM-CONST1
+    & $ \sum_{x \in s} \ZEROK(\sigma)\ \reduce\ \ZEROK(\sigma) $ \\
+    %
+    R-SUM-CONST2
+    & $ \sum_{x \in s} \ZEROB(\sigma)\ \reduce\ \ZEROB(\sigma) $ \\
+    %
+    R-SUM-CONST3
+    & $ \sum_{x \in s} \ZEROO(\sigma, \tau)\ \reduce\ \ZEROO(\sigma, \tau) $ \\
+    %
+    R-SUM-CONST4
+    & $ \ONEO(\sigma) \ \reduce\ \sum_{i \in \mathbf{U}(\sigma)} \ket{i} \cdot \bra{i} $
+\end{ruletable}
+
+\begin{ruletable}{Rules for eliminating $\delta_{s, t}$.}
+    %
+    R-SUM-ELIM0
+    & $ i \text{ free in } t \vdash \sum_{i \in \mathbf{U}(\sigma)} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} \delta_{i, t} \ \reduce\ \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n}  1$ \\
+    %
+    R-SUM-ELIM1
+    & $ i \text{ free in } t \vdash \sum_{i \in \mathbf{U}(\sigma)} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (\delta_{i, t} \times a) \ \reduce\ \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} a\{i/t\} $ \\
+    %
+    R-SUM-ELIM2
+    & $ i \text{ free in } t \vdash \sum_{i \in \mathbf{U}(\sigma)} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (\delta_{i, t}.A) \ \reduce\ \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} A\{i/t\} $ \\
+    %
+    R-SUM-ELIM3
+    & $ i \text{ free in } t \vdash \sum_{i \in \mathbf{U}(\sigma)} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (\delta_{i, t} \times a).A \ \reduce\ \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n}  a\{i/t\}.A\{i/t\} $ \\
+    R-SUM-ELIM4
+    & $ \sum_{i \in M} \sum_{j \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n}  \delta_{i, j} \ \reduce\ \sum_{i \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} 1 $ \\
+    %
+    R-SUM-ELIM5
+    & $ \sum_{i \in M} \sum_{j \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (\delta_{i, j} \times a) \ \reduce\ \sum_{i \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} a\{i/j\} $ \\
+    %
+    R-SUM-ELIM6
+    & $ \sum_{i \in M} \sum_{j \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (\delta_{i, j}.A) \ \reduce\ \sum_{i \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} A\{i/j\} $ \\
+    %
+    R-SUM-ELIM7
+    & $ \sum_{i \in M} \sum_{j \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (\delta_{i, j} \times a).A \ \reduce\ \sum_{i \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n}  a\{i/j\}.A\{i/j\} $ \\
+\end{ruletable}
+
+\begin{ruletable}{Rules for pushing terms into sum operators}
+    %
+    R-SUM-PUSH0
+    & $ (\sum_{i \in M} a) \times b \ \reduce\ \sum_{i \in M} (a \times b) $ \\
+    %
+    R-SUM-PUSH1
+    & $ (\sum_{i \in M} a)^* \ \reduce\ \sum_{i \in M} a^* $ \\
+    %
+    R-SUM-PUSH2
+    & $ (\sum_{i \in M} X)^\dagger \ \reduce\ \sum_{i \in M} X^\dagger $ \\
+    %
+    R-SUM-PUSH3
+    & $ a.(\sum_{i \in M} X) \ \reduce\ \sum_{i \in M} (a.X) $ \\
+    %
+    R-SUM-PUSH4
+    & $ (\sum_{i \in M} a).X \ \reduce\ \sum_{i \in M} (a.X) $ \\
+    %
+    R-SUM-PUSH5
+    & $ (\sum_{i \in M} B)\cdot K \ \reduce\ \sum_{i \in M}(B \cdot K) $ \\
+    %
+    R-SUM-PUSH6
+    & $ (\sum_{i \in M} O)\cdot K \ \reduce\ \sum_{i \in M}(O \cdot K) $ \\
+    %
+    R-SUM-PUSH7
+    & $ (\sum_{i \in M} B)\cdot O \ \reduce\ \sum_{i \in M}(B \cdot O) $ \\
+    %
+    R-SUM-PUSH8
+    & $ (\sum_{i \in M} K)\cdot B \ \reduce\ \sum_{i \in M}(K \cdot B) $ \\
+    %
+    R-SUM-PUSH9
+    & $ (\sum_{i \in M} O_1)\cdot O_2 \ \reduce\ \sum_{i \in M}(O_1 \cdot O_2) $ \\
+    %
+    R-SUM-PUSH10
+    & $ B \cdot (\sum_{i \in M} K) \ \reduce\ \sum_{i \in M}(B \cdot K) $ \\
+    %
+    R-SUM-PUSH11
+    & $ O \cdot (\sum_{i \in M} K) \ \reduce\ \sum_{i \in M}(O \cdot K) $ \\
+    %
+    R-SUM-PUSH12
+    & $ B \cdot (\sum_{i \in M} O) \ \reduce\ \sum_{i \in M}(B \cdot O) $ \\
+    %
+    R-SUM-PUSH13
+    & $ K \cdot (\sum_{i \in M} B) \ \reduce\ \sum_{i \in M}(K \cdot B) $ \\
+    %
+    R-SUM-PUSH14
+    & $ O_1 \cdot (\sum_{i \in M} O_2) \ \reduce\ \sum_{i \in M}(O_1 \cdot O_2) $ \\
+    %
+    R-SUM-PUSH15
+    & $ (\sum_{i \in M} K_1) \otimes K_2 \ \reduce\ \sum_{i \in M} (K_1 \otimes K_2) $ \\
+    %
+    R-SUM-PUSH16
+    & $ (\sum_{i \in M} B_1) \otimes B_2 \ \reduce\ \sum_{i \in M} (B_1 \otimes B_2) $ \\
+    %
+    R-SUM-PUSH17
+    & $ (\sum_{i \in M} O_1) \otimes O_2 \ \reduce\ \sum_{i \in M} (O_1 \otimes O_2) $ \\
+    %
+    R-SUM-PUSH18
+    & $ K_1 \otimes (\sum_{i \in M} K_2) \ \reduce\ \sum_{i \in M} (K_1 \otimes K_2) $ \\
+    %
+    R-SUM-PUSH19
+    & $ B_1 \otimes (\sum_{i \in M} B_2) \ \reduce\ \sum_{i \in M} (B_1 \otimes B_2) $ \\
+    %
+    R-SUM-PUSH20
+    & $ O_1 \otimes (\sum_{i \in M} O_2) \ \reduce\ \sum_{i \in M} (O_1 \otimes O_2) $ \\
+\end{ruletable}
+\yx{Note: because we apply type checking on variables, and stick to unique bound variables, these pushing in operations are always sound.}
+
+\begin{ruletable}{Rules for addition and index in sum}
+    %
+    R-SUM-ADD0
+    & $\sum_{i \in M}(X_1 + \cdots + X_n) \ \reduce\ (\sum_{i \in M} X_1) + \cdots + (\sum_{i \in M} X_n) $ \\
+    %
+    R-SUM-ADD1
+    & $Y_1 + \cdots + \sum_{i \in M}(a.X) + \cdots + \sum_{i \in M}X + Y_n \ \reduce\ Y_1 + \cdots + Y_n + \sum_{i \in M}(a+1).X $ \\
+    %
+    R-SUM-ADD2
+    & $Y_1 + \cdots + \sum_{i \in M}X + \cdots + \sum_{i \in M}(a.X) + Y_n \ \reduce\ Y_1 + \cdots + Y_n + \sum_{i \in M}(1+a).X $ \\
+    %
+    R-SUM-ADD3
+    & $Y_1 + \cdots + \sum_{i \in M}(a.X) + \cdots + \sum_{i \in M}(b.X) + Y_n \ \reduce\ Y_1 + \cdots + Y_n + \sum_{i \in M}(a+b).X $ \\
+    %
+    R-SUM-INDEX0
+    & $ \sum_{i \in \mathbf{U}(\sigma \times \tau)} A \ \reduce\ \sum_{j \in \mathbf{U}(\sigma)} \sum_{k \in \mathbf{U}(\tau)} A\{i/(j, k)\} $ \\
+    %
+    R-SUM-INDEX1
+    & $ \sum_{i \in M_1 \star M_2} A \ \reduce\ \sum_{j \in M_1} \sum_{k \in M_2} A\{i/(j, k)\} $
+\end{ruletable}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -812,8 +988,9 @@ We can transform a term A with a suitable permutation tree. The transformation i
     & \texttt{end}
 \end{align*}
 
+\clearpage
 
-
+\input{labelled_dirac.tex}
 
 \clearpage
 
