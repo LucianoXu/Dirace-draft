@@ -63,8 +63,9 @@
 \newcommand{\Sort}{\mathsf{Sort}}
 \newcommand{\WF}{\mathcal{WF}}
 
+\newcommand{\Index}{\mathsf{Index}}
 \newcommand{\Type}{\mathsf{Type}}
-\newcommand{\BaseS}{\mathsf{Base}}
+\newcommand{\Basis}{\mathsf{Basis}}
 
 \newcommand{\SType}{\mathcal{S}}
 \newcommand{\KType}{\mathcal{K}}
@@ -103,15 +104,22 @@
 
 \section{TODO}
 \begin{itemize}
-    \item The Coq side should be able to decide the alpha-equivalence of terms.
+    \item Alpha equivalence is checked by a bound variable renaming on the whole term.
+    \item arrow type of $\Type \to \Type$ are forbidden. Check whether typing rules comply with this restriction.
 \end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Language Syntax}
 \begin{definition}[syntax]
+    The syntax for type indices are defined as
+    \begin{align*}
+        \sigma ::=\ & x\ |\ \sigma_1 \times \sigma_2.
+    \end{align*}
     The syntax for Dirac notation types is defined as 
     \begin{align*}
-        T ::=\ & x\ |\ \SType\ |\ \KType(\sigma)\ |\ \BType(\sigma)\ |\ \OType(\sigma_1, \sigma_2)\ |\ T_1 \to T_2\ |\ \SET(\sigma), \\
-        \sigma ::=\ & x\ |\ \sigma_1 \times \sigma_2.
+        T ::=\ & x\ |\ \Basis(\sigma)\ |\ \SType\ |\ \KType(\sigma)\ |\ \BType(\sigma)\ |\ \OType(\sigma_1, \sigma_2)\ |\ T_1 \to T_2\ |\ \forall x.T\ |\ \SET(\sigma). \\
     \end{align*}
     The syntax for Dirac notation terms is defined as
     \begin{align*}
@@ -134,60 +142,93 @@ Usually, the sum body is specified by an abstraction. Therefore we use notation 
 \section{Typing System}
 The type checking of Dirac notations involves maintaining a well-formed context $\Gamma$, which specifies the definitions and typing assumtpions for variables.
 Notice that the type checking $\Gamma \vdash t : T$ is decidable.
-\begin{figure}[h]
-    \begin{gather*}
-        \textbf{W-Empty} \qquad
-        \frac{}{\WF([])}
-        \qquad \qquad
-        \textbf{W-Assum-Type} \qquad
-        \frac{\WF(\Gamma) \qquad T \notin \Gamma}{\WF(\Gamma; T:\Type)}\\
-        \\
-        \textbf{W-Assum-Term} \qquad
-        \frac{\Gamma\vdash T:\Type \qquad x \notin \Gamma}{\WF(\Gamma; x:T)}
-        \qquad \qquad
-        \textbf{W-Def} \qquad
-        \frac{\Gamma\vdash t:T \qquad x \notin \Gamma}{\WF(\Gamma; x:=t:T)} \\
-        \\
-        \textbf{Var} \qquad
-        \frac{\WF(\Gamma) \qquad (x:T) \in \Gamma \text{ or } (x := t : T) \in \Gamma \text{ for some $t$}}{\Gamma \vdash x : T} \\
-        \\
-        \textbf{Arrow} \qquad
-        \frac{\Gamma \vdash T:\Type \qquad \Gamma \vdash U:\Type}{\Gamma \vdash T \to U : \Type} \\
-        \\
-        \textbf{Lam} \qquad
-        \frac{\Gamma;x:T \vdash t : U}{\Gamma \vdash (\lambda x:T . t) : T \to U}
-        \qquad \qquad
-        \textbf{App} \qquad
-        \frac{\Gamma \vdash t:U \to T \qquad \Gamma \vdash u:U}{\Gamma \vdash (t\ u):T}
-    \end{gather*}
-    \caption{The typing rules for the typed lambda calculus with environment.}
-\end{figure}
-\yx{The Lam rule is problematic. It still allows a ill-formed dependent type.}
+
+\begin{definition}[context]
+    \begin{align*}
+        \Gamma ::= []\ |\ \Gamma; x : \Index\ |\ \Gamma; T : \Type\ |\ \Gamma; x : T\ |\ \Gamma; x := t : T.
+    \end{align*}
+\end{definition}
 
 \begin{figure}[h]
     \begin{gather*}
-        \textbf{Type-Base} \qquad
-        \frac{\WF(\Gamma)}{\Gamma \vdash \BaseS : \Type} 
+        \textbf{W-Empty} \qquad
+        \frac{}{\WF([])} \\
+        \\
+        \textbf{W-Assum-Index} \qquad
+        \frac{\WF(\Gamma) \qquad \sigma \notin \Gamma}{\WF(\Gamma; \sigma : \Index)}\qquad \qquad
+        \textbf{W-Assum-Type} \qquad
+        \frac{\WF(\Gamma) \qquad T \notin \Gamma}{\WF(\Gamma; T : \Type)} \\
+        \\
+        \textbf{W-Assum-Term} \qquad
+        \frac{\Gamma \vdash T : \Type \qquad x \notin \Gamma}{\WF(\Gamma; x:T)}
         \qquad \qquad
-        \textbf{Base-Subtype} \qquad
-        \frac{\Gamma \vdash T : \BaseS}{\Gamma \vdash T : \Type} \\
+        \textbf{W-Def-Term} \qquad
+        \frac{\Gamma\vdash t:T \qquad x \notin \Gamma}{\WF(\Gamma; x:=t:T)}
+    \end{gather*}
+    \caption{Rules for a well-formed context.}
+\end{figure}
+
+\begin{figure}
+    \begin{gather*}
+        \textbf{Index-Var} \qquad
+        \frac{\WF(\Gamma) \qquad \sigma : \Index \in \Gamma}{\Gamma \vdash \sigma : \Index}
+        \qquad \qquad
+        \textbf{Index-Prod} \qquad
+        \frac{\Gamma \vdash \sigma : \Index \qquad \Gamma \vdash \tau : \Index}{\Gamma \vdash \sigma \times \tau : \Index}
+    \end{gather*}
+    \caption{Rules for type index.}
+\end{figure}
+
+\begin{figure}
+    \begin{gather*}
+        \textbf{Type-Var} \qquad
+        \frac{\WF(\Gamma) \qquad T : \Type \in \Gamma}{\Gamma \vdash T : \Type}\\
+        \\
+        \textbf{Type-Arrow} \qquad
+        \frac{\Gamma \vdash T : \Type \qquad \Gamma \vdash U : \Type}{\Gamma \vdash T \to U : \Type}
+        \qquad \qquad
+        \textbf{Type-Index} \qquad
+        \frac{\Gamma ; \sigma : \Index \vdash U : \Type}{\Gamma \vdash \forall \sigma.U : \Type} \\
+        \\        
+        \textbf{Type-Basis} \qquad
+        \frac{\Gamma \vdash \sigma : \Index}{\Gamma \vdash \Basis(\sigma) : \Type}  \\
         \\
         \textbf{Type-Ket} \qquad
-        \frac{\Gamma \vdash \sigma : \BaseS}{\Gamma \vdash \KType(\sigma) : \Type}
+        \frac{\Gamma \vdash \sigma : \Index}{\Gamma \vdash \KType(\sigma) : \Type}
         \qquad \qquad
         \textbf{Type-Bra} \qquad
-        \frac{\Gamma \vdash \sigma : \BaseS}{\Gamma \vdash \BType(\sigma) : \Type} \\
+        \frac{\Gamma \vdash \sigma : \Index}{\Gamma \vdash \BType(\sigma) : \Type} \\
         \\
         \textbf{Type-Opt} \qquad
-        \frac{\Gamma \vdash \sigma : \BaseS \qquad \Gamma \vdash \tau : \BaseS}{\Gamma \vdash \OType(\sigma, \tau) : \Type}
+        \frac{\Gamma \vdash \sigma : \Index \qquad \Gamma \vdash \tau : \Index}{\Gamma \vdash \OType(\sigma, \tau) : \Type}
         \qquad \qquad
         \textbf{Type-Scalar} \qquad
         \frac{\WF(\Gamma)}{\Gamma \vdash \SType : \Type} \\
         \\
         \textbf{Type-Set} \qquad
-        \frac{\Gamma \vdash \sigma : \BaseS}{\Gamma \vdash \SET(\sigma) : \Type}
+        \frac{\Gamma \vdash \sigma : \Index}{\Gamma \vdash \SET(\sigma) : \Type}
     \end{gather*}
-    \caption{Typing rules for Dirac notation types.}
+    \caption{Rules for types.}
+\end{figure}
+
+\begin{figure}[h]
+    \begin{gather*}
+        \textbf{Term-Var} \qquad
+        \frac{\WF(\Gamma) \qquad (x:T) \in \Gamma \text{ or } (x := t : T) \in \Gamma \text{ for some $t$}}{\Gamma \vdash x : T} \\
+        \\
+        \textbf{Lam} \qquad
+        \frac{\Gamma;x:T \vdash t : U}{\Gamma \vdash (\lambda x:T . t) : T \to U}
+        \qquad \qquad
+        \textbf{Index} \qquad
+        \frac{\Gamma; \sigma : \Index \vdash t : U \qquad x \notin \Gamma}{\Gamma \vdash (\lambda x.t) : \forall \sigma.U} \\
+        \\
+        \textbf{App-Arrow} \qquad
+        \frac{\Gamma \vdash t:U \to T \qquad \Gamma \vdash u:U}{\Gamma \vdash (t\ u):T}
+        \qquad \qquad
+        \textbf{App-Index} \qquad
+        \frac{\Gamma \vdash t:\forall x.U \qquad \Gamma \vdash u : \Index}{\Gamma \vdash (t\ u):U\{x/u\}}
+    \end{gather*}
+    \caption{Rules for variable and function typings.}
 \end{figure}
 
 \begin{figure}[h]
@@ -199,11 +240,7 @@ Notice that the type checking $\Gamma \vdash t : T$ is decidable.
         \frac{\WF(\Gamma)}{\Gamma \vdash 1 : \SType}
         \qquad \qquad
         \textbf{Sca-Delta} \qquad
-        \frac{            
-            \begin{aligned}
-                & \Gamma\vdash \sigma : \BaseS \\
-                & \Gamma\vdash s : \sigma \qquad \Gamma\vdash t : \sigma
-            \end{aligned}} {\Gamma \vdash \delta_{s, t} : \SType} \\
+        \frac{ \Gamma\vdash s : \Basis(\sigma) \qquad \Gamma\vdash t : \Basis(\sigma) } {\Gamma \vdash \delta_{s, t} : \SType} \\
         \\
         \textbf{Sca-Add} \qquad
         \frac{\Gamma\vdash a_i : \SType \text{ for all $i$}}{\Gamma\vdash a_1 + \cdots + a_n : \SType}
@@ -225,33 +262,27 @@ Notice that the type checking $\Gamma \vdash t : T$ is decidable.
         % this two rules can be considered later
         % \textbf{Base-Def} \qquad
         % \frac{\WF(\Gamma) \qquad a_i \notin \Gamma \text{ for all $i$}}
-        % {\Gamma\vdash \{a_1, a_2, \cdots, a_n\} : \BaseS}
+        % {\Gamma\vdash \{a_1, a_2, \cdots, a_n\} : \Basis}
         % \qquad \qquad
         % \textbf{Base-Element} \qquad
         % \frac{\WF(\Gamma) \qquad c \in \{a_1, a_2, \cdots a_n\}}{\Gamma\vdash c : \{a_1, a_2, \cdots, a_n\}} \\
         % \\
-        \textbf{Base-Prod} \qquad
-        \frac{\Gamma\vdash \sigma : \BaseS \qquad \Gamma\vdash \tau : \BaseS}{\Gamma\vdash \sigma \times \tau : \BaseS}
-        \qquad \qquad
         \textbf{Pair-Base} \qquad
         \frac{
-            \begin{aligned}
-                & \Gamma\vdash \sigma : \BaseS \qquad \Gamma\vdash s : \sigma \\
-                & \Gamma\vdash \tau : \BaseS \qquad \Gamma\vdash t : \tau
-            \end{aligned}} {\Gamma\vdash (s, t) : \sigma \times \tau} 
+            \Gamma\vdash s : \Basis(\sigma) \qquad \Gamma\vdash t : \Basis(\tau)} {\Gamma\vdash (s, t) : \Basis(\sigma \times \tau)} 
         \textbf{}
     \end{gather*}
-    \caption{Typing rules for bases. }
+    \caption{Typing rules for Basis. }
 \end{figure}
 
 
 \begin{figure}[h]
     \begin{gather*}
         \textbf{Ket-0} \qquad
-        \frac{\Gamma \vdash \sigma : \BaseS}{\Gamma \vdash \ZEROK(\sigma) : \KType(\sigma)} 
+        \frac{\Gamma \vdash \sigma : \Index}{\Gamma \vdash \ZEROK(\sigma) : \KType(\sigma)} 
         \qquad \qquad
         \textbf{Ket-Base} \qquad
-        \frac{\Gamma \vdash \sigma : \BaseS \qquad \Gamma\vdash t : \sigma}{\Gamma \vdash \ket{t} : \KType(\sigma)} \\
+        \frac{\Gamma\vdash t : \Basis(\sigma)}{\Gamma \vdash \ket{t} : \KType(\sigma)} \\
         \\
         \textbf{Ket-Adj} \qquad
         \frac{\Gamma \vdash B : \BType(\sigma)}{\Gamma \vdash B^\dagger : \KType(\sigma)} 
@@ -274,10 +305,10 @@ Notice that the type checking $\Gamma \vdash t : T$ is decidable.
 \begin{figure}[h]
     \begin{gather*}
         \textbf{Bra-0} \qquad
-        \frac{\Gamma \vdash \sigma : \BaseS}{\Gamma \vdash \ZEROB(\sigma) : \BType(\sigma)} 
+        \frac{\Gamma \vdash \sigma : \Index}{\Gamma \vdash \ZEROB(\sigma) : \BType(\sigma)} 
         \qquad \qquad
         \textbf{Bra-Base} \qquad
-        \frac{\Gamma \vdash \sigma : \BaseS \qquad \Gamma\vdash t : \sigma}{\Gamma \vdash \bra{t} : \BType(\sigma)} \\
+        \frac{\Gamma\vdash t : \Basis(\sigma)}{\Gamma \vdash \bra{t} : \BType(\sigma)} \\
         \\
         \textbf{Bra-Adj} \qquad
         \frac{\Gamma \vdash K : \KType(\sigma)}{\Gamma \vdash K^\dagger : \BType(\sigma)} 
@@ -301,10 +332,10 @@ Notice that the type checking $\Gamma \vdash t : T$ is decidable.
 \begin{figure}[h]
     \begin{gather*}
         \textbf{Opt-0} \qquad
-        \frac{\Gamma \vdash \sigma : \BaseS \qquad \Gamma \vdash \tau : \BaseS}{\Gamma \vdash \ZEROO(\sigma, \tau) : \OType(\sigma, \tau)} 
+        \frac{\Gamma \vdash \sigma : \Index \qquad \Gamma \vdash \tau : \Index}{\Gamma \vdash \ZEROO(\sigma, \tau) : \OType(\sigma, \tau)} 
         \qquad \qquad
         \textbf{Opt-1} \qquad
-        \frac{\Gamma \vdash \sigma : \BaseS}{\Gamma \vdash \ONEO(\sigma) : \OType(\sigma, \sigma)} \\
+        \frac{\Gamma \vdash \sigma : \Index}{\Gamma \vdash \ONEO(\sigma) : \OType(\sigma, \sigma)} \\
         \\
         \textbf{Opt-Adj} \qquad
         \frac{\Gamma \vdash O : \OType(\sigma, \tau)}{\Gamma \vdash O^\dagger : \OType(\tau, \sigma)} 
@@ -331,7 +362,7 @@ Notice that the type checking $\Gamma \vdash t : T$ is decidable.
 \begin{figure}[h]
     \begin{gather*}
         \textbf{Set-U} \qquad
-        \frac{\Gamma \vdash \sigma : \BaseS}{\Gamma \vdash \mathbf{U}(\sigma) : \SET(\sigma)} 
+        \frac{\Gamma \vdash \sigma : \Index}{\Gamma \vdash \mathbf{U}(\sigma) : \SET(\sigma)} 
         \qquad \qquad
         \textbf{Set-Prod} \qquad
         \frac{\Gamma \vdash A : \SET(\sigma) \qquad \Gamma \vdash B : \SET(\tau)}{\Gamma \vdash A \star B : \SET(\sigma \times \tau)}
@@ -343,16 +374,16 @@ Notice that the type checking $\Gamma \vdash t : T$ is decidable.
 \begin{figure}[h]
     \begin{gather*}
         \textbf{Sum-Scalar} \qquad
-        \frac{\Gamma \vdash s : \SET(\sigma) \qquad \Gamma \vdash f : \sigma \to \SType}{\Gamma \vdash \sum_{s} f : \SType} 
-        \qquad \qquad
+        \frac{\Gamma \vdash s : \SET(\sigma) \qquad \Gamma \vdash f : \Basis(\sigma) \to \SType}{\Gamma \vdash \sum_{s} f : \SType} \\
+        \\
         \textbf{Sum-Ket} \qquad
-        \frac{\Gamma \vdash s : \SET(\sigma) \qquad \Gamma \vdash f : \sigma \to \KType(\tau)}{\Gamma \vdash \sum_{s} f : \KType(\tau)} \\
+        \frac{\Gamma \vdash s : \SET(\sigma) \qquad \Gamma \vdash f : \Basis(\sigma) \to \KType(\tau)}{\Gamma \vdash \sum_{s} f : \KType(\tau)} \\
         \\
         \textbf{Sum-Bra} \qquad
-        \frac{\Gamma \vdash s : \SET(\sigma) \qquad \Gamma \vdash f : \sigma \to \BType(\tau)}{\Gamma \vdash \sum_{s} f : \BType(\tau)} 
-        \qquad \qquad
+        \frac{\Gamma \vdash s : \SET(\sigma) \qquad \Gamma \vdash f : \Basis(\sigma) \to \BType(\tau)}{\Gamma \vdash \sum_{s} f : \BType(\tau)} \\
+        \\
         \textbf{Sum-Opt} \qquad
-        \frac{\Gamma \vdash s : \SET(\sigma) \qquad \Gamma \vdash f : \sigma \to \OType(\tau, \rho)}{\Gamma \vdash \sum_{s} f : \OType(\tau, \rho)}
+        \frac{\Gamma \vdash s : \SET(\sigma) \qquad \Gamma \vdash f : \Basis(\sigma) \to \OType(\tau, \rho)}{\Gamma \vdash \sum_{s} f : \OType(\tau, \rho)}
     \end{gather*}
     \caption{Sum typing rules.}
 \end{figure}
@@ -374,8 +405,6 @@ Notice that the type checking $\Gamma \vdash t : T$ is decidable.
     \end{gather*}
     \caption{Conversions and reductions for the typed lambda calculus.}
 \end{figure}
-
-\yx{Alpha rule will be implemented by renaming, and we can leave it for the future.}
 
 \newenvironment{ruletable}[1]
 {
