@@ -123,7 +123,7 @@
     \end{align*}
     The syntax for Dirac notation terms is defined as
     \begin{align*}
-        e ::=\ & x\ |\ (e_1, e_2) \\
+        e ::=\ & x\ |\ (e_1, e_2)\ |\ \lambda x: T.e\ |\ \lambda x.e\ |\ e_1\ e_2 \\
         & |\ 0\ |\ 1\ |\ \ADDS(e_1 \cdots e_n) \ |\ e_1 \times \cdots \times e_n\ |\ e^* \ |\ \delta_{e_1, e_2}\ |\ \DOT(e_1\ e_2) \\
         & |\ \ZEROK(\sigma)\ |\ \ZEROB(\sigma)\ |\ \ZEROO(\sigma_1, \sigma_2)\ |\ \ONEO(\sigma) \\
         & |\ \ket{e}\ |\ \bra{t}\ |\ e^\dagger\ |\ e_1.e_2\ |\ \ADD(e_1 \cdots e_n)\ |\ e_1 \otimes e_2 \\
@@ -137,7 +137,7 @@ Compared to [?], this syntax for Dirac notations merges the symbols with overlap
 Here $\ADDS$ and $\ADD$ are two different AC symbols representing the scalar addition and the linear algebra addition respectively. They will be denoted as $a_1 + \cdots + a_n$ and $X_1 + \cdots + X_n$.
 There are five kinds of linear algebra multiplications among ket, bra and operator, whose properties are similar but still diverge to some extent. For example, the rules $(O_1 \cdot O_2) \cdot K\ \reduce\ O_1 \cdot (O_2 \cdot K)$ and $B \cdot (O_1 \cdot O_2) \ \reduce\ (B \cdot O_1) \cdot O_2$ indicate that the sorting of multiplication sequences depends on the subterm types. To avoid frequent but unnecessary type checkings, we encode the typing information by using five different symbols, namely $\DOT$, $\MULK$, $\MULB$, $\OUTER$ and $\MULO$. They are denoted as $B\cdot K$, $K_1 \cdot K_2$, $B_1 \cdot B_2$, $K \cdot B$ and $O_1 \cdot O_2$, respectively.
 
-Usually, the sum body is specified by an abstraction. Therefore we use notation $\sum_{i \in s} X$ to denote $\sum_{s} \lambda i . X$.
+Usually, the sum body is specified by an abstraction. Therefore we use notation $\sum_{i \in s} X$ to denote $\sum_{s} \lambda i : T . X$.
  
 \section{Typing System}
 The type checking of Dirac notations involves maintaining a well-formed context $\Gamma$, which specifies the definitions and typing assumtpions for variables.
@@ -148,6 +148,8 @@ Notice that the type checking $\Gamma \vdash t : T$ is decidable.
         \Gamma ::= []\ |\ \Gamma; x : \Index\ |\ \Gamma; T : \Type\ |\ \Gamma; x : T\ |\ \Gamma; x := t : T.
     \end{align*}
 \end{definition}
+
+Note that in the following rules, $x : \Index$ and $x : \Type$ are not considered as $x : T$ judgements.
 
 \begin{figure}[h]
     \begin{gather*}
@@ -220,7 +222,7 @@ Notice that the type checking $\Gamma \vdash t : T$ is decidable.
         \frac{\Gamma;x:T \vdash t : U}{\Gamma \vdash (\lambda x:T . t) : T \to U}
         \qquad \qquad
         \textbf{Index} \qquad
-        \frac{\Gamma; \sigma : \Index \vdash t : U \qquad x \notin \Gamma}{\Gamma \vdash (\lambda x.t) : \forall \sigma.U} \\
+        \frac{\Gamma; x : \Index \vdash t : U}{\Gamma \vdash (\lambda x.t) : \forall x.U} \\
         \\
         \textbf{App-Arrow} \qquad
         \frac{\Gamma \vdash t:U \to T \qquad \Gamma \vdash u:U}{\Gamma \vdash (t\ u):T}
@@ -229,6 +231,24 @@ Notice that the type checking $\Gamma \vdash t : T$ is decidable.
         \frac{\Gamma \vdash t:\forall x.U \qquad \Gamma \vdash u : \Index}{\Gamma \vdash (t\ u):U\{x/u\}}
     \end{gather*}
     \caption{Rules for variable and function typings.}
+\end{figure}
+
+\begin{figure}[h]
+    \begin{gather*}
+        % this two rules can be considered later
+        % \textbf{Base-Def} \qquad
+        % \frac{\WF(\Gamma) \qquad a_i \notin \Gamma \text{ for all $i$}}
+        % {\Gamma\vdash \{a_1, a_2, \cdots, a_n\} : \Basis}
+        % \qquad \qquad
+        % \textbf{Base-Element} \qquad
+        % \frac{\WF(\Gamma) \qquad c \in \{a_1, a_2, \cdots a_n\}}{\Gamma\vdash c : \{a_1, a_2, \cdots, a_n\}} \\
+        % \\
+        \textbf{Pair-Base} \qquad
+        \frac{
+            \Gamma\vdash s : \Basis(\sigma) \qquad \Gamma\vdash t : \Basis(\tau)} {\Gamma\vdash (s, t) : \Basis(\sigma \times \tau)} 
+        \textbf{}
+    \end{gather*}
+    \caption{Typing rules for Basis. }
 \end{figure}
 
 \begin{figure}[h]
@@ -257,23 +277,6 @@ Notice that the type checking $\Gamma \vdash t : T$ is decidable.
     \caption{Scalar typing rules.}
 \end{figure}
 
-\begin{figure}[h]
-    \begin{gather*}
-        % this two rules can be considered later
-        % \textbf{Base-Def} \qquad
-        % \frac{\WF(\Gamma) \qquad a_i \notin \Gamma \text{ for all $i$}}
-        % {\Gamma\vdash \{a_1, a_2, \cdots, a_n\} : \Basis}
-        % \qquad \qquad
-        % \textbf{Base-Element} \qquad
-        % \frac{\WF(\Gamma) \qquad c \in \{a_1, a_2, \cdots a_n\}}{\Gamma\vdash c : \{a_1, a_2, \cdots, a_n\}} \\
-        % \\
-        \textbf{Pair-Base} \qquad
-        \frac{
-            \Gamma\vdash s : \Basis(\sigma) \qquad \Gamma\vdash t : \Basis(\tau)} {\Gamma\vdash (s, t) : \Basis(\sigma \times \tau)} 
-        \textbf{}
-    \end{gather*}
-    \caption{Typing rules for Basis. }
-\end{figure}
 
 
 \begin{figure}[h]
