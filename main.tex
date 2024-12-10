@@ -119,11 +119,11 @@
     \end{align*}
     The syntax for Dirac notation types is defined as 
     \begin{align*}
-        T ::=\ & x\ |\ \Basis(\sigma)\ |\ \SType\ |\ \KType(\sigma)\ |\ \BType(\sigma)\ |\ \OType(\sigma_1, \sigma_2)\ |\ T_1 \to T_2\ |\ \forall x.T\ |\ \SET(\sigma). \\
+        T ::=\ & x\ |\ \Basis(\sigma)\ |\ \SType\ |\ \KType(\sigma)\ |\ \BType(\sigma)\ |\ \OType(\sigma_1, \sigma_2)\ |\ T_1 \to T_2\ |\ \forall .T\ |\ \SET(\sigma). \\
     \end{align*}
     The syntax for Dirac notation terms is defined as
     \begin{align*}
-        e ::=\ & x\ |\ (e_1, e_2)\ |\ \lambda x: T.e\ |\ \lambda x.e\ |\ e_1\ e_2 \\
+        e ::=\ & x\ |\ \$i\ |\ (e_1, e_2)\ |\ \lambda : T.e\ |\ \lambda.e\ |\ e_1\ e_2 \\
         & |\ 0\ |\ 1\ |\ \ADDS(e_1 \cdots e_n) \ |\ e_1 \times \cdots \times e_n\ |\ e^* \ |\ \delta_{e_1, e_2}\ |\ \DOT(e_1\ e_2) \\
         & |\ \ZEROK(\sigma)\ |\ \ZEROB(\sigma)\ |\ \ZEROO(\sigma_1, \sigma_2)\ |\ \ONEO(\sigma) \\
         & |\ \ket{e}\ |\ \bra{t}\ |\ e^\dagger\ |\ e_1.e_2\ |\ \ADD(e_1 \cdots e_n)\ |\ e_1 \otimes e_2 \\
@@ -132,7 +132,7 @@
     \end{align*}
 \end{definition}
  % after consideration I still think keep DOT as binary is the best choice. It reduces the unstability of complicated matching in sequences.
-
+Here $i$ is a natural number and $\$i$ represents the $i$-th bound variable in de Bruijn notation. 
 Compared to [?], this syntax for Dirac notations merges the symbols with overlapped properties, such as the addition and scaling symbols for ket, bra and operator.
 Here $\ADDS$ and $\ADD$ are two different AC symbols representing the scalar addition and the linear algebra addition respectively. They will be denoted as $a_1 + \cdots + a_n$ and $X_1 + \cdots + X_n$.
 There are five kinds of linear algebra multiplications among ket, bra and operator, whose properties are similar but still diverge to some extent. For example, the rules $(O_1 \cdot O_2) \cdot K\ \reduce\ O_1 \cdot (O_2 \cdot K)$ and $B \cdot (O_1 \cdot O_2) \ \reduce\ (B \cdot O_1) \cdot O_2$ indicate that the sorting of multiplication sequences depends on the subterm types. To avoid frequent but unnecessary type checkings, we encode the typing information by using five different symbols, namely $\DOT$, $\MULK$, $\MULB$, $\OUTER$ and $\MULO$. They are denoted as $B\cdot K$, $K_1 \cdot K_2$, $B_1 \cdot B_2$, $K \cdot B$ and $O_1 \cdot O_2$, respectively.
@@ -140,75 +140,83 @@ There are five kinds of linear algebra multiplications among ket, bra and operat
 Usually, the sum body is specified by an abstraction. Therefore we use notation $\sum_{i \in s} X$ to denote $\sum_{s} \lambda i : T . X$.
  
 \section{Typing System}
-The type checking of Dirac notations involves maintaining a well-formed context $\Gamma$, which specifies the definitions and typing assumtpions for variables.
-Notice that the type checking $\Gamma \vdash t : T$ is decidable.
+The type checking of Dirac notations involves maintaining a well-formed environment and context $E[\Gamma]$, which specifies the definitions and typing assumtpions for variables.
+The environment and the conetxt are defined as follows.
 
-\begin{definition}[context]
+\begin{definition}[environment and context]
     \begin{align*}
-        \Gamma ::= []\ |\ \Gamma; x : \Index\ |\ \Gamma; T : \Type\ |\ \Gamma; x : T\ |\ \Gamma; x := t : T.
+        E ::=\ & []\ |\ E; x : \Index\ |\ E; T : \Type\ |\ E; x : T\ |\ E; x := t : T. \\
+        \Gamma ::=\ & []\ |\ \Gamma; \Index\ |\ \Gamma; T.
     \end{align*}
 \end{definition}
 
-Note that in the following rules, $x : \Index$ and $x : \Type$ are not considered as $x : T$ judgements.
+Note that in the following rules, $x : \Index$ and $x : \Type$ are not considered as $x : T$ judgements. The context $\Gamma$ acts as the stack to indicate the typing of de Bruijn notations. The notation $\Gamma_i$ is defined as the $i$-th element in $\Gamma$ from the end. That is, if $\Gamma \equiv \Gamma'; T$, then $\Gamma_0 = T$ and $\Gamma_i = \Gamma'_{i-1}$.
 
 \begin{figure}[h]
     \begin{gather*}
         \textbf{W-Empty} \qquad
-        \frac{}{\WF([])} \\
+        \frac{}{\WF([])[]} \\
         \\
-        \textbf{W-Assum-Index} \qquad
-        \frac{\WF(\Gamma) \qquad \sigma \notin \Gamma}{\WF(\Gamma; \sigma : \Index)}\qquad \qquad
-        \textbf{W-Assum-Type} \qquad
-        \frac{\WF(\Gamma) \qquad T \notin \Gamma}{\WF(\Gamma; T : \Type)} \\
+        \textbf{W-AssumE-Index} \qquad
+        \frac{\WF(E)[] \qquad x \notin E}{\WF(E; x : \Index)[]}\qquad \qquad
+        \textbf{W-AssumE-Type} \qquad
+        \frac{\WF(E)[] \qquad x \notin E}{\WF(E; x : \Type)} \\
         \\
-        \textbf{W-Assum-Term} \qquad
-        \frac{\Gamma \vdash T : \Type \qquad x \notin \Gamma}{\WF(\Gamma; x:T)}
+        \textbf{W-AssumE-Term} \qquad
+        \frac{E[] \vdash T : \Type \qquad x \notin E}{\WF(E; x:T)[]}
         \qquad \qquad
         \textbf{W-Def-Term} \qquad
-        \frac{\Gamma\vdash t:T \qquad x \notin \Gamma}{\WF(\Gamma; x:=t:T)}
+        \frac{E[]\vdash t:T \qquad x \notin E}{\WF(E; x:=t:T)[]} \\
+        \\
+        \textbf{W-AssumC-Index} \qquad
+        \frac{\WF(E)[\Gamma]}{\WF(E)[\Gamma; \Index]}
+        \qquad \qquad
+        \textbf{W-AssumC-Term} \qquad
+        \frac{E[\Gamma] \vdash T : \Type}{\WF(E)[\Gamma; T]}
     \end{gather*}
-    \caption{Rules for a well-formed context.}
+    \caption{Rules for a well-formed environment and context.}
 \end{figure}
 
 \begin{figure}
     \begin{gather*}
         \textbf{Index-Var} \qquad
-        \frac{\WF(\Gamma) \qquad \sigma : \Index \in \Gamma}{\Gamma \vdash \sigma : \Index}
+        \frac{\WF(E)[\Gamma] \qquad x : \Index \in E}{E[\Gamma] \vdash x : \Index}
         \qquad \qquad
         \textbf{Index-Prod} \qquad
-        \frac{\Gamma \vdash \sigma : \Index \qquad \Gamma \vdash \tau : \Index}{\Gamma \vdash \sigma \times \tau : \Index}
+        \frac{E[\Gamma] \vdash \sigma : \Index \qquad E[\Gamma] \vdash \tau : \Index}{E[\Gamma] \vdash \sigma \times \tau : \Index}
     \end{gather*}
     \caption{Rules for type index.}
 \end{figure}
 
 \begin{figure}
     \begin{gather*}
-        \textbf{Type-Var} \qquad
-        \frac{\WF(\Gamma) \qquad T : \Type \in \Gamma}{\Gamma \vdash T : \Type}\\
+        \textbf{Type-Context-Var} \qquad
+        \frac{\WF(E)[\Gamma]}{E[\Gamma]\vdash \$i : \Gamma_i}
+        \\
         \\
         \textbf{Type-Arrow} \qquad
-        \frac{\Gamma \vdash T : \Type \qquad \Gamma \vdash U : \Type}{\Gamma \vdash T \to U : \Type}
+        \frac{E[\Gamma] \vdash T : \Type \qquad E[\Gamma] \vdash U : \Type}{E[\Gamma] \vdash T \to U : \Type}
         \qquad \qquad
         \textbf{Type-Index} \qquad
-        \frac{\Gamma ; \sigma : \Index \vdash U : \Type}{\Gamma \vdash \forall \sigma.U : \Type} \\
+        \frac{E[\Gamma ; \Index] \vdash U : \Type}{E[\Gamma] \vdash \forall.U : \Type} \\
         \\        
         \textbf{Type-Basis} \qquad
-        \frac{\Gamma \vdash \sigma : \Index}{\Gamma \vdash \Basis(\sigma) : \Type}  \\
+        \frac{E[\Gamma] \vdash \sigma : \Index}{E[\Gamma] \vdash \Basis(\sigma) : \Type}  \\
         \\
         \textbf{Type-Ket} \qquad
-        \frac{\Gamma \vdash \sigma : \Index}{\Gamma \vdash \KType(\sigma) : \Type}
+        \frac{E[\Gamma] \vdash \sigma : \Index}{E[\Gamma] \vdash \KType(\sigma) : \Type}
         \qquad \qquad
         \textbf{Type-Bra} \qquad
-        \frac{\Gamma \vdash \sigma : \Index}{\Gamma \vdash \BType(\sigma) : \Type} \\
+        \frac{E[\Gamma] \vdash \sigma : \Index}{E[\Gamma] \vdash \BType(\sigma) : \Type} \\
         \\
         \textbf{Type-Opt} \qquad
-        \frac{\Gamma \vdash \sigma : \Index \qquad \Gamma \vdash \tau : \Index}{\Gamma \vdash \OType(\sigma, \tau) : \Type}
+        \frac{E[\Gamma] \vdash \sigma : \Index \qquad E[\Gamma] \vdash \tau : \Index}{E[\Gamma] \vdash \OType(\sigma, \tau) : \Type}
         \qquad \qquad
         \textbf{Type-Scalar} \qquad
-        \frac{\WF(\Gamma)}{\Gamma \vdash \SType : \Type} \\
+        \frac{\WF(E)[\Gamma]}{E[\Gamma] \vdash \SType : \Type} \\
         \\
         \textbf{Type-Set} \qquad
-        \frac{\Gamma \vdash \sigma : \Index}{\Gamma \vdash \SET(\sigma) : \Type}
+        \frac{E[\Gamma] \vdash \sigma : \Index}{E[\Gamma] \vdash \SET(\sigma) : \Type}
     \end{gather*}
     \caption{Rules for types.}
 \end{figure}
@@ -216,22 +224,23 @@ Note that in the following rules, $x : \Index$ and $x : \Type$ are not considere
 \begin{figure}[h]
     \begin{gather*}
         \textbf{Term-Var} \qquad
-        \frac{\WF(\Gamma) \qquad (x:T) \in \Gamma \text{ or } (x := t : T) \in \Gamma \text{ for some $t$}}{\Gamma \vdash x : T} \\
+        \frac{\WF(E)[\Gamma] \qquad (x:T) \in E \text{ or } (x := t : T) \in E \text{ for some $t$}}{E[\Gamma] \vdash x : T} \\
         \\
         \textbf{Lam} \qquad
-        \frac{\Gamma;x:T \vdash t : U}{\Gamma \vdash (\lambda x:T . t) : T \to U}
+        \frac{E[\Gamma; T] \vdash t : U}{E[\Gamma] \vdash (\lambda : T . t) : T \to U}
         \qquad \qquad
         \textbf{Index} \qquad
-        \frac{\Gamma; x : \Index \vdash t : U}{\Gamma \vdash (\lambda x.t) : \forall x.U} \\
+        \frac{E[\Gamma; \Index] \vdash t : U}{E[\Gamma] \vdash (\lambda.t) : \forall .U} \\
         \\
         \textbf{App-Arrow} \qquad
-        \frac{\Gamma \vdash t:U \to T \qquad \Gamma \vdash u:U}{\Gamma \vdash (t\ u):T}
+        \frac{E[\Gamma] \vdash t:U \to T \qquad E[\Gamma] \vdash u:U}{E[\Gamma] \vdash (t\ u):T}
         \qquad \qquad
         \textbf{App-Index} \qquad
-        \frac{\Gamma \vdash t:\forall x.U \qquad \Gamma \vdash u : \Index}{\Gamma \vdash (t\ u):U\{x/u\}}
+        \frac{E[\Gamma] \vdash t:\forall .U \qquad E[\Gamma] \vdash u : \Index}{E[\Gamma] \vdash (t\ u):U[u]}
     \end{gather*}
-    \caption{Rules for variable and function typings.}
+    \caption{Rules for variable and function typings. Here $U[u]$ means instantiate the first bound variable with $u$ in $U$.}
 \end{figure}
+
 
 \begin{figure}[h]
     \begin{gather*}
@@ -245,7 +254,7 @@ Note that in the following rules, $x : \Index$ and $x : \Type$ are not considere
         % \\
         \textbf{Pair-Base} \qquad
         \frac{
-            \Gamma\vdash s : \Basis(\sigma) \qquad \Gamma\vdash t : \Basis(\tau)} {\Gamma\vdash (s, t) : \Basis(\sigma \times \tau)} 
+            E[\Gamma]\vdash s : \Basis(\sigma) \qquad E[\Gamma]\vdash t : \Basis(\tau)} {E[\Gamma]\vdash (s, t) : \Basis(\sigma \times \tau)} 
         \textbf{}
     \end{gather*}
     \caption{Typing rules for Basis. }
@@ -254,25 +263,25 @@ Note that in the following rules, $x : \Index$ and $x : \Type$ are not considere
 \begin{figure}[h]
     \begin{gather*}
         \textbf{Sca-0} \qquad
-        \frac{\WF(\Gamma)}{\Gamma \vdash 0 : \SType}
+        \frac{\WF(E)[\Gamma]}{E[\Gamma] \vdash 0 : \SType}
         \qquad \qquad
         \textbf{Sca-1} \qquad
-        \frac{\WF(\Gamma)}{\Gamma \vdash 1 : \SType}
-        \qquad \qquad
+        \frac{\WF(E)[\Gamma]}{E[\Gamma] \vdash 1 : \SType} \\
+        \\
         \textbf{Sca-Delta} \qquad
-        \frac{ \Gamma\vdash s : \Basis(\sigma) \qquad \Gamma\vdash t : \Basis(\sigma) } {\Gamma \vdash \delta_{s, t} : \SType} \\
+        \frac{ E[\Gamma]\vdash s : \Basis(\sigma) \qquad E[\Gamma]\vdash t : \Basis(\sigma) } {E[\Gamma] \vdash \delta_{s, t} : \SType} \\
         \\
         \textbf{Sca-Add} \qquad
-        \frac{\Gamma\vdash a_i : \SType \text{ for all $i$}}{\Gamma\vdash a_1 + \cdots + a_n : \SType}
+        \frac{E[\Gamma]\vdash a_i : \SType \text{ for all $i$}}{E[\Gamma]\vdash a_1 + \cdots + a_n : \SType}
         \qquad \qquad
         \textbf{Sca-Mul} \qquad
-        \frac{\Gamma\vdash a_i : \SType \text{ for all $i$}}{\Gamma\vdash a_1 \times \cdots \times a_n : \SType} \\
+        \frac{E[\Gamma]\vdash a_i : \SType \text{ for all $i$}}{E[\Gamma]\vdash a_1 \times \cdots \times a_n : \SType} \\
         \\
         \textbf{Sca-Conj} \qquad
-        \frac{\Gamma \vdash a : \SType}{\Gamma \vdash a^*:\SType}
+        \frac{E[\Gamma] \vdash a : \SType}{E[\Gamma] \vdash a^*:\SType}
         \qquad \qquad
         \textbf{Sca-Dot} \qquad
-        \frac{\Gamma\vdash B : \BType(\sigma) \qquad \Gamma\vdash K : \KType(\sigma)}{\Gamma \vdash B \cdot K : \SType}
+        \frac{E[\Gamma]\vdash B : \BType(\sigma) \qquad E[\Gamma]\vdash K : \KType(\sigma)}{E[\Gamma] \vdash B \cdot K : \SType}
     \end{gather*}
     \caption{Scalar typing rules.}
 \end{figure}
@@ -282,25 +291,25 @@ Note that in the following rules, $x : \Index$ and $x : \Type$ are not considere
 \begin{figure}[h]
     \begin{gather*}
         \textbf{Ket-0} \qquad
-        \frac{\Gamma \vdash \sigma : \Index}{\Gamma \vdash \ZEROK(\sigma) : \KType(\sigma)} 
+        \frac{E[\Gamma] \vdash \sigma : \Index}{E[\Gamma] \vdash \ZEROK(\sigma) : \KType(\sigma)} 
         \qquad \qquad
         \textbf{Ket-Base} \qquad
-        \frac{\Gamma\vdash t : \Basis(\sigma)}{\Gamma \vdash \ket{t} : \KType(\sigma)} \\
+        \frac{E[\Gamma]\vdash t : \Basis(\sigma)}{E[\Gamma] \vdash \ket{t} : \KType(\sigma)} \\
         \\
         \textbf{Ket-Adj} \qquad
-        \frac{\Gamma \vdash B : \BType(\sigma)}{\Gamma \vdash B^\dagger : \KType(\sigma)} 
+        \frac{E[\Gamma] \vdash B : \BType(\sigma)}{E[\Gamma] \vdash B^\dagger : \KType(\sigma)} 
         \qquad \qquad
         \textbf{Ket-Scr} \qquad
-        \frac{\Gamma \vdash a : \SType \qquad \Gamma \vdash K : \KType(\sigma)}{\Gamma \vdash a.K : \KType(\sigma)} \\
+        \frac{E[\Gamma] \vdash a : \SType \qquad E[\Gamma] \vdash K : \KType(\sigma)}{E[\Gamma] \vdash a.K : \KType(\sigma)} \\
         \\
         \textbf{Ket-Add} \qquad
-        \frac{\Gamma \vdash K_i : \KType(\sigma) \text{ for all $i$}}{\Gamma \vdash K_1 + \cdots + K_n : \KType(\sigma)}
+        \frac{E[\Gamma] \vdash K_i : \KType(\sigma) \text{ for all $i$}}{E[\Gamma] \vdash K_1 + \cdots + K_n : \KType(\sigma)}
         \qquad \qquad
         \textbf{Ket-MulK} \qquad
-        \frac{\Gamma \vdash O : \OType(\sigma, \tau) \qquad \Gamma \vdash K : \KType(\tau)}{\Gamma \vdash O \cdot K : \KType(\sigma)} \\
+        \frac{E[\Gamma] \vdash O : \OType(\sigma, \tau) \qquad E[\Gamma] \vdash K : \KType(\tau)}{E[\Gamma] \vdash O \cdot K : \KType(\sigma)} \\
         \\
         \textbf{Ket-Tsr} \qquad
-        \frac{\Gamma \vdash K_1 : \KType(\sigma) \qquad \Gamma \vdash K_2 : \KType(\tau)} {\Gamma \vdash K_1 \otimes K_2 : \KType(\sigma \times \tau)}
+        \frac{E[\Gamma] \vdash K_1 : \KType(\sigma) \qquad E[\Gamma] \vdash K_2 : \KType(\tau)} {E[\Gamma] \vdash K_1 \otimes K_2 : \KType(\sigma \times \tau)}
     \end{gather*}
     \caption{Ket typing rules.}
 \end{figure}
@@ -308,25 +317,25 @@ Note that in the following rules, $x : \Index$ and $x : \Type$ are not considere
 \begin{figure}[h]
     \begin{gather*}
         \textbf{Bra-0} \qquad
-        \frac{\Gamma \vdash \sigma : \Index}{\Gamma \vdash \ZEROB(\sigma) : \BType(\sigma)} 
+        \frac{E[\Gamma] \vdash \sigma : \Index}{E[\Gamma] \vdash \ZEROB(\sigma) : \BType(\sigma)} 
         \qquad \qquad
         \textbf{Bra-Base} \qquad
-        \frac{\Gamma\vdash t : \Basis(\sigma)}{\Gamma \vdash \bra{t} : \BType(\sigma)} \\
+        \frac{E[\Gamma]\vdash t : \Basis(\sigma)}{E[\Gamma] \vdash \bra{t} : \BType(\sigma)} \\
         \\
         \textbf{Bra-Adj} \qquad
-        \frac{\Gamma \vdash K : \KType(\sigma)}{\Gamma \vdash K^\dagger : \BType(\sigma)} 
+        \frac{E[\Gamma] \vdash K : \KType(\sigma)}{E[\Gamma] \vdash K^\dagger : \BType(\sigma)} 
         \qquad \qquad
         \textbf{Bra-Scr} \qquad
-        \frac{\Gamma \vdash a : \SType \qquad \Gamma \vdash B : \BType(\sigma)}{\Gamma \vdash a.B : \BType(\sigma)} \\
+        \frac{E[\Gamma] \vdash a : \SType \qquad E[\Gamma] \vdash B : \BType(\sigma)}{E[\Gamma] \vdash a.B : \BType(\sigma)} \\
         \\
         \textbf{Bra-Add} \qquad
-        \frac{\Gamma \vdash B_i : \BType(\sigma) \text{ for all $i$}}{\Gamma \vdash B_1 + \cdots + B_n : \BType(\sigma)}
+        \frac{E[\Gamma] \vdash B_i : \BType(\sigma) \text{ for all $i$}}{E[\Gamma] \vdash B_1 + \cdots + B_n : \BType(\sigma)}
         \qquad \qquad
         \textbf{Bra-MulB} \qquad
-        \frac{\Gamma \vdash B : \KType(\sigma) \qquad \Gamma \vdash O : \OType(\sigma, \tau)}{\Gamma \vdash B \cdot O : \BType(\tau)} \\
+        \frac{E[\Gamma] \vdash B : \KType(\sigma) \qquad E[\Gamma] \vdash O : \OType(\sigma, \tau)}{E[\Gamma] \vdash B \cdot O : \BType(\tau)} \\
         \\
         \textbf{Bra-Tsr} \qquad
-        \frac{\Gamma \vdash B_1 : \BType(\sigma) \qquad \Gamma \vdash B_2 : \BType(\tau)} {\Gamma \vdash B_1 \otimes B_2 : \BType(\sigma \times \tau)}
+        \frac{E[\Gamma] \vdash B_1 : \BType(\sigma) \qquad E[\Gamma] \vdash B_2 : \BType(\tau)} {E[\Gamma] \vdash B_1 \otimes B_2 : \BType(\sigma \times \tau)}
     \end{gather*}
     \caption{Bra typing rules.}
 \end{figure}
@@ -335,28 +344,28 @@ Note that in the following rules, $x : \Index$ and $x : \Type$ are not considere
 \begin{figure}[h]
     \begin{gather*}
         \textbf{Opt-0} \qquad
-        \frac{\Gamma \vdash \sigma : \Index \qquad \Gamma \vdash \tau : \Index}{\Gamma \vdash \ZEROO(\sigma, \tau) : \OType(\sigma, \tau)} 
+        \frac{E[\Gamma] \vdash \sigma : \Index \qquad E[\Gamma] \vdash \tau : \Index}{E[\Gamma] \vdash \ZEROO(\sigma, \tau) : \OType(\sigma, \tau)} 
         \qquad \qquad
         \textbf{Opt-1} \qquad
-        \frac{\Gamma \vdash \sigma : \Index}{\Gamma \vdash \ONEO(\sigma) : \OType(\sigma, \sigma)} \\
+        \frac{E[\Gamma] \vdash \sigma : \Index}{E[\Gamma] \vdash \ONEO(\sigma) : \OType(\sigma, \sigma)} \\
         \\
         \textbf{Opt-Adj} \qquad
-        \frac{\Gamma \vdash O : \OType(\sigma, \tau)}{\Gamma \vdash O^\dagger : \OType(\tau, \sigma)} 
+        \frac{E[\Gamma] \vdash O : \OType(\sigma, \tau)}{E[\Gamma] \vdash O^\dagger : \OType(\tau, \sigma)} 
         \qquad \qquad
         \textbf{Opt-Scr} \qquad
-        \frac{\Gamma \vdash a : \SType \qquad \Gamma \vdash O : \OType(\sigma, \tau)}{\Gamma \vdash a.O : \OType(\sigma, \tau)} \\
+        \frac{E[\Gamma] \vdash a : \SType \qquad E[\Gamma] \vdash O : \OType(\sigma, \tau)}{E[\Gamma] \vdash a.O : \OType(\sigma, \tau)} \\
         \\
         \textbf{Opt-Add} \qquad
-        \frac{\Gamma \vdash O_i : \OType(\sigma, \tau) \text{ for all $i$}}{\Gamma \vdash O_1 + \cdots + O_n : \OType(\sigma, \tau)}
+        \frac{E[\Gamma] \vdash O_i : \OType(\sigma, \tau) \text{ for all $i$}}{E[\Gamma] \vdash O_1 + \cdots + O_n : \OType(\sigma, \tau)}
         \qquad \qquad
         \textbf{Opt-Outer} \qquad
-        \frac{\Gamma\vdash K : \KType(\sigma) \qquad \Gamma\vdash B : \BType(\tau)}{\Gamma\vdash K \cdot B : \OType(\sigma, \tau)} \\
+        \frac{E[\Gamma]\vdash K : \KType(\sigma) \qquad E[\Gamma]\vdash B : \BType(\tau)}{E[\Gamma]\vdash K \cdot B : \OType(\sigma, \tau)} \\
         \\
         \textbf{Opt-MulO} \qquad
-        \frac{\Gamma \vdash O_1 : \OType(\sigma, \tau) \qquad \Gamma \vdash O_2 : \OType(\tau, \rho)}{\Gamma \vdash O_1 \cdot O_2 : \OType(\sigma, \rho)} \\
+        \frac{E[\Gamma] \vdash O_1 : \OType(\sigma, \tau) \qquad E[\Gamma] \vdash O_2 : \OType(\tau, \rho)}{E[\Gamma] \vdash O_1 \cdot O_2 : \OType(\sigma, \rho)} \\
         \\
         \textbf{Opt-Tsr} \qquad
-        \frac{\Gamma \vdash O_1 : \OType(\sigma_1, \tau_1) \qquad \Gamma \vdash O_2 : \OType(\sigma_2, \tau_2)} {\Gamma \vdash O_1 \otimes O_2 : \OType(\sigma_1 \times \sigma_2, \tau_1 \times \tau_2)}
+        \frac{E[\Gamma] \vdash O_1 : \OType(\sigma_1, \tau_1) \qquad E[\Gamma] \vdash O_2 : \OType(\sigma_2, \tau_2)} {E[\Gamma] \vdash O_1 \otimes O_2 : \OType(\sigma_1 \times \sigma_2, \tau_1 \times \tau_2)}
     \end{gather*}
     \caption{Operator typing rules.}
 \end{figure}
@@ -365,10 +374,10 @@ Note that in the following rules, $x : \Index$ and $x : \Type$ are not considere
 \begin{figure}[h]
     \begin{gather*}
         \textbf{Set-U} \qquad
-        \frac{\Gamma \vdash \sigma : \Index}{\Gamma \vdash \mathbf{U}(\sigma) : \SET(\sigma)} 
+        \frac{E[\Gamma] \vdash \sigma : \Index}{E[\Gamma] \vdash \mathbf{U}(\sigma) : \SET(\sigma)} 
         \qquad \qquad
         \textbf{Set-Prod} \qquad
-        \frac{\Gamma \vdash A : \SET(\sigma) \qquad \Gamma \vdash B : \SET(\tau)}{\Gamma \vdash A \star B : \SET(\sigma \times \tau)}
+        \frac{E[\Gamma] \vdash A : \SET(\sigma) \qquad E[\Gamma] \vdash B : \SET(\tau)}{E[\Gamma] \vdash A \star B : \SET(\sigma \times \tau)}
     \end{gather*}
     \caption{Set typing rules.}
 \end{figure}
@@ -377,16 +386,16 @@ Note that in the following rules, $x : \Index$ and $x : \Type$ are not considere
 \begin{figure}[h]
     \begin{gather*}
         \textbf{Sum-Scalar} \qquad
-        \frac{\Gamma \vdash s : \SET(\sigma) \qquad \Gamma \vdash f : \Basis(\sigma) \to \SType}{\Gamma \vdash \sum_{s} f : \SType} \\
+        \frac{E[\Gamma] \vdash s : \SET(\sigma) \qquad E[\Gamma] \vdash f : \Basis(\sigma) \to \SType}{E[\Gamma] \vdash \sum_{s} f : \SType} \\
         \\
         \textbf{Sum-Ket} \qquad
-        \frac{\Gamma \vdash s : \SET(\sigma) \qquad \Gamma \vdash f : \Basis(\sigma) \to \KType(\tau)}{\Gamma \vdash \sum_{s} f : \KType(\tau)} \\
+        \frac{E[\Gamma] \vdash s : \SET(\sigma) \qquad E[\Gamma] \vdash f : \Basis(\sigma) \to \KType(\tau)}{E[\Gamma] \vdash \sum_{s} f : \KType(\tau)} \\
         \\
         \textbf{Sum-Bra} \qquad
-        \frac{\Gamma \vdash s : \SET(\sigma) \qquad \Gamma \vdash f : \Basis(\sigma) \to \BType(\tau)}{\Gamma \vdash \sum_{s} f : \BType(\tau)} \\
+        \frac{E[\Gamma] \vdash s : \SET(\sigma) \qquad E[\Gamma] \vdash f : \Basis(\sigma) \to \BType(\tau)}{E[\Gamma] \vdash \sum_{s} f : \BType(\tau)} \\
         \\
         \textbf{Sum-Opt} \qquad
-        \frac{\Gamma \vdash s : \SET(\sigma) \qquad \Gamma \vdash f : \Basis(\sigma) \to \OType(\tau, \rho)}{\Gamma \vdash \sum_{s} f : \OType(\tau, \rho)}
+        \frac{E[\Gamma] \vdash s : \SET(\sigma) \qquad E[\Gamma] \vdash f : \Basis(\sigma) \to \OType(\tau, \rho)}{E[\Gamma] \vdash \sum_{s} f : \OType(\tau, \rho)}
     \end{gather*}
     \caption{Sum typing rules.}
 \end{figure}
@@ -395,16 +404,21 @@ Note that in the following rules, $x : \Index$ and $x : \Type$ are not considere
 \section{Conversions and Reductions}
 \begin{figure}[h]
     \begin{gather*}
-        \textbf{Alpha} \qquad \text{(bound variable renaming)}
+        \textbf{Beta-Arrow} \qquad
+        \frac{}{E[\Gamma] \vdash ((\lambda : T.t)\ u)\ \reduce\ t[u]} 
         \qquad \qquad
-        \textbf{Beta} \qquad
-        \frac{}{\Gamma \vdash ((\lambda x:T.t)\ u)\ \reduce_\beta\ t\{x/u\}} \\
+        \textbf{Beta-Index} \qquad
+        \frac{}{E[\Gamma] \vdash ((\lambda.t)\ u)\ \reduce\ t[u]} 
+        \\
         \\
         \textbf{Delta} \qquad
-        \frac{\WF(\Gamma) \qquad (c:=t:T) \in \Gamma}{\Gamma \vdash c\ \reduce_\delta\ t}
+        \frac{\WF(E)[\Gamma] \qquad (c:=t:T) \in E}{E[\Gamma] \vdash c\ \reduce\ t} \\
+        \\
+        \textbf{Eta-Arrow} \qquad
+        \frac{}{E[\Gamma] \vdash \lambda : T . (t\ x)\ \reduce\ t}
         \qquad \qquad
-        \textbf{Eta} \qquad
-        \frac{\Gamma\vdash t : T \to U}{\Gamma \vdash \lambda x : T . (t\ x)\ \reduce_\eta\ t}
+        \textbf{Eta-Index} \qquad
+        \frac{}{E[\Gamma] \vdash \lambda . (t\ x)\ \reduce\ t}
     \end{gather*}
     \caption{Conversions and reductions for the typed lambda calculus.}
 \end{figure}
