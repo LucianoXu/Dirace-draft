@@ -104,10 +104,21 @@
 
 \section{TODO}
 \begin{itemize}
-    \item Alpha equivalence is checked by a bound variable renaming on the whole term.
-    \item arrow type of $\Type \to \Type$ are forbidden. Check whether typing rules comply with this restriction.
+    \item \ 
 \end{itemize}
 
+
+\section{Some practices of de Bruijn substitution and application}
+\begin{itemize}
+    \item $\lambda x .((\lambda y. \lambda z. \lambda w. y)\ x) \reduce \lambda x. \lambda z. \lambda w. x $ 
+    \\
+    $ \lambda . ((\lambda . \lambda . \lambda. 2)\ 0) \reduce \lambda . \lambda . \lambda.2$
+
+    \item $\lambda x . ((\lambda y. \lambda z. y)\ (X\ x)) \reduce \lambda x . \lambda z . (X\ x)$
+    \\
+    $\lambda . ((\lambda. \lambda. 1)\ (X\ 0)) \reduce \lambda. \lambda. (X\ 1)$
+
+\end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -137,7 +148,7 @@ Compared to [?], this syntax for Dirac notations merges the symbols with overlap
 Here $\ADDS$ and $\ADD$ are two different AC symbols representing the scalar addition and the linear algebra addition respectively. They will be denoted as $a_1 + \cdots + a_n$ and $X_1 + \cdots + X_n$.
 There are five kinds of linear algebra multiplications among ket, bra and operator, whose properties are similar but still diverge to some extent. For example, the rules $(O_1 \cdot O_2) \cdot K\ \reduce\ O_1 \cdot (O_2 \cdot K)$ and $B \cdot (O_1 \cdot O_2) \ \reduce\ (B \cdot O_1) \cdot O_2$ indicate that the sorting of multiplication sequences depends on the subterm types. To avoid frequent but unnecessary type checkings, we encode the typing information by using five different symbols, namely $\DOT$, $\MULK$, $\MULB$, $\OUTER$ and $\MULO$. They are denoted as $B\cdot K$, $K_1 \cdot K_2$, $B_1 \cdot B_2$, $K \cdot B$ and $O_1 \cdot O_2$, respectively.
 
-Usually, the sum body is specified by an abstraction. Therefore we use notation $\sum_{i \in s} X$ to denote $\sum_{s} \lambda i : T . X$.
+Usually, the sum body is specified by an abstraction. Therefore we use notation $\sum_s X$ to denote $\sum_{s} \lambda : T . X$ as well.
  
 \section{Typing System}
 The type checking of Dirac notations involves maintaining a well-formed environment and context $E[\Gamma]$, which specifies the definitions and typing assumtpions for variables.
@@ -415,10 +426,10 @@ Note that in the following rules, $x : \Index$ and $x : \Type$ are not considere
         \frac{\WF(E)[\Gamma] \qquad (c:=t:T) \in E}{E[\Gamma] \vdash c\ \reduce\ t} \\
         \\
         \textbf{Eta-Arrow} \qquad
-        \frac{}{E[\Gamma] \vdash \lambda : T . (t\ x)\ \reduce\ t}
+        \frac{}{E[\Gamma] \vdash \lambda : T . (t\ \$0)\ \reduce\ t}
         \qquad \qquad
         \textbf{Eta-Index} \qquad
-        \frac{}{E[\Gamma] \vdash \lambda . (t\ x)\ \reduce\ t}
+        \frac{}{E[\Gamma] \vdash \lambda . (t\ \$0)\ \reduce\ t}
     \end{gather*}
     \caption{Conversions and reductions for the typed lambda calculus.}
 \end{figure}
@@ -864,113 +875,113 @@ Note that in the following rules, $x : \Index$ and $x : \Type$ are not considere
 \begin{ruletable}{Rules for sum operators.}
     %
     R-SUM-CONST0
-    & $ \sum_{x \in s} 0 \ \reduce\ 0 $ \\
+    & $ \sum_{s} 0 \ \reduce\ 0 $ \\
     %
     R-SUM-CONST1
-    & $ \sum_{x \in s} \ZEROK(\sigma)\ \reduce\ \ZEROK(\sigma) $ \\
+    & $ \sum_{s} \ZEROK(\sigma)\ \reduce\ \ZEROK(\sigma) $ \\
     %
     R-SUM-CONST2
-    & $ \sum_{x \in s} \ZEROB(\sigma)\ \reduce\ \ZEROB(\sigma) $ \\
+    & $ \sum_{s} \ZEROB(\sigma)\ \reduce\ \ZEROB(\sigma) $ \\
     %
     R-SUM-CONST3
-    & $ \sum_{x \in s} \ZEROO(\sigma, \tau)\ \reduce\ \ZEROO(\sigma, \tau) $ \\
+    & $ \sum_{s} \ZEROO(\sigma, \tau)\ \reduce\ \ZEROO(\sigma, \tau) $ \\
     %
     R-SUM-CONST4
-    & $ \ONEO(\sigma) \ \reduce\ \sum_{i \in \mathbf{U}(\sigma)} \ket{i} \cdot \bra{i} $
+    & $ \ONEO(\sigma) \ \reduce\ \sum_{\mathbf{U}(\sigma)} \ket{i} \cdot \bra{i} $
 \end{ruletable}
 
 \begin{ruletable}{Rules for eliminating $\delta_{s, t}$. Note that these rules will match the $\delta$ operator modulo the commutativity of its arguments.}
     %
     R-SUM-ELIM0
-    & $ i \text{ free in } t \vdash \sum_{i \in \mathbf{U}(\sigma)} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} \delta_{i, t} \ \reduce\ \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n}  1$ \\
+    & $ \$i \text{ free in } t \vdash \sum_{\mathbf{U}(\sigma)} \sum_{s_1} \cdots \sum_{s_i} \delta_{\$i, t} \ \reduce\ \sum_{s_1} \cdots \sum_{s_i}  1$ \\
     %
     R-SUM-ELIM1
-    & $ i \text{ free in } t \vdash \sum_{i \in \mathbf{U}(\sigma)} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (a_1 \times \cdots \times \delta_{i, t} \times \cdots \times a_n) $ \\
-    & $ \reduce\ \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} a_1\{i/t\} \times \cdots \times a_n\{i/t\} $ \\
+    & $ \$i \text{ free in } t \vdash \sum_{\mathbf{U}(\sigma)} \sum_{s_1} \cdots \sum_{s_i} (a_1 \times \cdots \times \delta_{\$i, t} \times \cdots \times a_n) $ \\
+    & $ \reduce\ \sum_{s_1} \cdots \sum_{s_i} a_1\{\$i/t\} \times \cdots \times a_n\{\$i/t\} $ \\
     %
     R-SUM-ELIM2
-    & $ i \text{ free in } t \vdash \sum_{i \in \mathbf{U}(\sigma)} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (\delta_{i, t}.A) \ \reduce\ \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} A\{i/t\} $ \\
+    & $ \$i \text{ free in } t \vdash \sum_{\mathbf{U}(\sigma)} \sum_{s_1} \cdots \sum_{s_i} (\delta_{\$i, t}.A) \ \reduce\ \sum_{s_1} \cdots \sum_{s_i} A\{\$i/t\} $ \\
     %
     R-SUM-ELIM3
-    & $ i \text{ free in } t \vdash \sum_{i \in \mathbf{U}(\sigma)} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (a_1 \times \cdots \times \delta_{i, t} \times \cdots \times a_n).A $ \\
-    & $ \reduce\ \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n}  (a_1\{i/t\} \times \cdots \times a_n\{i/t\}).A\{i/t\} $ \\
+    & $ \$i \text{ free in } t \vdash \sum_{\mathbf{U}(\sigma)} \sum_{s_1} \cdots \sum_{s_i} (a_1 \times \cdots \times \delta_{\$i, t} \times \cdots \times a_i).A $ \\
+    & $ \reduce\ \sum_{s_1} \cdots \sum_{s_i}  (a_1\{\$i/t\} \times \cdots \times a_n\{\$i/t\}).A\{\$i/t\} $ \\
     R-SUM-ELIM4
-    & $ \sum_{i \in M} \sum_{j \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n}  \delta_{i, j} \ \reduce\ \sum_{j \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} 1 $ \\
+    & $ \sum_{M} \sum_{M} \sum_{s_1} \cdots \sum_{s_i}  \delta_{\$(i + 1), \$i} \ \reduce\ \sum_{M} \sum_{s_1} \cdots \sum_{k_n \in s_i} 1 $ \\
     %
     R-SUM-ELIM5
-    & $ \sum_{i \in M} \sum_{j \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (a_1 \times \dots \times \delta_{i, j} \times \cdots \times a_n) $ \\
-    & $ \reduce\ \sum_{j \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (a_1\{j/i\} \times \cdots \times a_n\{j/i\}) $ \\
+    & $ \sum_{M} \sum_{M} \sum_{s_1} \cdots \sum_{s_i} (a_1 \times \dots \times \delta_{\$(i+1), \$i} \times \cdots \times a_n) $ \\
+    & $ \reduce\ \sum_{M} \sum_{s_1} \cdots \sum_{s_n} (a_1\{\$i/\$(i+1)\} \times \cdots \times a_n\{\$i/\$(i+1)\}) $ \\
     %
     R-SUM-ELIM6
-    & $ \sum_{i \in M} \sum_{j \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (\delta_{i, j}.A) \ \reduce\ \sum_{j \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} A\{j/i\} $ \\
+    & $ \sum_{M} \sum_{M} \sum_{s_1} \cdots \sum_{s_i} (\delta_{\$(i+1), \$i}.A) \ \reduce\ \sum_{M} \sum_{s_1} \cdots \sum_{s_i} A\{\$i/\$(i+1)\} $ \\
     %
     R-SUM-ELIM7
-    & $ \sum_{i \in M} \sum_{j \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (a_1 \times \cdots \times \delta_{i, j} \times \cdots \times a_n).A $ \\
-    & $ \reduce\ \sum_{j \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (a_1\{j/i\} \times \cdots \times a_n\{j/i\}).A\{j/i\} $ \\
+    & $ \sum_{M} \sum_{M} \sum_{s_1} \cdots \sum_{s_i} (a_1 \times \cdots \times \delta_{\$(i+1), \$i} \times \cdots \times a_n).A $ \\
+    & $ \reduce\ \sum_{M} \sum_{s_1} \cdots \sum_{s_i} (a_1\{\$i/\$(i+1)\} \times \cdots \times a_n\{\$i/\$(i+1)\}).A\{\$i/\$(i+1)\} $ \\
 \end{ruletable}
 
 \begin{ruletable}{Rules for pushing terms into sum operators}
     %
     R-SUM-PUSH0
-    & $ b_1 \times \cdots \times (\sum_{i \in M} a) \times \cdots \times b_n \ \reduce\ \sum_{i \in M} (b_1 \times \cdots \times a \times \cdots \times b_n) $ \\
+    & $ b_1 \times \cdots \times (\sum_{M} a) \times \cdots \times b_n \ \reduce\ \sum_{M} (b_1 \times \cdots \times a \times \cdots \times b_n) $ \\
     %
     R-SUM-PUSH1
-    & $ (\sum_{i \in M} a)^* \ \reduce\ \sum_{i \in M} a^* $ \\
+    & $ (\sum_{M} a)^* \ \reduce\ \sum_{M} a^* $ \\
     %
     R-SUM-PUSH2
-    & $ (\sum_{i \in M} X)^\dagger \ \reduce\ \sum_{i \in M} X^\dagger $ \\
+    & $ (\sum_{M} X)^\dagger \ \reduce\ \sum_{M} X^\dagger $ \\
     %
     R-SUM-PUSH3
-    & $ a.(\sum_{i \in M} X) \ \reduce\ \sum_{i \in M} (a.X) $ \\
+    & $ a.(\sum_{M} X) \ \reduce\ \sum_{M} (a.X) $ \\
     %
     R-SUM-PUSH4
-    & $ (\sum_{i \in M} a).X \ \reduce\ \sum_{i \in M} (a.X) $ \\
+    & $ (\sum_{M} a).X \ \reduce\ \sum_{M} (a.X) $ \\
     %
     R-SUM-PUSH5
-    & $ (\sum_{i \in M} B)\cdot K \ \reduce\ \sum_{i \in M}(B \cdot K) $ \\
+    & $ (\sum_{M} B)\cdot K \ \reduce\ \sum_{M}(B \cdot K) $ \\
     %
     R-SUM-PUSH6
-    & $ (\sum_{i \in M} O)\cdot K \ \reduce\ \sum_{i \in M}(O \cdot K) $ \\
+    & $ (\sum_{M} O)\cdot K \ \reduce\ \sum_{M}(O \cdot K) $ \\
     %
     R-SUM-PUSH7
-    & $ (\sum_{i \in M} B)\cdot O \ \reduce\ \sum_{i \in M}(B \cdot O) $ \\
+    & $ (\sum_{M} B)\cdot O \ \reduce\ \sum_{M}(B \cdot O) $ \\
     %
     R-SUM-PUSH8
-    & $ (\sum_{i \in M} K)\cdot B \ \reduce\ \sum_{i \in M}(K \cdot B) $ \\
+    & $ (\sum_{M} K)\cdot B \ \reduce\ \sum_{M}(K \cdot B) $ \\
     %
     R-SUM-PUSH9
-    & $ (\sum_{i \in M} O_1)\cdot O_2 \ \reduce\ \sum_{i \in M}(O_1 \cdot O_2) $ \\
+    & $ (\sum_{M} O_1)\cdot O_2 \ \reduce\ \sum_{M}(O_1 \cdot O_2) $ \\
     %
     R-SUM-PUSH10
-    & $ B \cdot (\sum_{i \in M} K) \ \reduce\ \sum_{i \in M}(B \cdot K) $ \\
+    & $ B \cdot (\sum_{M} K) \ \reduce\ \sum_{M}(B \cdot K) $ \\
     %
     R-SUM-PUSH11
-    & $ O \cdot (\sum_{i \in M} K) \ \reduce\ \sum_{i \in M}(O \cdot K) $ \\
+    & $ O \cdot (\sum_{M} K) \ \reduce\ \sum_{M}(O \cdot K) $ \\
     %
     R-SUM-PUSH12
-    & $ B \cdot (\sum_{i \in M} O) \ \reduce\ \sum_{i \in M}(B \cdot O) $ \\
+    & $ B \cdot (\sum_{M} O) \ \reduce\ \sum_{M}(B \cdot O) $ \\
     %
     R-SUM-PUSH13
-    & $ K \cdot (\sum_{i \in M} B) \ \reduce\ \sum_{i \in M}(K \cdot B) $ \\
+    & $ K \cdot (\sum_{M} B) \ \reduce\ \sum_{M}(K \cdot B) $ \\
     %
     R-SUM-PUSH14
-    & $ O_1 \cdot (\sum_{i \in M} O_2) \ \reduce\ \sum_{i \in M}(O_1 \cdot O_2) $ \\
+    & $ O_1 \cdot (\sum_{M} O_2) \ \reduce\ \sum_{M}(O_1 \cdot O_2) $ \\
     %
     R-SUM-PUSH15
-    & $ (\sum_{i \in M} X_1) \otimes X_2 \ \reduce\ \sum_{i \in M} (X_1 \otimes X_2) $ \\
+    & $ (\sum_{M} X_1) \otimes X_2 \ \reduce\ \sum_{M} (X_1 \otimes X_2) $ \\
     %
     R-SUM-PUSH16
-    & $ X_1 \otimes (\sum_{i \in M} X_2) \ \reduce\ \sum_{i \in M} (X_1 \otimes X_2) $
+    & $ X_1 \otimes (\sum_{M} X_2) \ \reduce\ \sum_{M} (X_1 \otimes X_2) $
 \end{ruletable}
 \yx{Note: because we apply type checking on variables, and stick to unique bound variables, these pushing in operations are always sound.}
 
 \begin{ruletable}{Rules for addition and index in sum}
     %
     R-SUM-ADDS0
-    & $\sum_{i \in M}(a_1 + \cdots + a_n) \ \reduce\ (\sum_{i \in M} a_1) + \cdots + (\sum_{i \in M} a_n) $ \\
+    & $\sum_{M}(a_1 + \cdots + a_n) \ \reduce\ (\sum_{M} a_1) + \cdots + (\sum_{M} a_n) $ \\
     %
     R-SUM-ADD0
-    & $\sum_{i \in M}(X_1 + \cdots + X_n) \ \reduce\ (\sum_{i \in M} X_1) + \cdots + (\sum_{i \in M} X_n) $ \\
+    & $\sum_{M}(X_1 + \cdots + X_n) \ \reduce\ (\sum_{M} X_1) + \cdots + (\sum_{M} X_n) $ \\
     %
     R-SUM-ADD1
     & $Y_1 + \cdots + \sum_{i \in M}(a.X) + \cdots + \sum_{i \in M}X + Y_n \ \reduce\ Y_1 + \cdots + Y_n + \sum_{i \in M}(a+1).X $ \\
@@ -982,13 +993,13 @@ Note that in the following rules, $x : \Index$ and $x : \Type$ are not considere
     & $Y_1 + \cdots + \sum_{i \in M}(a.X) + \cdots + \sum_{i \in M}(b.X) + Y_n \ \reduce\ Y_1 + \cdots + Y_n + \sum_{i \in M}(a+b).X $ \\
     %
     R-SUM-INDEX0
-    & $ \sum_{i \in \mathbf{U}(\sigma \times \tau)} A \ \reduce\ \sum_{j \in \mathbf{U}(\sigma)} \sum_{k \in \mathbf{U}(\tau)} A\{i/(j, k)\} $ \\
+    & $ \sum_{\mathbf{U}(\sigma \times \tau)} A \ \reduce\ \sum_{\mathbf{U}(\sigma)} \sum_{\mathbf{U}(\tau)} \textsf{adjust}(A, 1, 2)\{\$0/(\$2, \$1)\} $ \\
     %
     R-SUM-INDEX1
-    & $ \sum_{i \in M_1 \star M_2} A \ \reduce\ \sum_{j \in M_1} \sum_{k \in M_2} A\{i/(j, k)\} $ \\
+    & $ \sum_{M_1 \star M_2} A \ \reduce\ \sum_{M_1} \sum_{M_2} \textsf{adjust}(A, 1, 2)\{\$0/(\$2, \$1)\} $ \\
     %
     R-SUM-SWAP
-    & $ M_1 < M_2 \vdash \sum_{i \in M_2} \sum_{j \in M_1} X \ \reduce\ \sum_{j \in M_1} \sum_{i \in M_2} X $
+    & $ M_1 < M_2 \vdash \sum_{M_2} \sum_{M_1} X \ \reduce\ \sum_{M_1} \sum_{M_2} \textsf{swap01}(X) $
 \end{ruletable}
 
 \yx{The rules R-SUM-ADD1 to R-SUM-ADD3 needs identical sum terms, which requires the rewriting to be after the alpha normalization. We don't implement them for now.}
