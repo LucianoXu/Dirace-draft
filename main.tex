@@ -102,22 +102,20 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{TODO}
+\section{Consideration}
 \begin{itemize}
-    \item \ 
+    \item AC equivalence and alpha equivalence.
+    \item Efficient AC equivalence checking by sorting on syntax.
+    \item Sorting requires that alpha equivalent terms have the same syntax.
+    \item de Bruijn expression satisfies this requirement, but the typing and substitution becomes very complicated in the type index scenario.
+    \item only compute de Bruijn form in the equivalence checking and sorting phase.
 \end{itemize}
 
-
-\section{Some practices of de Bruijn substitution and application}
+\section{TODO}
 \begin{itemize}
-    \item $\lambda x .((\lambda y. \lambda z. \lambda w. y)\ x) \reduce \lambda x. \lambda z. \lambda w. x $ 
-    \\
-    $ \lambda . ((\lambda . \lambda . \lambda. 2)\ 0) \reduce \lambda . \lambda . \lambda.2$
-
-    \item $\lambda x . ((\lambda y. \lambda z. y)\ (X\ x)) \reduce \lambda x . \lambda z . (X\ x)$
-    \\
-    $\lambda . ((\lambda. \lambda. 1)\ (X\ 0)) \reduce \lambda. \lambda. (X\ 1)$
-
+    \item implemented trace output for the whole pipeline.
+    \item Note that the context should also be maintained during rewriting matching.
+    \item better parser and output.
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -130,11 +128,11 @@
     \end{align*}
     The syntax for Dirac notation types is defined as 
     \begin{align*}
-        T ::=\ & x\ |\ \Basis(\sigma)\ |\ \SType\ |\ \KType(\sigma)\ |\ \BType(\sigma)\ |\ \OType(\sigma_1, \sigma_2)\ |\ T_1 \to T_2\ |\ \forall .T\ |\ \SET(\sigma). \\
+        T ::=\ & x\ |\ \Basis(\sigma)\ |\ \SType\ |\ \KType(\sigma)\ |\ \BType(\sigma)\ |\ \OType(\sigma_1, \sigma_2)\ |\ T_1 \to T_2\ |\ \forall x.T\ |\ \SET(\sigma). \\
     \end{align*}
     The syntax for Dirac notation terms is defined as
     \begin{align*}
-        e ::=\ & x\ |\ \$i\ |\ (e_1, e_2)\ |\ \lambda : T.e\ |\ \lambda.e\ |\ e_1\ e_2 \\
+        e ::=\ & x\ |\ (e_1, e_2)\ |\ \lambda x : T.e\ |\ \mu x.e\ |\ e_1\ e_2 \\
         & |\ 0\ |\ 1\ |\ \ADDS(e_1 \cdots e_n) \ |\ e_1 \times \cdots \times e_n\ |\ e^* \ |\ \delta_{e_1, e_2}\ |\ \DOT(e_1\ e_2) \\
         & |\ \ZEROK(\sigma)\ |\ \ZEROB(\sigma)\ |\ \ZEROO(\sigma_1, \sigma_2)\ |\ \ONEO(\sigma) \\
         & |\ \ket{e}\ |\ \bra{t}\ |\ e^\dagger\ |\ e_1.e_2\ |\ \ADD(e_1 \cdots e_n)\ |\ e_1 \otimes e_2 \\
@@ -148,7 +146,7 @@ Compared to [?], this syntax for Dirac notations merges the symbols with overlap
 Here $\ADDS$ and $\ADD$ are two different AC symbols representing the scalar addition and the linear algebra addition respectively. They will be denoted as $a_1 + \cdots + a_n$ and $X_1 + \cdots + X_n$.
 There are five kinds of linear algebra multiplications among ket, bra and operator, whose properties are similar but still diverge to some extent. For example, the rules $(O_1 \cdot O_2) \cdot K\ \reduce\ O_1 \cdot (O_2 \cdot K)$ and $B \cdot (O_1 \cdot O_2) \ \reduce\ (B \cdot O_1) \cdot O_2$ indicate that the sorting of multiplication sequences depends on the subterm types. To avoid frequent but unnecessary type checkings, we encode the typing information by using five different symbols, namely $\DOT$, $\MULK$, $\MULB$, $\OUTER$ and $\MULO$. They are denoted as $B\cdot K$, $K_1 \cdot K_2$, $B_1 \cdot B_2$, $K \cdot B$ and $O_1 \cdot O_2$, respectively.
 
-Usually, the sum body is specified by an abstraction. Therefore we use notation $\sum_s X$ to denote $\sum_{s} \lambda : T . X$ as well.
+Usually, the sum body is specified by an abstraction. Therefore we use notation $\sum_s X$ to denote $\sum_{x \in s} \lambda x : T . X$ as well.
  
 \section{Typing System}
 The type checking of Dirac notations involves maintaining a well-formed environment and context $E[\Gamma]$, which specifies the definitions and typing assumtpions for variables.
@@ -157,11 +155,11 @@ The environment and the conetxt are defined as follows.
 \begin{definition}[environment and context]
     \begin{align*}
         E ::=\ & []\ |\ E; x : \Index\ |\ E; T : \Type\ |\ E; x : T\ |\ E; x := t : T. \\
-        \Gamma ::=\ & []\ |\ \Gamma; \Index\ |\ \Gamma; T.
+        \Gamma ::=\ & []\ |\ \Gamma; x : \Index\ |\ \Gamma; x : T.
     \end{align*}
 \end{definition}
 
-Note that in the following rules, $x : \Index$ and $x : \Type$ are not considered as $x : T$ judgements. The context $\Gamma$ acts as the stack to indicate the typing of de Bruijn notations. The notation $\Gamma_i$ is defined as the $i$-th element in $\Gamma$ from the end. That is, if $\Gamma \equiv \Gamma'; T$, then $\Gamma_0 = T$ and $\Gamma_i = \Gamma'_{i-1}$.
+Note that in the following rules, $x : \Index$ and $x : \Type$ are not considered as $x : T$ judgements.
 
 \begin{figure}[h]
     \begin{gather*}
@@ -171,7 +169,7 @@ Note that in the following rules, $x : \Index$ and $x : \Type$ are not considere
         \textbf{W-AssumE-Index} \qquad
         \frac{\WF(E)[] \qquad x \notin E}{\WF(E; x : \Index)[]}\qquad \qquad
         \textbf{W-AssumE-Type} \qquad
-        \frac{\WF(E)[] \qquad x \notin E}{\WF(E; x : \Type)} \\
+        \frac{\WF(E)[] \qquad x \notin E}{\WF(E; x : \Type)[]} \\
         \\
         \textbf{W-AssumE-Term} \qquad
         \frac{E[] \vdash T : \Type \qquad x \notin E}{\WF(E; x:T)[]}
@@ -180,10 +178,10 @@ Note that in the following rules, $x : \Index$ and $x : \Type$ are not considere
         \frac{E[]\vdash t:T \qquad x \notin E}{\WF(E; x:=t:T)[]} \\
         \\
         \textbf{W-AssumC-Index} \qquad
-        \frac{\WF(E)[\Gamma]}{\WF(E)[\Gamma; \Index]}
+        \frac{\WF(E)[\Gamma]}{\WF(E)[\Gamma; x : \Index]}
         \qquad \qquad
         \textbf{W-AssumC-Term} \qquad
-        \frac{E[\Gamma] \vdash T : \Type}{\WF(E)[\Gamma; T]}
+        \frac{E[\Gamma] \vdash T : \Type}{\WF(E)[\Gamma; x : T]}
     \end{gather*}
     \caption{Rules for a well-formed environment and context.}
 \end{figure}
@@ -191,7 +189,7 @@ Note that in the following rules, $x : \Index$ and $x : \Type$ are not considere
 \begin{figure}
     \begin{gather*}
         \textbf{Index-Var} \qquad
-        \frac{\WF(E)[\Gamma] \qquad x : \Index \in E}{E[\Gamma] \vdash x : \Index}
+        \frac{\WF(E)[\Gamma] \qquad x : \Index \in E[\Gamma]}{E[\Gamma] \vdash x : \Index}
         \qquad \qquad
         \textbf{Index-Prod} \qquad
         \frac{E[\Gamma] \vdash \sigma : \Index \qquad E[\Gamma] \vdash \tau : \Index}{E[\Gamma] \vdash \sigma \times \tau : \Index}
@@ -201,15 +199,11 @@ Note that in the following rules, $x : \Index$ and $x : \Type$ are not considere
 
 \begin{figure}
     \begin{gather*}
-        \textbf{Type-Context-Var} \qquad
-        \frac{\WF(E)[\Gamma]}{E[\Gamma]\vdash \$i : \Gamma_i}
-        \\
-        \\
         \textbf{Type-Arrow} \qquad
         \frac{E[\Gamma] \vdash T : \Type \qquad E[\Gamma] \vdash U : \Type}{E[\Gamma] \vdash T \to U : \Type}
         \qquad \qquad
         \textbf{Type-Index} \qquad
-        \frac{E[\Gamma ; \Index] \vdash U : \Type}{E[\Gamma] \vdash \forall.U : \Type} \\
+        \frac{E[\Gamma ; x : \Index] \vdash U : \Type}{E[\Gamma] \vdash \forall x.U : \Type} \\
         \\        
         \textbf{Type-Basis} \qquad
         \frac{E[\Gamma] \vdash \sigma : \Index}{E[\Gamma] \vdash \Basis(\sigma) : \Type}  \\
@@ -235,19 +229,19 @@ Note that in the following rules, $x : \Index$ and $x : \Type$ are not considere
 \begin{figure}[h]
     \begin{gather*}
         \textbf{Term-Var} \qquad
-        \frac{\WF(E)[\Gamma] \qquad (x:T) \in E \text{ or } (x := t : T) \in E \text{ for some $t$}}{E[\Gamma] \vdash x : T} \\
+        \frac{\WF(E)[\Gamma] \qquad (x:T) \in E[\Gamma] \text{ or } (x := t : T) \in E \text{ for some $t$}}{E[\Gamma] \vdash x : T} \\
         \\
         \textbf{Lam} \qquad
-        \frac{E[\Gamma; T] \vdash t : U}{E[\Gamma] \vdash (\lambda : T . t) : T \to U}
+        \frac{E[\Gamma; x : T] \vdash t : U}{E[\Gamma] \vdash (\lambda x : T . t) : T \to U}
         \qquad \qquad
         \textbf{Index} \qquad
-        \frac{E[\Gamma; \Index] \vdash t : U}{E[\Gamma] \vdash (\lambda.t) : \forall .U} \\
+        \frac{E[\Gamma; x : \Index] \vdash t : U}{E[\Gamma] \vdash (\mu x.t) : \forall x.U} \\
         \\
         \textbf{App-Arrow} \qquad
         \frac{E[\Gamma] \vdash t:U \to T \qquad E[\Gamma] \vdash u:U}{E[\Gamma] \vdash (t\ u):T}
         \qquad \qquad
         \textbf{App-Index} \qquad
-        \frac{E[\Gamma] \vdash t:\forall .U \qquad E[\Gamma] \vdash u : \Index}{E[\Gamma] \vdash (t\ u):U[u]}
+        \frac{E[\Gamma] \vdash t:\forall x.U \qquad E[\Gamma] \vdash u : \Index}{E[\Gamma] \vdash (t\ u):U\{x/u\}}
     \end{gather*}
     \caption{Rules for variable and function typings. Here $U[u]$ means instantiate the first bound variable with $u$ in $U$.}
 \end{figure}
@@ -413,23 +407,34 @@ Note that in the following rules, $x : \Index$ and $x : \Type$ are not considere
 
 \clearpage
 \section{Conversions and Reductions}
+
+\begin{figure}[h]
+    \begin{gather*}
+        \frac{E[\Gamma] \vdash K : \KType(\sigma)}{E[\Gamma] \vdash K \ \reduce\ \sum_{i \in \mathbf{U}(\sigma)}(\bra{i}\cdot K).\ket{i}} \\
+        \\
+        \frac{E[\Gamma] \vdash B : \BType(\sigma)}{E[\Gamma] \vdash B \ \reduce\ \sum_{i \in \mathbf{U}(\sigma)}(B \cdot \ket{i}).\bra{i}} \\
+        \\
+        \frac{E[\Gamma] \vdash O : \OType(\sigma, \tau)}{E[\Gamma] \vdash O \ \reduce\ \sum_{i \in \mathbf{U}(\sigma)} \sum_{j \in \mathbf{U}(\tau)}(\bra{i} \cdot O \cdot \ket{j}).(\ket{i} \cdot \bra{j})}
+    \end{gather*}
+\end{figure}
+
 \begin{figure}[h]
     \begin{gather*}
         \textbf{Beta-Arrow} \qquad
-        \frac{}{E[\Gamma] \vdash ((\lambda : T.t)\ u)\ \reduce\ t[u]} 
+        \frac{}{E[\Gamma] \vdash ((\lambda x : T.t)\ u)\ \reduce\ t\{x/u\}} 
         \qquad \qquad
         \textbf{Beta-Index} \qquad
-        \frac{}{E[\Gamma] \vdash ((\lambda.t)\ u)\ \reduce\ t[u]} 
+        \frac{}{E[\Gamma] \vdash ((\mu x.t)\ u)\ \reduce\ t\{x/u\}} 
         \\
         \\
         \textbf{Delta} \qquad
         \frac{\WF(E)[\Gamma] \qquad (c:=t:T) \in E}{E[\Gamma] \vdash c\ \reduce\ t} \\
         \\
         \textbf{Eta-Arrow} \qquad
-        \frac{}{E[\Gamma] \vdash \lambda : T . (t\ \$0)\ \reduce\ t}
+        \frac{}{E[\Gamma] \vdash \lambda x : T . (t\ x)\ \reduce\ t}
         \qquad \qquad
         \textbf{Eta-Index} \qquad
-        \frac{}{E[\Gamma] \vdash \lambda . (t\ \$0)\ \reduce\ t}
+        \frac{}{E[\Gamma] \vdash \mu x . (t\ x)\ \reduce\ t}
     \end{gather*}
     \caption{Conversions and reductions for the typed lambda calculus.}
 \end{figure}
@@ -875,113 +880,113 @@ Note that in the following rules, $x : \Index$ and $x : \Type$ are not considere
 \begin{ruletable}{Rules for sum operators.}
     %
     R-SUM-CONST0
-    & $ \sum_{s} 0 \ \reduce\ 0 $ \\
+    & $ \sum_{x \in s} 0 \ \reduce\ 0 $ \\
     %
     R-SUM-CONST1
-    & $ \sum_{s} \ZEROK(\sigma)\ \reduce\ \ZEROK(\sigma) $ \\
+    & $ \sum_{x \in s} \ZEROK(\sigma)\ \reduce\ \ZEROK(\sigma) $ \\
     %
     R-SUM-CONST2
-    & $ \sum_{s} \ZEROB(\sigma)\ \reduce\ \ZEROB(\sigma) $ \\
+    & $ \sum_{x \in s} \ZEROB(\sigma)\ \reduce\ \ZEROB(\sigma) $ \\
     %
     R-SUM-CONST3
-    & $ \sum_{s} \ZEROO(\sigma, \tau)\ \reduce\ \ZEROO(\sigma, \tau) $ \\
+    & $ \sum_{x \in s} \ZEROO(\sigma, \tau)\ \reduce\ \ZEROO(\sigma, \tau) $ \\
     %
     R-SUM-CONST4
-    & $ \ONEO(\sigma) \ \reduce\ \sum_{\mathbf{U}(\sigma)} \ket{i} \cdot \bra{i} $
+    & $ \ONEO(\sigma) \ \reduce\ \sum_{i \in \mathbf{U}(\sigma)} \ket{i} \cdot \bra{i} $
 \end{ruletable}
 
 \begin{ruletable}{Rules for eliminating $\delta_{s, t}$. Note that these rules will match the $\delta$ operator modulo the commutativity of its arguments.}
     %
     R-SUM-ELIM0
-    & $ \$i \text{ free in } t \vdash \sum_{\mathbf{U}(\sigma)} \sum_{s_1} \cdots \sum_{s_i} \delta_{\$i, t} \ \reduce\ \sum_{s_1} \cdots \sum_{s_i}  1$ \\
+    & $ i \text{ free in } t \vdash \sum_{i \in \mathbf{U}(\sigma)} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} \delta_{i, t} \ \reduce\ \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n}  1$ \\
     %
     R-SUM-ELIM1
-    & $ \$i \text{ free in } t \vdash \sum_{\mathbf{U}(\sigma)} \sum_{s_1} \cdots \sum_{s_i} (a_1 \times \cdots \times \delta_{\$i, t} \times \cdots \times a_n) $ \\
-    & $ \reduce\ \sum_{s_1} \cdots \sum_{s_i} a_1\{\$i/t\} \times \cdots \times a_n\{\$i/t\} $ \\
+    & $ i \text{ free in } t \vdash \sum_{i \in \mathbf{U}(\sigma)} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (a_1 \times \cdots \times \delta_{i, t} \times \cdots \times a_n) $ \\
+    & $ \reduce\ \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} a_1\{i/t\} \times \cdots \times a_n\{i/t\} $ \\
     %
     R-SUM-ELIM2
-    & $ \$i \text{ free in } t \vdash \sum_{\mathbf{U}(\sigma)} \sum_{s_1} \cdots \sum_{s_i} (\delta_{\$i, t}.A) \ \reduce\ \sum_{s_1} \cdots \sum_{s_i} A\{\$i/t\} $ \\
+    & $ i \text{ free in } t \vdash \sum_{i \in \mathbf{U}(\sigma)} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (\delta_{i, t}.A) \ \reduce\ \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} A\{i/t\} $ \\
     %
     R-SUM-ELIM3
-    & $ \$i \text{ free in } t \vdash \sum_{\mathbf{U}(\sigma)} \sum_{s_1} \cdots \sum_{s_i} (a_1 \times \cdots \times \delta_{\$i, t} \times \cdots \times a_i).A $ \\
-    & $ \reduce\ \sum_{s_1} \cdots \sum_{s_i}  (a_1\{\$i/t\} \times \cdots \times a_n\{\$i/t\}).A\{\$i/t\} $ \\
+    & $ i \text{ free in } t \vdash \sum_{i \in \mathbf{U}(\sigma)} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (a_1 \times \cdots \times \delta_{i, t} \times \cdots \times a_n).A $ \\
+    & $ \reduce\ \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n}  (a_1\{i/t\} \times \cdots \times a_n\{i/t\}).A\{i/t\} $ \\
     R-SUM-ELIM4
-    & $ \sum_{M} \sum_{M} \sum_{s_1} \cdots \sum_{s_i}  \delta_{\$(i + 1), \$i} \ \reduce\ \sum_{M} \sum_{s_1} \cdots \sum_{k_n \in s_i} 1 $ \\
+    & $ \sum_{i \in M} \sum_{j \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n}  \delta_{i, j} \ \reduce\ \sum_{j \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} 1 $ \\
     %
     R-SUM-ELIM5
-    & $ \sum_{M} \sum_{M} \sum_{s_1} \cdots \sum_{s_i} (a_1 \times \dots \times \delta_{\$(i+1), \$i} \times \cdots \times a_n) $ \\
-    & $ \reduce\ \sum_{M} \sum_{s_1} \cdots \sum_{s_n} (a_1\{\$i/\$(i+1)\} \times \cdots \times a_n\{\$i/\$(i+1)\}) $ \\
+    & $ \sum_{i \in M} \sum_{j \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (a_1 \times \dots \times \delta_{i, j} \times \cdots \times a_n) $ \\
+    & $ \reduce\ \sum_{j \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (a_1\{j/i\} \times \cdots \times a_n\{j/i\}) $ \\
     %
     R-SUM-ELIM6
-    & $ \sum_{M} \sum_{M} \sum_{s_1} \cdots \sum_{s_i} (\delta_{\$(i+1), \$i}.A) \ \reduce\ \sum_{M} \sum_{s_1} \cdots \sum_{s_i} A\{\$i/\$(i+1)\} $ \\
+    & $ \sum_{i \in M} \sum_{j \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (\delta_{i, j}.A) \ \reduce\ \sum_{j \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} A\{j/i\} $ \\
     %
     R-SUM-ELIM7
-    & $ \sum_{M} \sum_{M} \sum_{s_1} \cdots \sum_{s_i} (a_1 \times \cdots \times \delta_{\$(i+1), \$i} \times \cdots \times a_n).A $ \\
-    & $ \reduce\ \sum_{M} \sum_{s_1} \cdots \sum_{s_i} (a_1\{\$i/\$(i+1)\} \times \cdots \times a_n\{\$i/\$(i+1)\}).A\{\$i/\$(i+1)\} $ \\
+    & $ \sum_{i \in M} \sum_{j \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (a_1 \times \cdots \times \delta_{i, j} \times \cdots \times a_n).A $ \\
+    & $ \reduce\ \sum_{j \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (a_1\{j/i\} \times \cdots \times a_n\{j/i\}).A\{j/i\} $ \\
 \end{ruletable}
 
 \begin{ruletable}{Rules for pushing terms into sum operators}
     %
     R-SUM-PUSH0
-    & $ b_1 \times \cdots \times (\sum_{M} a) \times \cdots \times b_n \ \reduce\ \sum_{M} (b_1 \times \cdots \times a \times \cdots \times b_n) $ \\
+    & $ b_1 \times \cdots \times (\sum_{i \in M} a) \times \cdots \times b_n \ \reduce\ \sum_{i \in M} (b_1 \times \cdots \times a \times \cdots \times b_n) $ \\
     %
     R-SUM-PUSH1
-    & $ (\sum_{M} a)^* \ \reduce\ \sum_{M} a^* $ \\
+    & $ (\sum_{i \in M} a)^* \ \reduce\ \sum_{i \in M} a^* $ \\
     %
     R-SUM-PUSH2
-    & $ (\sum_{M} X)^\dagger \ \reduce\ \sum_{M} X^\dagger $ \\
+    & $ (\sum_{i \in M} X)^\dagger \ \reduce\ \sum_{i \in M} X^\dagger $ \\
     %
     R-SUM-PUSH3
-    & $ a.(\sum_{M} X) \ \reduce\ \sum_{M} (a.X) $ \\
+    & $ a.(\sum_{i \in M} X) \ \reduce\ \sum_{i \in M} (a.X) $ \\
     %
     R-SUM-PUSH4
-    & $ (\sum_{M} a).X \ \reduce\ \sum_{M} (a.X) $ \\
+    & $ (\sum_{i \in M} a).X \ \reduce\ \sum_{i \in M} (a.X) $ \\
     %
     R-SUM-PUSH5
-    & $ (\sum_{M} B)\cdot K \ \reduce\ \sum_{M}(B \cdot K) $ \\
+    & $ (\sum_{i \in M} B)\cdot K \ \reduce\ \sum_{i \in M}(B \cdot K) $ \\
     %
     R-SUM-PUSH6
-    & $ (\sum_{M} O)\cdot K \ \reduce\ \sum_{M}(O \cdot K) $ \\
+    & $ (\sum_{i \in M} O)\cdot K \ \reduce\ \sum_{i \in M}(O \cdot K) $ \\
     %
     R-SUM-PUSH7
-    & $ (\sum_{M} B)\cdot O \ \reduce\ \sum_{M}(B \cdot O) $ \\
+    & $ (\sum_{i \in M} B)\cdot O \ \reduce\ \sum_{i \in M}(B \cdot O) $ \\
     %
     R-SUM-PUSH8
-    & $ (\sum_{M} K)\cdot B \ \reduce\ \sum_{M}(K \cdot B) $ \\
+    & $ (\sum_{i \in M} K)\cdot B \ \reduce\ \sum_{i \in M}(K \cdot B) $ \\
     %
     R-SUM-PUSH9
-    & $ (\sum_{M} O_1)\cdot O_2 \ \reduce\ \sum_{M}(O_1 \cdot O_2) $ \\
+    & $ (\sum_{i \in M} O_1)\cdot O_2 \ \reduce\ \sum_{i \in M}(O_1 \cdot O_2) $ \\
     %
     R-SUM-PUSH10
-    & $ B \cdot (\sum_{M} K) \ \reduce\ \sum_{M}(B \cdot K) $ \\
+    & $ B \cdot (\sum_{i \in M} K) \ \reduce\ \sum_{i \in M}(B \cdot K) $ \\
     %
     R-SUM-PUSH11
-    & $ O \cdot (\sum_{M} K) \ \reduce\ \sum_{M}(O \cdot K) $ \\
+    & $ O \cdot (\sum_{i \in M} K) \ \reduce\ \sum_{i \in M}(O \cdot K) $ \\
     %
     R-SUM-PUSH12
-    & $ B \cdot (\sum_{M} O) \ \reduce\ \sum_{M}(B \cdot O) $ \\
+    & $ B \cdot (\sum_{i \in M} O) \ \reduce\ \sum_{i \in M}(B \cdot O) $ \\
     %
     R-SUM-PUSH13
-    & $ K \cdot (\sum_{M} B) \ \reduce\ \sum_{M}(K \cdot B) $ \\
+    & $ K \cdot (\sum_{i \in M} B) \ \reduce\ \sum_{i \in M}(K \cdot B) $ \\
     %
     R-SUM-PUSH14
-    & $ O_1 \cdot (\sum_{M} O_2) \ \reduce\ \sum_{M}(O_1 \cdot O_2) $ \\
+    & $ O_1 \cdot (\sum_{i \in M} O_2) \ \reduce\ \sum_{i \in M}(O_1 \cdot O_2) $ \\
     %
     R-SUM-PUSH15
-    & $ (\sum_{M} X_1) \otimes X_2 \ \reduce\ \sum_{M} (X_1 \otimes X_2) $ \\
+    & $ (\sum_{i \in M} X_1) \otimes X_2 \ \reduce\ \sum_{i \in M} (X_1 \otimes X_2) $ \\
     %
     R-SUM-PUSH16
-    & $ X_1 \otimes (\sum_{M} X_2) \ \reduce\ \sum_{M} (X_1 \otimes X_2) $
+    & $ X_1 \otimes (\sum_{i \in M} X_2) \ \reduce\ \sum_{i \in M} (X_1 \otimes X_2) $
 \end{ruletable}
 \yx{Note: because we apply type checking on variables, and stick to unique bound variables, these pushing in operations are always sound.}
 
 \begin{ruletable}{Rules for addition and index in sum}
     %
     R-SUM-ADDS0
-    & $\sum_{M}(a_1 + \cdots + a_n) \ \reduce\ (\sum_{M} a_1) + \cdots + (\sum_{M} a_n) $ \\
+    & $\sum_{i \in M}(a_1 + \cdots + a_n) \ \reduce\ (\sum_{i \in M} a_1) + \cdots + (\sum_{i \in M} a_n) $ \\
     %
     R-SUM-ADD0
-    & $\sum_{M}(X_1 + \cdots + X_n) \ \reduce\ (\sum_{M} X_1) + \cdots + (\sum_{M} X_n) $ \\
+    & $\sum_{i \in M}(X_1 + \cdots + X_n) \ \reduce\ (\sum_{i \in M} X_1) + \cdots + (\sum_{i \in M} X_n) $ \\
     %
     R-SUM-ADD1
     & $Y_1 + \cdots + \sum_{i \in M}(a.X) + \cdots + \sum_{i \in M}X + Y_n \ \reduce\ Y_1 + \cdots + Y_n + \sum_{i \in M}(a+1).X $ \\
@@ -993,13 +998,13 @@ Note that in the following rules, $x : \Index$ and $x : \Type$ are not considere
     & $Y_1 + \cdots + \sum_{i \in M}(a.X) + \cdots + \sum_{i \in M}(b.X) + Y_n \ \reduce\ Y_1 + \cdots + Y_n + \sum_{i \in M}(a+b).X $ \\
     %
     R-SUM-INDEX0
-    & $ \sum_{\mathbf{U}(\sigma \times \tau)} A \ \reduce\ \sum_{\mathbf{U}(\sigma)} \sum_{\mathbf{U}(\tau)} \textsf{adjust}(A, 1, 2)\{\$0/(\$2, \$1)\} $ \\
+    & $ \sum_{i \in \mathbf{U}(\sigma \times \tau)} A \ \reduce\ \sum_{j \in \mathbf{U}(\sigma)} \sum_{k \in \mathbf{U}(\tau)} A\{i/(j, k)\} $ \\
     %
     R-SUM-INDEX1
-    & $ \sum_{M_1 \star M_2} A \ \reduce\ \sum_{M_1} \sum_{M_2} \textsf{adjust}(A, 1, 2)\{\$0/(\$2, \$1)\} $ \\
+    & $ \sum_{i \in M_1 \star M_2} A \ \reduce\ \sum_{j \in M_1} \sum_{k \in M_2} A\{i/(j, k)\} $ \\
     %
     R-SUM-SWAP
-    & $ M_1 < M_2 \vdash \sum_{M_2} \sum_{M_1} X \ \reduce\ \sum_{M_1} \sum_{M_2} \textsf{swap01}(X) $
+    & $ M_1 < M_2 \vdash \sum_{i \in M_2} \sum_{j \in M_1} X \ \reduce\ \sum_{j \in M_1} \sum_{i \in M_2} X $
 \end{ruletable}
 
 \yx{The rules R-SUM-ADD1 to R-SUM-ADD3 needs identical sum terms, which requires the rewriting to be after the alpha normalization. We don't implement them for now.}
@@ -1017,7 +1022,7 @@ Note that in the following rules, $x : \Index$ and $x : \Type$ are not considere
         &|\ \texttt{Check}(term) \\
         &|\ \texttt{Show}(\texttt{ID}) \\
         &|\ \texttt{ShowAll} \\
-        &|\ \texttt{Normalize}(term) \\
+        &|\ \texttt{Normalize}(term)\ |\ \texttt{Normalize}(term\ \textsf{Trace}) \\
         &|\ \texttt{CheckEq}(term\ term) \\
     type ::=&\ \texttt{Type}\ |\ \texttt{Arrow}(type\ type) \\
             &|\ \texttt{Base} \\
