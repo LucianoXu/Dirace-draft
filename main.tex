@@ -104,6 +104,7 @@
 
 \section{Consideration}
 \begin{itemize}
+    \item We can emphasize that we are moving from pure term rewriting to a hybrid algorithm.
     \item AC equivalence and alpha equivalence.
     \item Efficient AC equivalence checking by sorting on syntax.
     \item Sorting requires that alpha equivalent terms have the same syntax.
@@ -112,10 +113,13 @@
     \item pipeline: 
         \begin{enumerate}
             \item preprocessing
+            \item rename unique bound variable names
             \item 1st rewritings
             \item variable expansion
             \item 2nd rewritings 
-            \item computing de Bruijn and sorting
+            \item sorting modulo bound variables
+            \item sorting successive sum. The order depends on there occurances in the last sorting result. If no occurance, then the order will depend on the set (for sum) and the type (for lambda abstraction only).
+            \item computing de Bruijn
         \end{enumerate}
 
     \item I found that typing of inner bound variables also requires modifying the context.
@@ -126,19 +130,22 @@
 \section{TODO}
 \begin{itemize}
     \item implemented trace output for the whole pipeline.
-    \item better parser and output.
+    \item better output.
     \item add Mathematica support for scalars
     \item output trace to Coq
     \item consider labelled Dirac notations
     \item better trace output
     \item better error logic
     \item better format output
+    \item remove term bank and hash consing
 \end{itemize}
 
 \section{Things to Note}
 \begin{itemize}
     \item The context should also be maintained during rewriting matching.
     \item We don't allow eta reduction. It will intertwine with SUM-SWAP and break the confluence.
+    \item In each Delta reduction, the bound variables are replaced with unique variables. This should help solve the problem of conflicting variable names during substitution.
+    \item I guess it may still be necessary to try all different bound variable assignments.
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -147,7 +154,7 @@
 \begin{definition}[syntax]
     The syntax for type indices are defined as
     \begin{align*}
-        \sigma ::=\ & x\ |\ \sigma_1 \times \sigma_2\ |\ \{c_0, c_1, \cdots, c_n\}.
+        \sigma ::=\ & x\ |\ \sigma_1 \times \sigma_2\ |\ \mathsf{Qdit}_n.
     \end{align*}
     The syntax for Dirac notation types is defined as 
     \begin{align*}
@@ -217,8 +224,8 @@ Note that in the following rules, $x : \Index$ and $x : \Type$ are not considere
         \textbf{Index-Prod} \qquad
         \frac{E[\Gamma] \vdash \sigma : \Index \qquad E[\Gamma] \vdash \tau : \Index}{E[\Gamma] \vdash \sigma \times \tau : \Index} \\
         \\
-        \textbf{Index-Concrete} \qquad
-        \frac{\WF(E)[\Gamma] \qquad c_i \notin E[\Gamma] \text{ for all } i \qquad c_i \text{ are unique}}{E[\Gamma] \vdash \{c_1, c_2, \cdots, c_n\} : \Index}
+        \textbf{Index-Qudit} \qquad
+        \frac{\WF(E)[\Gamma]}{E[\Gamma] \vdash \mathsf{Qudit}_n : \Index}
     \end{gather*}
     \caption{Rules for type index.}
 \end{figure}
@@ -1021,10 +1028,7 @@ Note that in the following rules, $x : \Index$ and $x : \Type$ are not considere
     & $ \sum_{i \in \mathbf{U}(\sigma \times \tau)} A \ \reduce\ \sum_{j \in \mathbf{U}(\sigma)} \sum_{k \in \mathbf{U}(\tau)} A\{i/(j, k)\} $ \\
     %
     R-SUM-INDEX1
-    & $ \sum_{i \in M_1 \star M_2} A \ \reduce\ \sum_{j \in M_1} \sum_{k \in M_2} A\{i/(j, k)\} $ \\
-    %
-    R-SUM-SWAP
-    & $ M_1 < M_2 \vdash \sum_{i \in M_2} \sum_{j \in M_1} X \ \reduce\ \sum_{j \in M_1} \sum_{i \in M_2} X $
+    & $ \sum_{i \in M_1 \star M_2} A \ \reduce\ \sum_{j \in M_1} \sum_{k \in M_2} A\{i/(j, k)\} $
 \end{ruletable}
 
 \yx{The rules R-SUM-ADD1 to R-SUM-ADD3 needs identical sum terms, which requires the rewriting to be after the alpha normalization. We don't implement them for now.}
