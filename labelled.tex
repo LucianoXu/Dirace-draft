@@ -71,51 +71,6 @@ The extra syntax for the environment.
     E ::= \dots \mid E; r : \reg(\sigma)
 \end{gather}
 
-\begin{gather}
-  \textbf{W-AssumE-Reg}\qquad 
-  \frac{E[]\vdash \sigma : \Index\qquad r\notin E}{\WF[E; r : \reg(\sigma)[]]}
-\end{gather}
-
-\begin{gather*}
-  \textbf{Type-Labelled} \qquad
-  \frac{E[\Gamma] \vdash r : \reg(\sigma_r) \text{ for all $r$ in $s_1$ and $s_2$} }{E[\Gamma] \vdash \DType(s_1, s_2) : \textsf{Type}} \\
-  \\
-  \textbf{Reg-Var} \qquad
-  \frac{\WF(E[\Gamma]) \qquad r : \reg(\sigma) \in E}{E[\Gamma] \vdash r : \reg(\sigma)}  \\ 
-  \\
-  \textbf{Reg-Pair}\qquad
-  \frac{E[\Gamma] \vdash R : \reg \sigma\qquad E[\Gamma] \vdash Q : \reg \tau\qquad R\| Q}{E[\Gamma] \vdash (R,Q) : \reg \sigma \times \tau}
-\end{gather*}
-
-\begin{gather*}
-    \textbf{Type-L-Base-Ket}\qquad 
-    \frac{r : \reg \sigma \in E\qquad E[\Gamma] \vdash i : \Basis(\sigma)}{E[\Gamma] \vdash |i\>_r : \DType(\{r\}; \emptyset)} \\
-    \textbf{Type-L-Base-Bra}\qquad 
-    \frac{r : \reg \sigma \in E \qquad E[\Gamma] \vdash i : \Basis(\sigma)}{E[\Gamma] \vdash {}_r\<i| : \DType(\emptyset; \{r\})} \\
-    \textbf{Type-L-Ket}\qquad 
-    \frac{E[\Gamma] \vdash R : \reg \sigma\qquad E[\Gamma] \vdash K : \KType(\sigma)}{E[\Gamma] \vdash K_R : \DType(\var R; \emptyset)} \\
-    \textbf{Type-L-Bra}\qquad 
-    \frac{E[\Gamma] \vdash R : \reg \sigma\qquad E[\Gamma] \vdash B : \BType(\sigma)}{E[\Gamma] \vdash B_R : \DType(\emptyset; \var R)} \\
-    \textbf{Type-L-Opt}\qquad 
-    \frac{E[\Gamma] \vdash R_1 : \reg \sigma_1\qquad 
-    E[\Gamma] \vdash R_2 : \reg \sigma_2\qquad 
-    E[\Gamma] \vdash O : \OType(\sigma_1; \sigma_2)}
-    {E[\Gamma] \vdash O_{R_1;R_2} : \DType(\var R_1; \var R_2)} \\
-    \textbf{Type-L-Conj}\qquad 
-    \frac{E[\Gamma] \vdash \tD : \DType(s_1;s_2)}{E[\Gamma] \vdash \tD^\dagger : \DType(s_2;s_1)} \qquad
-    \textbf{Type-L-SCL}\qquad 
-    \frac{E[\Gamma] \vdash S : \SType\qquad E[\Gamma] \vdash \tD : \DType(s_1;s_2)}{E[\Gamma] \vdash S.\tD : \DType(s_1;s_2)} \\
-    \textbf{Type-L-ADD}\qquad
-    \frac{E[\Gamma] \vdash \tD_i : \DType(s_1;s_2)\quad \text{forall } i}{E[\Gamma] \vdash \tD_1+\cdots+\tD_n : \DType(s_1;s_2)} \\
-    \textbf{Type-L-TSR}\qquad
-    \frac{E[\Gamma] \vdash \tD_1 : \DType(s_1;s_1')\qquad E[\Gamma] \vdash \tD_2 : \DType(s_2;s_2')\qquad s_1\cap s_2 = \emptyset\qquad s_1'\cap s_2' = \emptyset}{E[\Gamma] \vdash \tD_1\otimes\tD_2 : \DType(s_1\cup s_2;s_1'\cup s_2')} \\
-    \textbf{Type-L-DOT}\qquad
-    \frac{E[\Gamma] \vdash \tD_1 : \DType(s_1;s_1')\qquad E[\Gamma] \vdash \tD_2 : \DType(s_2;s_2')\qquad 
-    s_1 \cap s_2 \backslash s_1' = \emptyset \qquad
-    s_2' \cap s_1' \backslash s_2 = \emptyset}
-    {E[\Gamma] \vdash \tD_1\cdot\tD_2 : \DType(s_1 \cup (s_2\backslash s_1'); s_2' \cup (s_1'\backslash s_2))}
-\end{gather*}
-
 \subsubsection*{Eliminating the registers}
 
 \begin{enumerate}
@@ -125,98 +80,16 @@ The extra syntax for the environment.
     \item $R = r_k$, $|i_R\> \triangleq |i_{r_k}\>$ and $\<i_R| \triangleq \<i_{r_k}|$;
     \item $R = (R_1,R_2)$: $|i_R\> \triangleq |i_{R_1}\> \otimes |i_{R_2}\>$ and $\<i_R| \triangleq \<i_{R_1}| \otimes \<i_{R_2}|$.
   \end{itemize}
-    \item Expansion of all $K_R,B_R,O_{R,R'}$:
-    \begin{align*}
-      &K_R = \sum_{i_{r_1}\in\bU(\sigma_{r_1})}\cdots \sum_{i_{r_n}\in\bU(\sigma_{r_n})} (\<i_R|\cdot K). (|i_{r_1}\>_{r_i}\otimes\cdots\otimes|i_{r_n}\>_{r_n}).\\
-      &B_R = \sum_{i_{r_1}\in\bU(\sigma_{r_1})}\cdots \sum_{i_{r_n}\in\bU(\sigma_{r_n})} (B\cdot |i_R\>). ({}_{r_1}\<i_{r_1}|\otimes\cdots\otimes{}_{r_n}\<i_{r_n}|).\\
-      &O_{R,R'} = \sum_{i_{r_1}\in\bU(\sigma_{r_1})}\cdots \sum_{i_{r_n}\in\bU(\sigma_{r_n})}
-      \sum_{i_{r'_1}\in\bU(\sigma_{r'_1})}\cdots \sum_{i_{r'_{n'}}\in\bU(\sigma_{r'_{n'}})} \\
-      &\qquad\qquad\qquad (\<i_R|\cdot O\cdot |i_{R'}\>).\Big((|i_{r_1}\>_{r_i}\otimes\cdots\otimes|i_{r_n}\>_{r_n})\otimes({}_{r'_1}\<i_{r'_1}|\otimes\cdots\otimes{}_{r'_{n'}}\<i_{r'_{n'}}|)\Big).\\
-    \end{align*}
-    \item Rewriting to push big operators and split: \textbf{Beta-Arrow}, \textbf{Beta-Index}, \textbf{Delta}
+    \item Expansion of all $K_R,B_R,O_{R,R'}$
 
     
-\begin{ruletable}{The special flattening rule.}
-    %
-    R-ADJDK
-    & $ ({}_r\<i|)^\dagger \ \reduce\ |i\>_r$ \\
-    %
-    R-ADJDB
-    & $ (|i\>_r)^\dagger \ \reduce\ {}_r\<i|$ \\
-    & \textcolor{gray}{Dealing with adjoint; now we don't have any $\tD^\dagger$ by combining push rules.} \\
-    R-ADJD0
-    & $ (\tD_1 \otimes \tD_2)^\dagger \ \reduce\ \tD_1^\dagger \otimes \tD_2^\dagger$ \\
-    %
-    R-ADJD1
-    & $ (\tD_1\cdot \tD_2)^\dagger \ \reduce\ \tD_2^\dagger \cdot \tD_1^\dagger$ \\
-    %
-    R-SCRD0
-    & $ D_1 \otimes \cdots \otimes (a.\tD_n) \otimes \cdots \otimes \tD_m \ \reduce\ a.(\tD_1 \otimes \cdots \otimes \tD_m) $ \\
-    %
-    R-SCRD1
-    & $ (a.\tD_1) \cdot \tD_2 \ \reduce\ a.(\tD_1 \cdot \tD_2) $ \\
-    %
-    R-SCRD2
-    & $ \tD_1 \cdot (a.\tD_2) \ \reduce\ a.(\tD_1 \cdot \tD_2) $ \\
-    & \textcolor{gray}{Dealing with scaling} \\
-    %
-    R-TSRD0
-    & $ (\tD_1 + \cdots + \tD_n) \otimes \tD\ \reduce\ \tD_1 \otimes \tD + \cdots + \tD_n \otimes \tD $ \\
-    %
-    R-DOTD0
-    & $ (\tD_1 + \cdots + \tD_n) \cdot \tD\ \reduce\ \tD_1 \cdot \tD + \cdots + \tD_n \cdot \tD $ \\
-    %
-    R-DOTD1
-    & $ \tD \cdot (\tD_1 + \cdots + \tD_n)\ \reduce\ \tD \cdot \tD_1 + \cdots + \tD \cdot \tD_n $ \\
-    & \textcolor{gray}{Distributivity of $\cdot$ and $\otimes$. } \\
-    %
-    R-SUM-PUSHD0
-    & $ (\sum_{i \in M} \tD_1) \otimes \tD_2 \ \reduce\ \sum_{i \in M} (\tD_1 \otimes \tD_2) $ \\
-    %
-    R-SUM-PUSHD2
-    & $ (\sum_{i \in M} \tD_1) \cdot \tD_2 \ \reduce\ \sum_{i \in M} (\tD_1 \cdot \tD_2) $ \\
-    %
-    R-SUM-PUSHD3
-    & $ \tD_1 \cdot (\sum_{i \in M} \tD_2) \ \reduce\ \sum_{i \in M} (\tD_1 \cdot \tD_2) $ \\
-    %
-    R-L-SORT0
-    & $ A : \DType(s_1, s_2), B : \DType(s_1', s_2'), s_2 \cap s_1'=\emptyset \Rightarrow A \cdot B \ \reduce\ A \otimes B $ \\
-    %
-    R-L-SORT1
-    & ${}_r\bra{i}\cdot\ket{j}_r \ \reduce\ \delta_{i, j}$ \\
-    %
-    R-L-SORT2
-    & ${}_r\bra{i}\cdot(Y_1 \otimes \cdots \otimes \ket{j}_r \otimes \cdots \otimes Y_m) \ \reduce\ \delta_{i, j}.(Y_1  \otimes \cdots \otimes Y_m)$ \\
-    %
-    R-L-SORT3
-    & $(X_1 \otimes \cdots \otimes {}_r\bra{i} \otimes \cdots \otimes X_n) \cdot \ket{j}_r \ \reduce\ \delta_{i,j}.(X_1 \otimes \cdots \otimes X_n)$ \\
-    %
-    R-L-SORT1
-    & $ (X_1 \otimes \cdots \otimes {}_r\bra{i} \otimes \cdots \otimes X_n) \cdot (Y_1 \otimes \cdots \otimes \ket{j}_r \otimes \cdots \otimes Y_m) $ \\
-    & $\reduce\ \delta_{i,j}.(X_1 \otimes \cdots \otimes X_n) \cdot (Y_1 \otimes \cdots \otimes Y_m)$
-\end{ruletable}
     After the rewriting of this step, the expression we have is always in the following form:
     $$
     \Big(\sum_{i_1}\cdots\sum_{i_n} a.\tD_f\Big) + \cdots + \Big(\sum_{i_1}\cdots\sum_{i_{n'}} a.\tD_f\Big)
     $$
     where $\tD_f$ is generated by :
     $$\tD_f ::= |i\>_r \mid {}_r\<i| \mid \te\otimes\te \mid \te\cdot\te. $$
-    \item Simplify $\tD_f$. Let $\cN$ be the variable name set. For every $\tD_f$, we define three functions $\mathsf{Can}(\tD_f) : \List\ (\cN\times\cN)$, $\mathsf{CDom}(\tD_f), \mathsf{Dom}(\tD_f) : \List\ (\cN\times \cR)$ that compute the cancellation pairs of variables, codomain and domain.
-    They are inductively defined by the structure of $\tD_f$:
-    \begin{itemize}
-        \item $\tD_f \equiv |i\>_r$: $\mathsf{Can}(\tD_f) = []$, $\mathsf{CDom}(\tD_f) = [(i,r)]$, $\mathsf{Dom}(\tD_f) = []$.
-        \item $\tD_f \equiv {}_r\<i|$: $\mathsf{Can}(\tD_f) = []$, $\mathsf{CDom}(\tD_f) = []$, $\mathsf{Dom}(\tD_f) = [(i,r)]$.
-        \item $\tD_f \equiv \tD_{1f}\otimes\tD_{2f}$: $\mathsf{Can}(\tD_f) = \mathsf{Can}(\tD_{1f}) ; \mathsf{Can}(\tD_{2f})$, $\mathsf{CDom}(\tD_f) = \mathsf{CDom}(\tD_{1f}) ; \mathsf{CDom}(\tD_{2f})$, $\mathsf{Dom}(\tD_f) = \mathsf{Dom}(\tD_{1f}) ; \mathsf{Dom}(\tD_{2f})$. (Here, $;$ is the concatenation of lists)
-        \item $\tD_f \equiv \tD_{1f}\cdot\tD_{2f}$: recursively execute:
-        \begin{enumerate}
-            \item Set $L_{\rm can} = []$, $L_{\rm dom} = \mathsf{Dom}(\tD_{1f})$, $L_{\rm cdom} = \mathsf{CDom}(\tD_{2f})$.
-            \item If there exists $(i_1,r)\in L_{\rm dom}$ and $(i_2,r)\in L_{\rm cdom}$, then $L_{\rm can} = L_{\rm can}; (i_1,i_2)$, $L_{\rm dom} = L_{\rm dom}\backslash(i_1,r)$ and $L_{\rm cdom} = L_{\rm cdom}\backslash(i_2,r)$. (Here, $\backslash$ means to remove the element from the list.)
-            \item Repeat step (b) until it fails.
-        \end{enumerate}
-        Then, 
-        $\mathsf{Can}(\tD_f) = \mathsf{Can}(\tD_{1f}) ; \mathsf{Can}(\tD_{2f}); L_{\rm can}$, 
-        $\mathsf{CDom}(\tD_f) = \mathsf{CDom}(\tD_{1f}) ; L_{\rm cdom}$, $\mathsf{Dom}(\tD_f) = \mathsf{Dom}(\tD_{f}) ; L_{\rm dom}$. 
-    \end{itemize}
+    \item
     Suppose $\mathsf{CDom}(\tD_{f}) = \{(i_1,r_1),\cdots,(i_n,r_n)\}$ and $\mathsf{Dom}(\tD_{f}) = \{(i'_1,r'_1),\cdots,(i'_{n'},r'_{n'})\}$ where the list is sorted by a default order of variables in $\cR$. We define:
     $$D_f = \bigg(\prod_{(i,j)\in \mathsf{Can}(\tD_f)}\delta_{i,j}\bigg).\Big((|i_1\>\otimes\cdots\otimes|i_n\>) \cdot (\<i'_1|\otimes\cdots\otimes\<i'_{n'}|)\Big).$$
     If $\mathsf{Dom}$ or $\mathsf{CDom}$ is an empty list, the $D_f$ is just a Ket or Bra.

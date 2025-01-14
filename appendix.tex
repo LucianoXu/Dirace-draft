@@ -1,0 +1,1173 @@
+
+\section{Full Typing Rules}
+
+\label{sec: full typing rules}
+
+This section includes the full list of typing rules.
+
+\begin{itemize}
+    \item Rules for a well-formed environment and context.
+    \[
+        \textbf{W-Empty} \qquad
+        \frac{}{\WF([])[]}
+    \]
+    \[
+        \textbf{W-AssumE-Index} \qquad
+        \frac{\WF(E)[] \qquad x \notin E}{\WF(E; x : \Index)[]}
+    \]
+    \[
+        \textbf{W-AssumE-Term} \qquad
+        \frac{E[] \vdash T : \Type \qquad x \notin E}{\WF(E; x:T)[]}
+    \]
+    \[
+        \textbf{W-Def-Term} \qquad
+        \frac{E[]\vdash t:T \qquad x \notin E}{\WF(E; x:=t:T)[]}
+    \]
+    \[
+        \textbf{W-AssumC-Index} \qquad
+        \frac{\WF(E)[\Gamma]}{\WF(E)[\Gamma; x : \Index]}
+    \]
+    \[
+        \textbf{W-AssumC-Term} \qquad
+        \frac{E[\Gamma] \vdash T : \Type}{\WF(E)[\Gamma; x : T]}
+    \]
+
+
+    \item Rules for type indices.
+    \[
+        \textbf{Index-Var} \qquad
+        \frac{\WF(E)[\Gamma] \qquad x : \Index \in E[\Gamma]}{E[\Gamma] \vdash x : \Index}
+    \]
+    \[
+        \textbf{Index-Prod} \qquad
+        \frac{E[\Gamma] \vdash \sigma : \Index \qquad E[\Gamma] \vdash \tau : \Index}{E[\Gamma] \vdash \sigma \times \tau : \Index}
+    \]
+    \[
+        \textbf{Index-Qudit} \qquad
+        \frac{\WF(E)[\Gamma]}{E[\Gamma] \vdash \mathsf{Bit} : \Index}
+    \]
+
+
+    \item Rules for types.
+    \[
+        \textbf{Type-Lam} \qquad
+        \frac{E[\Gamma] \vdash T : \Type \qquad E[\Gamma] \vdash U : \Type}{E[\Gamma] \vdash T \to U : \Type}
+    \]
+    \[
+        \textbf{Type-Index} \qquad
+        \frac{E[\Gamma ; x : \Index] \vdash U : \Type}{E[\Gamma] \vdash \forall x.U : \Type}
+    \]
+    \[
+        \textbf{Type-Basis} \qquad
+        \frac{E[\Gamma] \vdash \sigma : \Index}{E[\Gamma] \vdash \Basis(\sigma) : \Type}
+    \]
+    \[
+        \textbf{Type-Ket} \qquad
+        \frac{E[\Gamma] \vdash \sigma : \Index}{E[\Gamma] \vdash \KType(\sigma) : \Type}
+    \]
+    \[
+        \textbf{Type-Bra} \qquad
+        \frac{E[\Gamma] \vdash \sigma : \Index}{E[\Gamma] \vdash \BType(\sigma) : \Type}
+    \]
+    \[
+        \textbf{Type-Opt} \qquad
+        \frac{E[\Gamma] \vdash \sigma : \Index \qquad E[\Gamma] \vdash \tau : \Index}{E[\Gamma] \vdash \OType(\sigma, \tau) : \Type}
+    \]
+    \[
+        \textbf{Type-Scalar} \qquad
+        \frac{\WF(E)[\Gamma]}{E[\Gamma] \vdash \SType : \Type}
+    \]
+    \[
+        \textbf{Type-Set} \qquad
+        \frac{E[\Gamma] \vdash \sigma : \Index}{E[\Gamma] \vdash \SET(\sigma) : \Type}
+    \]
+    \[
+        \textbf{Type-Register} \qquad
+        \frac{E[\Gamma] \vdash  \sigma : \Index}{E[\Gamma] \vdash \reg(\sigma) : \Type}
+    \]
+    \[
+        \textbf{Type-Labelled} \qquad
+        \frac{E[\Gamma] \vdash r : \reg(\sigma_r) \text{ for all $r$ in $s_1$ and $s_2$} }{E[\Gamma] \vdash \DType(s_1, s_2) : \textsf{Type}} 
+    \]
+
+    \item Rules for variable and function typings. Here $U\{x/u\}$ means replacing the bound variable $x$ with $u$ in $U$.
+    \[
+        \textbf{Term-Var} \qquad
+        \frac{
+            \begin{aligned}
+                & \WF(E)[\Gamma] \\
+                & (x:T) \in E[\Gamma] \text{ or } (x := t : T) \in E \text{ for some $t$}
+            \end{aligned}
+        }
+        {E[\Gamma] \vdash x : T}
+    \]
+    \[
+        \textbf{Lam} \qquad
+        \frac{E[\Gamma; x : T] \vdash t : U}{E[\Gamma] \vdash (\lambda x : T . t) : T \to U}
+    \]
+    \[
+        \textbf{Index} \qquad
+        \frac{E[\Gamma; x : \Index] \vdash t : U}{E[\Gamma] \vdash (\mu x.t) : \forall x.U}
+    \]
+    \[
+        \textbf{App-Lam} \qquad
+        \frac{E[\Gamma] \vdash t:U \to T \qquad E[\Gamma] \vdash u:U}{E[\Gamma] \vdash (t\ u):T}
+    \]
+    \[
+        \textbf{App-Index} \qquad
+        \frac{E[\Gamma] \vdash t:\forall x.U \qquad E[\Gamma] \vdash u : \Index}{E[\Gamma] \vdash (t\ u):U\{x/u\}}
+    \]
+    
+    \item Basis term typing rules. 
+    \[  \textbf{Basis-0} \qquad
+        \frac{\WF(E[\Gamma])}{E[\Gamma] \vdash 0 : \Basis(\mathsf{Bit})}
+    \]
+    \[  \textbf{Basis-1} \qquad
+        \frac{\WF(E[\Gamma])}{E[\Gamma] \vdash 1 : \Basis(\mathsf{Bit})}
+    \]
+    \[
+        \textbf{Basis-Pair} \qquad
+        \frac{E[\Gamma]\vdash s : \Basis(\sigma) \qquad E[\Gamma]\vdash t : \Basis(\tau)} {E[\Gamma]\vdash (s, t) : \Basis(\sigma \times \tau)}
+    \]
+
+
+    \item Composition typing rules. 
+    \[  \textbf{Compo-SS} \qquad
+        \frac{E[\Gamma] \vdash x : \SType \qquad E[\Gamma] \vdash y : \SType}{E[\Gamma] \vdash x \circ y : \SType}
+    \]
+    \[  \textbf{Compo-SK} \qquad
+        \frac{E[\Gamma] \vdash x : \SType \qquad E[\Gamma] \vdash y : \KType(\sigma)}{E[\Gamma] \vdash x \circ y : \KType(\sigma)}
+    \]
+    \[  \textbf{Compo-SB} \qquad
+        \frac{E[\Gamma] \vdash x : \SType \qquad E[\Gamma] \vdash y : \BType(\sigma)}{E[\Gamma] \vdash x \circ y : \BType(\sigma)}
+    \]
+    \[  \textbf{Compo-SO} \qquad
+        \frac{E[\Gamma] \vdash x : \SType \qquad E[\Gamma] \vdash y : \OType(\sigma, \tau)}{E[\Gamma] \vdash x \circ y : \OType(\sigma, \tau)}
+    \]
+    \[  \textbf{Compo-KS} \qquad
+        \frac{E[\Gamma] \vdash x : \KType(\sigma) \qquad E[\Gamma] \vdash y : \SType}{E[\Gamma] \vdash x \circ y : \KType(\sigma)}
+    \]
+    \[  \textbf{Compo-KK} \qquad
+        \frac{E[\Gamma] \vdash x : \KType(\sigma) \qquad E[\Gamma] \vdash y : \KType(\tau)}{E[\Gamma] \vdash x \circ y : \KType(\sigma \times \tau)}
+    \]
+    \[  \textbf{Compo-KB} \qquad
+        \frac{E[\Gamma] \vdash x : \KType(\sigma) \qquad E[\Gamma] \vdash y : \BType(\tau)}{E[\Gamma] \vdash x \circ y : \OType(\sigma, \tau)}
+    \]
+    \[  \textbf{Compo-BS} \qquad
+        \frac{E[\Gamma] \vdash x : \BType(\sigma) \qquad E[\Gamma] \vdash y : \SType}{E[\Gamma] \vdash x \circ y : \BType(\sigma)}
+    \]
+    \[  \textbf{Compo-BK} \qquad
+        \frac{E[\Gamma] \vdash x : \BType(\sigma) \qquad E[\Gamma] \vdash y : \KType(\sigma)}{E[\Gamma] \vdash x \circ y : \SType}
+    \]
+    \[  \textbf{Compo-BB} \qquad
+        \frac{E[\Gamma] \vdash x : \BType(\sigma) \qquad E[\Gamma] \vdash y : \BType(\tau)}{E[\Gamma] \vdash x \circ y : \BType(\sigma \times \tau)}
+    \]
+    \[  \textbf{Compo-BO} \qquad
+        \frac{E[\Gamma] \vdash x : \BType(\sigma) \qquad E[\Gamma] \vdash y : \OType(\sigma, \tau)}{E[\Gamma] \vdash x \circ y : \BType(\tau)}
+    \]
+    \[  \textbf{Compo-OS} \qquad
+        \frac{E[\Gamma] \vdash x : \OType(\sigma, \tau) \qquad E[\Gamma] \vdash y : \SType}{E[\Gamma] \vdash x \circ y : \OType(\sigma, \tau)}
+    \]
+    \[  \textbf{Compo-OK} \qquad
+        \frac{E[\Gamma] \vdash x : \OType(\sigma, \tau) \qquad E[\Gamma] \vdash y : \KType(\tau)}{E[\Gamma] \vdash x \circ y : \KType(\sigma)}
+    \]
+    \[  \textbf{Compo-OO} \qquad
+        \frac{E[\Gamma] \vdash x : \OType(\sigma, \tau) \qquad E[\Gamma] \vdash y : \OType(\sigma', \tau')}{E[\Gamma] \vdash x \circ y : \OType(\sigma \times \sigma', \tau \times \tau')}
+    \]
+
+
+    \item Scalar term typing rules.
+    \[
+        \textbf{Sca-0} \qquad
+        \frac{\WF(E)[\Gamma]}{E[\Gamma] \vdash 0 : \SType}
+    \]
+    \[
+        \textbf{Sca-1} \qquad
+        \frac{\WF(E)[\Gamma]}{E[\Gamma] \vdash 1 : \SType}
+    \]
+    \[
+        \textbf{Sca-Delta} \qquad
+        \frac{ E[\Gamma]\vdash s : \Basis(\sigma) \qquad E[\Gamma]\vdash t : \Basis(\sigma) } {E[\Gamma] \vdash \delta_{s, t} : \SType}
+    \]
+    \[
+        \textbf{Sca-Add} \qquad
+        \frac{E[\Gamma]\vdash a_i : \SType \text{ for all $i$}}{E[\Gamma]\vdash a_1 + \cdots + a_n : \SType}
+    \]
+    \[
+        \textbf{Sca-Mul} \qquad
+        \frac{E[\Gamma]\vdash a_i : \SType \text{ for all $i$}}{E[\Gamma]\vdash a_1 \times \cdots \times a_n : \SType}
+    \]
+    \[
+        \textbf{Sca-Conj} \qquad
+        \frac{E[\Gamma] \vdash a : \SType}{E[\Gamma] \vdash a^*:\SType}
+    \]
+    \[
+        \textbf{Sca-Dot} \qquad
+        \frac{E[\Gamma]\vdash B : \BType(\sigma) \qquad E[\Gamma]\vdash K : \KType(\sigma)}{E[\Gamma] \vdash B \cdot K : \SType}
+    \]
+    \[
+        \textbf{Sca-Sum} \qquad
+        \frac{E[\Gamma] \vdash s : \SET(\sigma) \qquad E[\Gamma] \vdash f : \Basis(\sigma) \to \SType}{E[\Gamma] \vdash \sum_{s} f : \SType}
+    \]
+
+    \item Ket term typing rules.
+    \[
+        \textbf{Ket-0} \qquad
+        \frac{E[\Gamma] \vdash \sigma : \Index}{E[\Gamma] \vdash \ZEROK(\sigma) : \KType(\sigma)}
+    \]
+    \[
+        \textbf{Ket-Basis} \qquad
+        \frac{E[\Gamma]\vdash t : \Basis(\sigma)}{E[\Gamma] \vdash \ket{t} : \KType(\sigma)}
+    \]
+    \[
+        \textbf{Ket-Adj} \qquad
+        \frac{E[\Gamma] \vdash B : \BType(\sigma)}{E[\Gamma] \vdash B^\dagger : \KType(\sigma)}
+    \]
+    \[
+        \textbf{Ket-Scr} \qquad
+        \frac{E[\Gamma] \vdash a : \SType \qquad E[\Gamma] \vdash K : \KType(\sigma)}{E[\Gamma] \vdash a.K : \KType(\sigma)}
+    \]
+    \[
+        \textbf{Ket-Add} \qquad
+        \frac{E[\Gamma] \vdash K_i : \KType(\sigma) \text{ for all $i$}}{E[\Gamma] \vdash K_1 + \cdots + K_n : \KType(\sigma)}
+    \]
+    \[
+        \textbf{Ket-MulK} \qquad
+        \frac{E[\Gamma] \vdash O : \OType(\sigma, \tau) \qquad E[\Gamma] \vdash K : \KType(\tau)}{E[\Gamma] \vdash O \cdot K : \KType(\sigma)}
+    \]
+    \[
+        \textbf{Ket-Tsr} \qquad
+        \frac{E[\Gamma] \vdash K_1 : \KType(\sigma) \qquad E[\Gamma] \vdash K_2 : \KType(\tau)} {E[\Gamma] \vdash K_1 \otimes K_2 : \KType(\sigma \times \tau)}
+    \]
+    \[
+        \textbf{Ket-Sum} \qquad
+        \frac{E[\Gamma] \vdash s : \SET(\sigma) \qquad E[\Gamma] \vdash f : \Basis(\sigma) \to \KType(\tau)}{E[\Gamma] \vdash \sum_{s} f : \KType(\tau)}
+    \]
+
+    \item Bra term typing rules.
+    \[
+        \textbf{Bra-0} \qquad
+        \frac{E[\Gamma] \vdash \sigma : \Index}{E[\Gamma] \vdash \ZEROB(\sigma) : \BType(\sigma)}
+    \]
+    \[
+        \textbf{Bra-Basis} \qquad
+        \frac{E[\Gamma]\vdash t : \Basis(\sigma)}{E[\Gamma] \vdash \bra{t} : \BType(\sigma)}
+    \]
+    \[
+        \textbf{Bra-Adj} \qquad
+        \frac{E[\Gamma] \vdash K : \KType(\sigma)}{E[\Gamma] \vdash K^\dagger : \BType(\sigma)}
+    \]
+    \[
+        \textbf{Bra-Scr} \qquad
+        \frac{E[\Gamma] \vdash a : \SType \qquad E[\Gamma] \vdash B : \BType(\sigma)}{E[\Gamma] \vdash a.B : \BType(\sigma)}
+    \]
+    \[
+        \textbf{Bra-Add} \qquad
+        \frac{E[\Gamma] \vdash B_i : \BType(\sigma) \text{ for all $i$}}{E[\Gamma] \vdash B_1 + \cdots + B_n : \BType(\sigma)}
+    \]
+    \[
+        \textbf{Bra-MulB} \qquad
+        \frac{E[\Gamma] \vdash B : \KType(\sigma) \qquad E[\Gamma] \vdash O : \OType(\sigma, \tau)}{E[\Gamma] \vdash B \cdot O : \BType(\tau)}
+    \]
+    \[
+        \textbf{Bra-Tsr} \qquad
+        \frac{E[\Gamma] \vdash B_1 : \BType(\sigma) \qquad E[\Gamma] \vdash B_2 : \BType(\tau)} {E[\Gamma] \vdash B_1 \otimes B_2 : \BType(\sigma \times \tau)}
+    \]
+    \[
+        \textbf{Bra-Sum} \qquad
+        \frac{E[\Gamma] \vdash s : \SET(\sigma) \qquad E[\Gamma] \vdash f : \Basis(\sigma) \to \BType(\tau)}{E[\Gamma] \vdash \sum_{s} f : \BType(\tau)}
+    \]
+
+    \item Operator term typing rules.
+    \[
+        \textbf{Opt-0} \qquad
+        \frac{E[\Gamma] \vdash \sigma : \Index \qquad E[\Gamma] \vdash \tau : \Index}{E[\Gamma] \vdash \ZEROO(\sigma, \tau) : \OType(\sigma, \tau)}
+    \]
+    \[
+        \textbf{Opt-1} \qquad
+        \frac{E[\Gamma] \vdash \sigma : \Index}{E[\Gamma] \vdash \ONEO(\sigma) : \OType(\sigma, \sigma)}
+    \]
+    \[
+        \textbf{Opt-Adj} \qquad
+        \frac{E[\Gamma] \vdash O : \OType(\sigma, \tau)}{E[\Gamma] \vdash O^\dagger : \OType(\tau, \sigma)}
+    \]
+    \[
+        \textbf{Opt-Scr} \qquad
+        \frac{E[\Gamma] \vdash a : \SType \qquad E[\Gamma] \vdash O : \OType(\sigma, \tau)}{E[\Gamma] \vdash a.O : \OType(\sigma, \tau)}
+    \]
+    \[
+        \textbf{Opt-Add} \qquad
+        \frac{E[\Gamma] \vdash O_i : \OType(\sigma, \tau) \text{ for all $i$}}{E[\Gamma] \vdash O_1 + \cdots + O_n : \OType(\sigma, \tau)}
+    \]
+    \[
+        \textbf{Opt-Outer} \qquad
+        \frac{E[\Gamma]\vdash K : \KType(\sigma) \qquad E[\Gamma]\vdash B : \BType(\tau)}{E[\Gamma]\vdash K \cdot B : \OType(\sigma, \tau)}
+    \]
+    \[
+        \textbf{Opt-Mulo} \qquad
+        \frac{E[\Gamma] \vdash O_1 : \OType(\sigma, \tau) \qquad E[\Gamma] \vdash O_2 : \OType(\tau, \rho)}{E[\Gamma] \vdash O_1 \cdot O_2 : \OType(\sigma, \rho)}
+    \]
+    \[
+        \textbf{Opt-Tsr} \qquad
+        \frac{E[\Gamma] \vdash O_1 : \OType(\sigma_1, \tau_1) \qquad E[\Gamma] \vdash O_2 : \OType(\sigma_2, \tau_2)} {E[\Gamma] \vdash O_1 \otimes O_2 : \OType(\sigma_1 \times \sigma_2, \tau_1 \times \tau_2)}
+    \]
+    \[
+        \textbf{Opt-Sum} \qquad
+        \frac{E[\Gamma] \vdash s : \SET(\sigma) \qquad E[\Gamma] \vdash f : \Basis(\sigma) \to \OType(\tau, \rho)}{E[\Gamma] \vdash \sum_{s} f : \OType(\tau, \rho)}
+    \]
+
+    \item Set term typing rules.
+    \[
+        \textbf{Set-U} \qquad
+        \frac{E[\Gamma] \vdash \sigma : \Index}{E[\Gamma] \vdash \mathbf{U}(\sigma) : \SET(\sigma)}
+    \]
+    \[
+        \textbf{Set-Prod} \qquad
+        \frac{E[\Gamma] \vdash A : \SET(\sigma) \qquad E[\Gamma] \vdash B : \SET(\tau)}{E[\Gamma] \vdash A \star B : \SET(\sigma \times \tau)}
+    \]
+
+
+    \item Register term typing rules.
+    \[
+        \textbf{Reg-Var} \qquad
+        \frac{\WF(E[\Gamma]) \qquad r : \reg(\sigma) \in E}{E[\Gamma] \vdash r : \reg(\sigma)}
+    \]
+    \[
+        \textbf{Reg-Pair}\qquad
+        \frac{E[\Gamma] \vdash R : \reg \sigma\qquad E[\Gamma] \vdash Q : \reg \tau\qquad R\| Q}{E[\Gamma] \vdash (R,Q) : \reg \sigma \times \tau}
+    \]
+
+    \item Typing rules for labelled Dirac notations.
+    \[
+        \textbf{L-Basis-Ket}\qquad 
+        \frac{r : \reg \sigma \in E\qquad E[\Gamma] \vdash i : \Basis(\sigma)}{E[\Gamma] \vdash |i\>_r : \DType(\{r\}, \emptyset)}
+    \]
+    \[
+        \textbf{L-Basis-Bra}\qquad 
+        \frac{r : \reg \sigma \in E \qquad E[\Gamma] \vdash i : \Basis(\sigma)}{E[\Gamma] \vdash {}_r\<i| : \DType(\emptyset, \{r\})}
+    \]
+    \[
+        \textbf{L-Ket}\qquad 
+        \frac{E[\Gamma] \vdash R : \reg \sigma\qquad E[\Gamma] \vdash K : \KType(\sigma)}{E[\Gamma] \vdash K_R : \DType(\var R, \emptyset)}
+    \]
+    \[
+        \textbf{L-Bra}\qquad 
+        \frac{E[\Gamma] \vdash R : \reg \sigma\qquad E[\Gamma] \vdash B : \BType(\sigma)}{E[\Gamma] \vdash B_R : \DType(\emptyset, \var R)}
+    \]
+    \[
+        \textbf{L-Opt}\qquad 
+        \frac{
+            \begin{aligned}
+                E[\Gamma] \vdash R_1 : \reg \sigma_1 \\
+                E[\Gamma] \vdash R_2 : \reg \sigma_2
+            \end{aligned}
+            \qquad
+            E[\Gamma] \vdash O : \OType(\sigma_1, \sigma_2)
+        }
+        {E[\Gamma] \vdash O_{R_1;R_2} : \DType(\var R_1, \var R_2)}
+    \]
+    \[
+        \textbf{L-Conj}\qquad 
+        \frac{E[\Gamma] \vdash \tD : \DType(s_1,s_2)}{E[\Gamma] \vdash \tD^\dagger : \DType(s_2,s_1)}
+    \]
+    \[
+        \textbf{L-Scl}\qquad 
+        \frac{E[\Gamma] \vdash S : \SType\qquad E[\Gamma] \vdash \tD : \DType(s_1,s_2)}{E[\Gamma] \vdash S.\tD : \DType(s_1,s_2)}
+    \]
+    \[
+        \textbf{L-Add}\qquad
+        \frac{E[\Gamma] \vdash \tD_i : \DType(s_1,s_2)\quad \text{forall } i}{E[\Gamma] \vdash \tD_1+\cdots+\tD_n : \DType(s_1,s_2)}
+    \]
+    \[
+        \textbf{L-Tsr}\qquad
+        \frac{
+            \begin{aligned}
+                E[\Gamma] \vdash \tD_1 : \DType(s_1,s_1') \\
+                E[\Gamma] \vdash \tD_2 : \DType(s_2,s_2')
+            \end{aligned}
+            \qquad 
+            \begin{aligned}
+                s_1\cap s_2 = \emptyset \\
+                s_1'\cap s_2' = \emptyset
+            \end{aligned}
+        }
+        {E[\Gamma] \vdash \tD_1\otimes\tD_2 : \DType(s_1\cup s_2,s_1'\cup s_2')}
+    \]
+    \[
+        \textbf{L-Dot}\qquad
+        \frac{
+            \begin{aligned}
+                E[\Gamma] \vdash \tD_1 : \DType(s_1,s_1') \\
+                E[\Gamma] \vdash \tD_2 : \DType(s_2,s_2')
+            \end{aligned}
+            \qquad 
+            \begin{aligned}
+                s_1 \cap s_2 \backslash s_1' = \emptyset \\
+                s_2' \cap s_1' \backslash s_2 = \emptyset
+            \end{aligned}
+        }
+        {E[\Gamma] \vdash \tD_1\cdot\tD_2 : \DType(s_1 \cup (s_2\backslash s_1'), s_2' \cup (s_1'\backslash s_2))}
+    \]
+    \[
+        \textbf{L-Sum}\qquad
+        \frac{E[\Gamma] \vdash s : \SET(\sigma) \qquad E[\Gamma] \vdash f : \Basis(\sigma) \to \DType(s_1, s_2)}{E[\Gamma] \vdash \sum_{s} f : \DType(s_1, s_2)}
+    \]
+
+\end{itemize}
+
+
+\section{Axiomatic Semantics}
+
+The full list of equational axioms are provided below.
+    \begin{align*}
+        & \textsc{(Ax-Scalar)} &&
+        (B \cdot K)^* = K^\dagger \cdot B^\dagger
+        \\
+            & \textsc{(Ax-Delta)} &&
+        \delta_{s, t}^* = \delta_{s, t}
+        \qquad
+        \bra{s} \cdot \ket{t} = \delta_{s, t}
+        \\ & &&
+        \delta_{s, s} = 1
+        \qquad
+        s \neq t \vdash \delta_{s, t} = 0
+        \qquad
+        \delta_{s, t} = \delta_{t, s}
+        \\
+            & \textsc{(Ax-Linear)} &&
+        \mathbf{0} + D = D
+        \qquad
+        D_1 + D_2 = D_2 + D_1
+        \\ & &&
+        (D_1 + D_2) + D_3 = D_1 + (D_2 + D_3)
+        \\ & &&
+        0.D = \mathbf{0}
+        \qquad
+        a.\mathbf{0} = \mathbf{0}
+        \qquad
+        1.D = D
+        \\ & &&
+        a.(b.D) = (a \times b).D
+        \qquad
+        (a + b).D = a.D + b.D
+        \\ & &&
+        a.(D_1 + D_2) = a.D_1 + a.D_2
+        \\
+        & \textsc{(Ax-Bilinear)} &&
+        D \cdot \mathbf{0} = \mathbf{0} 
+        \qquad
+        D_1 \cdot (a.D_2) = a.(D_1 \cdot D_2)
+        \\ & &&
+        D_0 \cdot (D_1 + D_2) = D_0 \cdot D_1 + D_0 \cdot D_2
+        \\ & &&
+        \mathbf{0} \cdot D = \mathbf{0}
+        \qquad
+        (a.D_1) \cdot D_2 = a.(D_1 \cdot D_2)
+        \\ & &&
+        (D_1 + D_2) \cdot D_0 = D_1 \cdot D_0 + D_2 \cdot D_0
+        \\ 
+        & &&
+        D \otimes \mathbf{0} = \mathbf{0}
+        \qquad
+        D_1 \otimes (a.D_2) = a.(D_1 \otimes D_2)
+        \\ & &&
+        D_0 \otimes (D_1 + D_2) = D_0 \otimes D_1 + D_0 \otimes D_2
+        \\ & &&
+        \mathbf{0} \otimes D = \mathbf{0} 
+        \qquad
+        (a.D_1) \otimes D_2 = a.(D_1 \otimes D_2)
+        \\ & &&
+        (D_1 + D_2) \otimes D_0 = D_1 \otimes D_0 + D_2 \otimes D_0
+        \\ 
+            & \textsc{(Ax-Adjoint)} &&
+        \mathbf{0}^\dagger = \mathbf{0}
+        \qquad
+        (D^\dagger)^\dagger = D 
+        \qquad
+        (a.D)^\dagger = a^*.(D^\dagger)
+        \\ & &&
+        (D_1 + D_2)^\dagger = D_1^\dagger + D_2^\dagger
+        \\
+        & && (D_1 \cdot D_2)^\dagger = D_2^\dagger \cdot D_1^\dagger
+        \qquad
+        (D_1 \otimes D_2)^\dagger = D_1^\dagger \otimes D_2^\dagger
+        \\
+            & \textsc{(Ax-Comp)} &&
+        D_0 \cdot (D_1 \cdot D_2) = (D_0 \cdot D_1) \cdot D_2
+        \\ & &&
+        (D_1 \otimes D_2) \cdot (D_3 \otimes D_4) = (D_1 \cdot D_3) \otimes (D_2 \cdot D_4)
+        % \\ & &&
+        % (K_1 \cdot B_1) \cdot (K_2 \cdot B_2) = (B_1 \cdot K_2) . (K_1 \otimes B_2)
+        \\ & &&
+        (K_1 \cdot B) \cdot K_2 = (B \cdot K_2).K_1
+        \qquad
+        B_1 \cdot (K \cdot B_2) = (B_1 \cdot K).B_2
+        % \\ & &&
+        % (K \cdot B) \cdot O = K \cdot (B \cdot O)
+        % \qquad
+        % O \cdot (K \cdot B) = (O \cdot  K) \cdot B
+        % \\
+        %     & &&
+        % (K_1 \cdot B_1) \otimes (K_2 \cdot B_2) = (K_1 \otimes K_2) \cdot (B_1 \otimes B_2)
+        \\ 
+            & &&
+        (B_1 \otimes B_2) \cdot (K_1 \otimes K_2) = (B_1 \cdot K_1) \times (B_2 \cdot K_2)
+        \\ 
+            & \textsc{(Ax-Ground)} &&
+        \mathbf{1}_\mathcal{O}^\dagger = \mathbf{1}_\mathcal{O}
+        \qquad
+        \textbf{1}_\mathcal{O} \cdot D = D 
+        \qquad
+        \mathbf{1}_\mathcal{O} \otimes \mathbf{1}_\mathcal{O} = \mathbf{1}_\mathcal{O} 
+        \\ & &&
+        \ket{t}^\dagger = \bra{t}
+        \qquad
+        \ket{s} \otimes \ket{t} =\ket{(s, t)} 
+    \end{align*}
+\yx{to be continued}
+
+
+
+
+\section{Rewriting Rules}
+
+\label{sec: rewriting rules}
+
+This section includes all the rewriting rules used in the system. Related rules are collected in the same table. 
+
+\renewcommand{\arraystretch}{1.2} % Increases row height by 50%
+
+\begin{ruletable}{Reductions for the definitions and function applications.}
+    %
+    BETA-ARROW
+    & $((\lambda x : T.t)\ u)\ \reduce\ t\{x/u\}$ \\
+    %
+    BETA-INDEX
+    & $((\mu x.t)\ u)\ \reduce\ t\{x/u\}$ \\
+    %
+    DELTA
+    & $(c:=t:T) \in E \Rightarrow c\ \reduce\ t$
+\end{ruletable}
+
+\begin{ruletable}{The special to flatten all AC symbols within one call.}
+    %
+    R-FLATTEN
+    & $a_1 + \cdots + (b_1 + \cdots + b_m) + \cdots + a_n$ \\
+    & $\reduce\ a_1 + \cdots + b_1 + \cdots + b_m + \cdots + a_n$ \\ 
+    \\
+    & $a_1 \times \cdots \times (b_1 \times \cdots \times b_m) \times \cdots \times a_n$ \\
+    & $\reduce\ a_1 \times \cdots \times b_1 \times \cdots \times b_m \times \cdots \times a_n$ \\
+    \\
+    & $X_1 + \cdots + (X_1' + \cdots + X_m') + \cdots + X_n$ \\
+    & $\reduce\ X_1 + \cdots + X_1' + \cdots + X_m' + \cdots + X_n$
+\end{ruletable}
+
+\begin{ruletable}{Rules for scalar symbols.}
+    %
+    R-CONJ5
+    & $ \delta_{s, t}^* \ \reduce\ \delta_{s, t}$ \\
+    %
+    R-CONJ6
+    & $ (B \cdot K)^* \ \reduce\ K^\dagger \cdot B^\dagger $ \\
+    %
+    R-DOT0
+    & $ \ZEROB(\sigma) \cdot K \ \reduce\ 0 $ \\
+    %
+    R-DOT1
+    & $ B \cdot \ZEROK(\sigma) \ \reduce\ 0 $ \\
+    %
+    R-DOT2
+    & $ (a.B) \cdot K \ \reduce\ a \times (B \cdot K) $ \\
+    %
+    R-DOT3
+    & $ B \cdot (a.K) \ \reduce\ a \times (B \cdot K) $ \\
+    %
+    R-DOT4
+    & $ (B_1 + \cdots + B_n) \cdot K \ \reduce\ B_1 \cdot K + \cdots + B_n \cdot K $ \\
+    %
+    R-DOT5
+    & $ B \cdot (K_1 + \cdots + K_n) \ \reduce\ B \cdot K_1 + \cdots + B \cdot K_n $ \\
+    %
+    R-DOT6
+    & $ \bra{s} \cdot \ket{t} \ \reduce\ \delta_{s, t} $ \\
+    %
+    R-DOT7
+    & $ (B_1 \otimes B_2) \cdot \ket{(s, t)} \ \reduce\ (B_1 \cdot \ket{s}) \times (B_2 \cdot \ket{t}) $ \\
+    %
+    R-DOT8
+    & $ \bra{(s, t)} \cdot (K_1 \otimes K_2) \ \reduce\ (\bra{s} \cdot K_1) \times (\bra{t} \cdot K_2) $ \\
+    %
+    R-DOT9
+    & $ (B_1 \otimes B_2) \cdot (K_1 \otimes K_2) \ \reduce\ (B_1 \cdot K_1) \times (B_2 \cdot K_2) $ \\
+    %
+    R-DOT10
+    & $ (B \cdot O) \cdot K \ \reduce\ B \cdot (O \cdot K) $ \\
+    %
+    R-DOT11
+    & $ \bra{(s, t)} \cdot ((O_1 \otimes O_2) \cdot K) \ \reduce\ ((\bra{s} \cdot O_1) \otimes (\bra{t} \cdot O_2)) \cdot K $ \\
+    %
+    R-DOT12
+    & $ (B_1 \otimes B_2) \cdot ((O_1 \otimes O_2) \cdot K) \ \reduce\ ((B_1 \cdot O_1) \otimes (B_2 \cdot O_2)) \cdot K $ \\
+    %
+    R-DELTA0
+    & $ \delta_{a, a} \ \reduce\ 1$ \\
+    %
+    R-DELTA1
+    & $ \delta_{(a, b), (c, d)} \ \reduce\ \delta_{a, c} \times \delta_{b, d}$ \\
+\end{ruletable}
+
+
+\begin{ruletable}{Rules for scaling.}
+    %
+    R-SCR0
+    & $ 1.X \ \reduce\ X $ \\
+    %
+    R-SCR1
+    & $ a.(b.X) \ \reduce\ (a \times b).X $ \\
+    %
+    R-SCR2
+    & $ a.(X_1 + \cdots + X_n) \ \reduce\ a.X_1 + \cdots + a.X_n $ \\
+    %
+    R-SCRK0
+    & $ K : \KType(\sigma) \Rightarrow 0.K \ \reduce\ \ZEROK(\sigma)$ \\
+    %
+    R-SCRK1
+    & $ a.\ZEROK(\sigma) \ \reduce\ \ZEROK(\sigma) $ \\
+    % 
+    R-SCRB0
+    & $ B : \BType(\sigma) \Rightarrow 0.B \ \reduce\ \ZEROB(\sigma)$ \\
+    % 
+    R-SCRB1
+    & $ a.\ZEROB(\sigma) \ \reduce\ \ZEROB(\sigma) $ \\
+    % 
+    R-SCRO0
+    & $ O : \OType(\sigma, \tau) \Rightarrow 0.O \ \reduce\ \ZEROO(\sigma, \tau)$ \\
+    % 
+    R-SCRO1
+    & $ a.\ZEROO(\sigma, \tau) \ \reduce\ \ZEROO(\sigma, \tau) $ \\
+\end{ruletable}
+
+\begin{ruletable}{Rules for addition. }
+    %
+    R-ADDID
+    & $+(X) \ \reduce\ X$ \\
+    %
+    R-ADD0
+    & $Y_1 + \cdots + X + \cdots + X + \cdots + Y_n \ \reduce\ Y_1 + \cdots + Y_n + \cdots + (1+1).X$ \\
+    %
+    R-ADD1
+    & $Y_1 + \cdots + X + \cdots + a.X + \cdots + Y_n \ \reduce\ Y_1 + \cdots + Y_n + (1+a).X$ \\
+    %
+    R-ADD2
+    & $Y_1 + \cdots + a.X + \cdots + X + \cdots + Y_n \ \reduce\ Y_1 + \cdots + Y_n + (a+1).X$ \\
+    %
+    R-ADD3
+    & $Y_1 + \cdots + a.X + \cdots + b.X + \cdots + Y_n \ \reduce\ Y_1 + \cdots + Y_n + (a+b).X$ \\
+    %
+    R-ADDK0
+    & $K_1 + \cdots + \ZEROK(\sigma) + \cdots + K_n\ \reduce K_1 + \cdots + K_n$ \\
+    %
+    R-ADDB0
+    & $B_1 + \cdots + \ZEROB(\sigma) + \cdots + B_n \ \reduce\ B_1 + \cdots + B_n$ \\
+    %
+    R-ADDO0
+    & $O_1 + \cdots + \ZEROO(\sigma, \tau) + \cdots + O_n \ \reduce\ O_1 + \cdots + O_n$ 
+    \\
+\end{ruletable}
+
+\begin{ruletable}{Rules for adjoint.}
+    %
+    R-ADJ0
+    & $ (X^\dagger)^\dagger \ \reduce\ X $ \\
+    %
+    R-ADJ1
+    & $ (a.X)^\dagger \ \reduce\ (a^*).(X^\dagger) $ \\
+    %
+    R-ADJ2
+    & $ (X_1 + \cdots + X_n)^\dagger \ \reduce\ X_1^\dagger + \cdots + X_n^\dagger $ \\
+    %
+    R-ADJ3
+    & $ (X \otimes Y)^\dagger \ \reduce\ X^\dagger \otimes Y^\dagger$ \\
+    %
+    R-ADJK0
+    & $ \ZEROB(\sigma)^\dagger \ \reduce\ \ZEROK(\sigma) $ \\
+    %
+    R-ADJK1
+    & $ \bra{t}^\dagger \ \reduce\ \ket{t} $ \\
+    %
+    R-ADJK2
+    & $ (B \cdot O)^\dagger\ \reduce\ O^\dagger \cdot B^\dagger $ \\
+    %
+    R-ADJB0
+    & $ \ZEROK(\sigma)^\dagger \ \reduce\ \ZEROB(\sigma) $ \\
+    %
+    R-ADJB1
+    & $ \ket{t}^\dagger \ \reduce\ \bra{t} $ \\
+    %
+    R-ADJB2
+    & $ (O \cdot K)^\dagger\ \reduce\ K^\dagger \cdot O^\dagger $ \\
+    %
+    R-ADJO0
+    & $ \ZEROO(\sigma, \tau)^\dagger \ \reduce\ \ZEROO(\tau, \sigma) $ \\
+    %
+    R-ADJO1
+    & $ \ONEO(\sigma)^\dagger \ \reduce\ \ONEO(\sigma)$ \\
+    %
+    R-ADJO2
+    & $ (K \cdot B)^\dagger \ \reduce\ B^\dagger \cdot K^\dagger$ \\
+    %
+    R-ADJO3
+    & $ (O_1 \cdot O_2)^\dagger \ \reduce\ O_2^\dagger \cdot O_1^\dagger $ \\
+\end{ruletable}
+
+\begin{ruletable}{Rules for tensor product.}
+    R-TSR0
+    & $ (a.X_1) \otimes X_2 \ \reduce\ a.(X_1 \otimes X_2) $ \\
+    %
+    R-TSR1
+    & $ X_1 \otimes (a.X_2) \ \reduce\ a.(X_1 \otimes X_2) $ \\
+    %
+    R-TSR2
+    & $ (X_1 + \cdots + X_n) \otimes X' \reduce X_1 \otimes X' + \cdots + X_n \otimes X' $ \\
+    %
+    R-TSR3
+    & $ X' \otimes (X_1 + \cdots + X_n) \reduce X' \otimes X_1 + \cdots + X' \otimes X_n $ \\
+    %
+    R-TSRK0
+    & $ K : \KType(\tau) \Rightarrow \ZEROK(\sigma) \otimes K\ \reduce\ \ZEROK(\sigma \times \tau) $ \\
+    %
+    R-TSRK1
+    & $ K : \KType(\tau) \Rightarrow K \otimes \ZEROK(\sigma)\ \reduce\ \ZEROK(\tau \times \sigma) $ \\
+    %
+    R-TSRK2
+    & $\ket{s} \otimes \ket{t} \ \reduce\ \ket{(s, t)}$ \\
+    %
+    R-TSRB0
+    & $ B : \BType(\tau) \Rightarrow \ZEROB(\sigma) \otimes B\ \reduce\ \ZEROB(\sigma \times \tau) $ \\
+    %
+    R-TSRB1
+    & $ B : \BType(\tau) \Rightarrow B \otimes \ZEROB(\sigma)\ \reduce\ \ZEROB(\tau \times \sigma) $ \\
+    %
+    R-TSRB2
+    & $\bra{s} \otimes \bra{t} \ \reduce\ \bra{(s, t)}$ \\
+    %
+    R-TSRO0
+    & $ O : \OType(\sigma, \tau) \Rightarrow O \otimes \ZEROO(\sigma', \tau') \ \reduce\ \ZEROO(\sigma \times \sigma', \tau \times \tau') $ \\
+    % 
+    R-TSRO1
+    & $ O : \OType(\sigma, \tau) \Rightarrow \ZEROO(\sigma', \tau') \otimes O \ \reduce\ \ZEROO(\sigma' \times \sigma, \tau' \times \tau) $ \\
+    %
+    R-TSRO2
+    & $\ONEO(\sigma) \otimes \ONEO(\tau)\ \reduce\ \ONEO(\sigma \times \tau)$ \\
+    %
+    R-TSRO3
+    & $ (K_1 \cdot B_1) \otimes (K_2 \cdot B_2)\ \reduce\ (K_1 \otimes K_2) \cdot (B_1 \otimes B_2) $ \\
+    %
+\end{ruletable}
+
+\begin{ruletable}{Rule for $O\cdot K$.}
+    %
+    R-MULK0
+    & $ \ZEROO(\sigma, \tau) \cdot K \ \reduce\ \ZEROK(\sigma) $ \\
+    %
+    R-MULK1
+    & $ O : \OType(\sigma, \tau) \Rightarrow O \cdot \ZEROK(\tau) \ \reduce\ \ZEROK(\sigma) $ \\
+    %
+    R-MULK2
+    & $ \ONEO(\sigma) \cdot K \ \reduce K $ \\
+    %
+    R-MULK3
+    & $ (a.O) \cdot K \ \reduce\ a.(O \cdot K) $ \\
+    %
+    R-MULK4
+    & $ O \cdot (a.K) \ \reduce\ a.(O \cdot K) $ \\
+    %
+    R-MULK5
+    & $ (O_1 + \cdots + O_n) \cdot K \ \reduce\ O_1 \cdot K + \cdots + O_n \cdot K $ \\
+    %
+    R-MULK6
+    & $ O \cdot (K_1 + \cdots + K_n) \ \reduce\ O \cdot K_1 + \cdots + O \cdot K_n $ \\
+    %
+    R-MULK7
+    & $ (K_1 \cdot B) \cdot K_2 \ \reduce\ (B \cdot K_2).K_1 $ \\
+    %
+    R-MULK8
+    & $ (O_1 \cdot O_2) \cdot K \ \reduce\ O_1 \cdot (O_2 \cdot K) $ \\
+    %
+    R-MULK9
+    & $ (O_1 \otimes O_2) \cdot ((O_1' \otimes O_2') \cdot K)\ \reduce\ ((O_1 \cdot O_1') \otimes (O_2 \cdot O_2')) \cdot K $ \\
+    %
+    R-MULK10
+    & $ (O_1 \otimes O_2) \cdot \ket{(s, t)}\ \reduce\ (O_1 \cdot \ket{s}) \otimes (O_2 \cdot \ket{t}) $ \\
+    %
+    R-MULK11
+    & $ (O_1 \otimes O_2) \cdot (K_1 \otimes K_2)\ \reduce\ (O_1 \cdot K_1) \otimes (O_2 \cdot K_2) $
+\end{ruletable}
+
+
+\begin{ruletable}{Rule for $B\cdot O$.}
+    %
+    R-MULB0
+    & $ B \cdot \ZEROO(\sigma, \tau) \ \reduce\ \ZEROB(\tau) $ \\
+    %
+    R-MULB1
+    & $ O : \OType(\sigma, \tau) \Rightarrow \ZEROB(\sigma) \cdot O\ \reduce\ \ZEROB(\tau) $ \\
+    %
+    R-MULB2
+    & $ B \cdot \ONEO(\sigma) \ \reduce B $ \\
+    %
+    R-MULB3
+    & $ (a.B) \cdot O \ \reduce\ a.(B \cdot O) $ \\
+    %
+    R-MULB4
+    & $ B \cdot (a.O) \ \reduce\ a.(B \cdot O) $ \\
+    %
+    R-MULB5
+    & $ (B_1 + \cdots + B_n) \cdot O \ \reduce\ B_1 \cdot O + \cdots + B_n \cdot O $ \\
+    %
+    R-MULB6
+    & $ B \cdot (O_1 + \cdots + O_n) \ \reduce\ B \cdot O_1 + \cdots + B \cdot O_n $ \\
+    %
+    R-MULB7
+    & $ B_1 \cdot (K \cdot B_2) \ \reduce\ (B_1 \cdot K).B_2 $ \\
+    %
+    R-MULB8
+    & $ B \cdot (O_1 \cdot O_2) \ \reduce\ (B \cdot O_1) \cdot O_2 $ \\
+    %
+    R-MULB9
+    & $ (B \cdot (O_1' \otimes O_2')) \cdot (O_1 \otimes O_2) \ \reduce\ B \cdot ((O_1' \otimes O_2') \cdot (O_1 \otimes O_2)) $ \\
+    %
+    R-MULB10
+    & $ \bra{(s, t)} \cdot (O_1 \otimes O_2)\ \reduce\ (\bra{s} \cdot O_1) \otimes (\bra{t} \cdot O_2) $ \\
+    %
+    R-MULB11
+    & $ (B_1 \otimes B_2) \cdot (O_1 \otimes O_2)\ \reduce\ (B_1 \cdot O_1) \otimes (B_2 \cdot O_2) $
+\end{ruletable}
+
+\begin{ruletable}{Rules for $K \cdot B$.}
+    %
+    R-OUTER0
+    & $ B : \BType(\tau) \Rightarrow \mathbf{0}_\mathcal{K}(\sigma) \cdot B\ \reduce\ \mathbf{0}_\mathcal{O}(\sigma, \tau) $ \\
+    %
+    R-OUTER1
+    & $ K : \KType(\sigma) \Rightarrow K \cdot \mathbf{0}_\mathcal{B}(\tau)\ \reduce\ \mathbf{0}_\mathcal{O}(\sigma, \tau) $ \\
+    %
+    R-OUTER2
+    & $ (a.K) \cdot B\ \reduce\ a.(K \cdot B) $ \\
+    %
+    R-OUTER3
+    & $ K \cdot (a.B)\ \reduce\ a.(K \cdot B) $ \\
+    %
+    R-OUTER4
+    & $ (K_1 + \cdots + K_n) \cdot B\ \reduce\ K_1 \cdot B + \cdots + K_n \cdot B $ \\
+    %
+    R-OUTER5
+    & $ K \cdot (B_1 + \cdots + B_n)\ \reduce\ K \cdot B_1 + \cdots + K \cdot B_n $ \\
+\end{ruletable}
+
+\begin{ruletable}{Rules for $O_1 \cdot O_2$.}
+    %
+    R-MULO0
+    & $ O : \OType(\tau, \rho) \Rightarrow \ZEROO(\sigma, \tau) \cdot O\ \reduce\ \ZEROO(\sigma, \rho) $ \\
+    %
+    R-MULO1
+    & $ O : \OType(\sigma, \tau) \Rightarrow O \cdot \ZEROO(\tau, \rho)\ \reduce\ \mathbf{0}_\mathcal{O}(\sigma, \rho) $ \\
+    %
+    R-MULO2
+    & $ \ONEO(\sigma) \cdot O \ \reduce\ O $ \\
+    %
+    R-MULO3
+    & $ O \cdot \ONEO(\sigma) \ \reduce\ O $ \\
+    %
+    R-MULO4
+    & $ (K \cdot B) \cdot O \ \reduce\ K \cdot (B \cdot O) $ \\
+    %
+    R-MULO5
+    & $ O \cdot (K \cdot B) \ \reduce\ (O \cdot K) \cdot B $ \\
+    %
+    R-MULO6
+    & $ (a.O_1) \cdot O_2 \ \reduce\ a.(O_1 \cdot O_2) $ \\
+    %
+    R-MULO7
+    & $ O_1 \cdot (a.O_2) \ \reduce\ a.(O_1 \cdot O_2) $ \\
+    %
+    R-MULO8
+    & $ (O_1 + \cdots + O_n) \cdot O'\ \reduce\ O_1 \cdot O' + \cdots + O_n \cdot O' $ \\
+    %
+    R-MULO9
+    & $ O' \cdot (O_1 + \cdots + O_n)\ \reduce\ O' \cdot O_1 + \cdots + O' \cdot O_n $ \\
+    %
+    R-MULO10
+    & $ (O_1 \cdot O_2) \cdot O_3\ \reduce\ O_1 \cdot (O_2 \cdot O_3) $ \\
+    %
+    R-MULO11
+    & $ (O_1 \otimes O_2) \cdot (O_1' \otimes O_2')\ \reduce\ (O_1 \cdot O_1') \otimes (O_2 \cdot O_2') $ \\
+    %
+    R-MULO12
+    & $ (O_1 \otimes O_2) \cdot ((O_1' \otimes O_2') \cdot O_3)\ \reduce\ ((O_1 \cdot O_1') \otimes (O_2 \cdot O_2')) \cdot O_3 $ \\  
+\end{ruletable}
+
+\begin{ruletable}{Rules for sets.}
+    %
+    R-SET0
+    & $ \mathbf{U}(\sigma) \star \mathbf{U}(\tau) \ \reduce\ \mathbf{U}(\sigma \times \tau) $
+\end{ruletable}
+
+\begin{ruletable}{Rules for sum operators.}
+    %
+    R-SUM-CONST0
+    & $ \sum_{x \in s} 0 \ \reduce\ 0 $ \\
+    %
+    R-SUM-CONST1
+    & $ \sum_{x \in s} \ZEROK(\sigma)\ \reduce\ \ZEROK(\sigma) $ \\
+    %
+    R-SUM-CONST2
+    & $ \sum_{x \in s} \ZEROB(\sigma)\ \reduce\ \ZEROB(\sigma) $ \\
+    %
+    R-SUM-CONST3
+    & $ \sum_{x \in s} \ZEROO(\sigma, \tau)\ \reduce\ \ZEROO(\sigma, \tau) $ \\
+    %
+    R-SUM-CONST4
+    & $ \ONEO(\sigma) \ \reduce\ \sum_{i \in \mathbf{U}(\sigma)} \ket{i} \cdot \bra{i} $
+\end{ruletable}
+
+\begin{ruletable}{Rules for eliminating $\delta_{s, t}$. These rules match the $\delta$ operator modulo the commutativity of its arguments.}
+    %
+    R-SUM-ELIM0
+    & $ i \text{ free in } t \Rightarrow \sum_{i \in \mathbf{U}(\sigma)} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} \delta_{i, t}$ \\
+    & $ \reduce\ \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n}  1$ \\
+    \\
+    %
+    R-SUM-ELIM1
+    & $ i \text{ free in } t \Rightarrow $ \\
+    & $ \sum_{i \in \mathbf{U}(\sigma)} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (a_1 \times \cdots \times \delta_{i, t} \times \cdots \times a_n) $ \\
+    & $ \reduce\ \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} a_1\{i/t\} \times \cdots \times a_n\{i/t\} $ \\
+    \\
+    %
+    R-SUM-ELIM2
+    & $ i \text{ free in } t \Rightarrow \sum_{i \in \mathbf{U}(\sigma)} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (\delta_{i, t}.A) $ \\
+    & $ \reduce\ \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} A\{i/t\} $ \\
+    \\
+    %
+    R-SUM-ELIM3
+    & $ i \text{ free in } t \Rightarrow $ \\
+    & $ \sum_{i \in \mathbf{U}(\sigma)} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (a_1 \times \cdots \times \delta_{i, t} \times \cdots \times a_n).A $ \\
+    & $ \reduce\ \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n}  (a_1\{i/t\} \times \cdots \times a_n\{i/t\}).A\{i/t\} $ \\
+    \\
+    %
+    R-SUM-ELIM4
+    & $ \sum_{i \in M} \sum_{j \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n}  \delta_{i, j}$ \\ 
+    & $\reduce\ \sum_{j \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} 1 $ \\
+    \\
+    %
+    R-SUM-ELIM5
+    & $ \sum_{i \in M} \sum_{j \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (a_1 \times \dots \times \delta_{i, j} \times \cdots \times a_n) $ \\
+    & $ \reduce\ \sum_{j \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (a_1\{j/i\} \times \cdots \times a_n\{j/i\}) $ \\
+    \\
+    %
+    R-SUM-ELIM6
+    & $ \sum_{i \in M} \sum_{j \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (\delta_{i, j}.A) $ \\
+    & $ \reduce\ \sum_{j \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} A\{j/i\} $ \\
+    \\
+    %
+    R-SUM-ELIM7
+    & $ \sum_{i \in M} \sum_{j \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (a_1 \times \cdots \times \delta_{i, j} \times \cdots \times a_n).A $ \\
+    & $ \reduce\ \sum_{j \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (a_1\{j/i\} \times \cdots \times a_n\{j/i\}).A\{j/i\} $ \\
+    \\
+    %
+    R-SUM-ELIM8
+    & $ \sum_{i \in M} \sum_{j \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} ((a_1 \times \cdots \times \delta_{i, j} \times \cdots \times a_n) + $ \\
+    & $ \cdots + (b_1 \times \cdots \times \delta_{i, j} \times \cdots \times b_n)).A $ \\
+    & $ \reduce\ \sum_{j \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} ((a_1\{j/i\} \times \cdots \times a_n\{j/i\}) + $ \\
+    & $ \cdots + (b_1\{j/i\} \times \cdots \times b_n\{j/i\})).A\{j/i\} $ \\
+\end{ruletable}
+
+\begin{ruletable}{Rules for pushing terms into sum operators. Because we apply type checking on variables, and stick to unique bound variables, these operations are always sound.}
+    %
+    R-SUM-PUSH0
+    & $ b_1 \times \cdots \times (\sum_{i \in M} a) \times \cdots \times b_n$ \\
+    & $\reduce\ \sum_{i \in M} (b_1 \times \cdots \times a \times \cdots \times b_n) $ \\
+    %
+    R-SUM-PUSH1
+    & $ (\sum_{i \in M} a)^* \ \reduce\ \sum_{i \in M} a^* $ \\
+    %
+    R-SUM-PUSH2
+    & $ (\sum_{i \in M} X)^\dagger \ \reduce\ \sum_{i \in M} X^\dagger $ \\
+    %
+    R-SUM-PUSH3
+    & $ a.(\sum_{i \in M} X) \ \reduce\ \sum_{i \in M} (a.X) $ \\
+    %
+    R-SUM-PUSH4
+    & $ (\sum_{i \in M} a).X \ \reduce\ \sum_{i \in M} (a.X) $ \\
+    %
+    R-SUM-PUSH5
+    & $ (\sum_{i \in M} B)\cdot K \ \reduce\ \sum_{i \in M}(B \cdot K) $ \\
+    %
+    R-SUM-PUSH6
+    & $ (\sum_{i \in M} O)\cdot K \ \reduce\ \sum_{i \in M}(O \cdot K) $ \\
+    %
+    R-SUM-PUSH7
+    & $ (\sum_{i \in M} B)\cdot O \ \reduce\ \sum_{i \in M}(B \cdot O) $ \\
+    %
+    R-SUM-PUSH8
+    & $ (\sum_{i \in M} K)\cdot B \ \reduce\ \sum_{i \in M}(K \cdot B) $ \\
+    %
+    R-SUM-PUSH9
+    & $ (\sum_{i \in M} O_1)\cdot O_2 \ \reduce\ \sum_{i \in M}(O_1 \cdot O_2) $ \\
+    %
+    R-SUM-PUSH10
+    & $ B \cdot (\sum_{i \in M} K) \ \reduce\ \sum_{i \in M}(B \cdot K) $ \\
+    %
+    R-SUM-PUSH11
+    & $ O \cdot (\sum_{i \in M} K) \ \reduce\ \sum_{i \in M}(O \cdot K) $ \\
+    %
+    R-SUM-PUSH12
+    & $ B \cdot (\sum_{i \in M} O) \ \reduce\ \sum_{i \in M}(B \cdot O) $ \\
+    %
+    R-SUM-PUSH13
+    & $ K \cdot (\sum_{i \in M} B) \ \reduce\ \sum_{i \in M}(K \cdot B) $ \\
+    %
+    R-SUM-PUSH14
+    & $ O_1 \cdot (\sum_{i \in M} O_2) \ \reduce\ \sum_{i \in M}(O_1 \cdot O_2) $ \\
+    %
+    R-SUM-PUSH15
+    & $ (\sum_{i \in M} X_1) \otimes X_2 \ \reduce\ \sum_{i \in M} (X_1 \otimes X_2) $ \\
+    %
+    R-SUM-PUSH16
+    & $ X_1 \otimes (\sum_{i \in M} X_2) \ \reduce\ \sum_{i \in M} (X_1 \otimes X_2) $
+\end{ruletable}
+
+
+\begin{ruletable}{Rules for addition and index in sum.}
+    %
+    R-SUM-ADDS0
+    & $\sum_{i \in M}(a_1 + \cdots + a_n) \ \reduce\ (\sum_{i \in M} a_1) + \cdots + (\sum_{i \in M} a_n) $ \\
+    % %
+    % R-SUM-ADDS1
+    % & $\sum_{i \in M}(b_1 \times \cdots \times (a_1 + \cdots + a_n) \times \cdots \times b_m) $ \\
+    % & $ \reduce\ (\sum_{i \in M} (b_1 \times \cdots \times a_1 \times \cdots \times b_m) + \cdots + (\sum_{i \in M} (b_1 \times \cdots \times a_n \times \cdots \times b_m)) $ \\
+    %
+    R-SUM-ADD0
+    & $\sum_{i \in M}(X_1 + \cdots + X_n) \ \reduce\ (\sum_{i \in M} X_1) + \cdots + (\sum_{i \in M} X_n) $ \\
+    %
+    R-SUM-INDEX0
+    & $ \sum_{i \in \mathbf{U}(\sigma \times \tau)} A \ \reduce\ \sum_{j \in \mathbf{U}(\sigma)} \sum_{k \in \mathbf{U}(\tau)} A\{i/(j, k)\} $ \\
+    %
+    R-SUM-INDEX1
+    & $ \sum_{i \in M_1 \star M_2} A \ \reduce\ \sum_{j \in M_1} \sum_{k \in M_2} A\{i/(j, k)\} $
+\end{ruletable}
+
+
+\begin{ruletable}{Rules for Bit index.}
+    %
+    R-BIT-DELTA
+    & $\delta_{0, 1} \ \reduce\ 0$ \\
+    %
+    R-BIT-ONEO
+    & $\ONEO(\textsf{Bit})\ \reduce\ \ket{0}\bra{0} + \ket{1}\bra{1} $ \\
+    %
+    R-BIT-SUM
+    & $\sum_{i \in \mathbf{U}(\textsf{Bit})} A\ \reduce\ A\{i/0\} + A\{i/1\}$
+\end{ruletable}
+
+\begin{ruletable}{Rules about addition and sum.}
+    R-MULS2
+    & $b_1 \times \cdots \times (a_1 + \cdots + a_n) \times \cdots \times b_m$ \\
+    & $\reduce\ (b_1 \times \cdots \times a_1 \times \cdots \times b_m) + \cdots + (b_1 \times \cdots \times a_n \times \cdots \times b_m)$ \\
+    \\
+    %
+    R-SUM-ADD1
+    & $ Y_1 + \cdots + Y_n + \sum_{i \in M}(a+b).X$ \\
+    & $ \reduce\ Y_1 + \cdots + \sum_{i \in M}(a.X) + \cdots + \sum_{i \in M}(b.X) + Y_n$ \\
+    \\
+    %
+    R-SUM-FACTOR
+    & $X_1 + \cdots + (\sum_{k_1 \in s_1}\cdots\sum_{k_n \in s_n}A) $ \\
+    & $ + (\sum_{k_1 \in s_1}\cdots\sum_{k_n \in s_n}A) + \cdots +X_n$ \\
+    & $X_1 + \cdots + (\sum_{k_1 \in s_1}\cdots\sum_{k_n \in s_n}(1+1).A) + \cdots +X_n$ \\
+    \\
+    & $X_1 + \cdots + (\sum_{k_1 \in s_1}\cdots\sum_{k_n \in s_n}a.A) $ \\
+    & $ + (\sum_{k_1 \in s_1}\cdots\sum_{k_n \in s_n}A) + \cdots +X_n$ \\
+    & $X_1 + \cdots + (\sum_{k_1 \in s_1}\cdots\sum_{k_n \in s_n}(a+1).A) + \cdots +X_n$ \\
+    \\
+    & $X_1 + \cdots + (\sum_{k_1 \in s_1}\cdots\sum_{k_n \in s_n}a.A) $ \\
+    & $ + (\sum_{k_1 \in s_1}\cdots\sum_{k_n \in s_n}b.A) + \cdots +X_n$ \\
+    & $X_1 + \cdots + (\sum_{k_1 \in s_1}\cdots\sum_{k_n \in s_n}(a+b).A) + \cdots +X_n$ \\
+\end{ruletable}
+
+\begin{ruletable}{Rules to eliminate labels in Dirac notations.}
+    %
+    R-L-EXPAND
+    & $K_R \ \reduce\ \sum_{i_{r_1}\in\bU(\sigma_{r_1})}\cdots \sum_{i_{r_n}\in\bU(\sigma_{r_n})} (\<i_R|\cdot K). (|i_{r_1}\>_{r_i}\otimes\cdots\otimes|i_{r_n}\>_{r_n})$ \\
+    \\
+    %
+    & $B_R \ \reduce\ \sum_{i_{r_1}\in\bU(\sigma_{r_1})}\cdots \sum_{i_{r_n}\in\bU(\sigma_{r_n})} (B\cdot |i_R\>). ({}_{r_1}\<i_{r_1}|\otimes\cdots\otimes{}_{r_n}\<i_{r_n}|)$\\
+    \\
+    %
+    & $O_{R,R'} \ \reduce\ \sum_{i_{r_1}\in\bU(\sigma_{r_1})}\cdots \sum_{i_{r_n}\in\bU(\sigma_{r_n})}
+    \sum_{i_{r'_1}\in\bU(\sigma_{r'_1})}\cdots \sum_{i_{r'_{n'}}\in\bU(\sigma_{r'_{n'}})}$ \\
+    & $(\<i_R|\cdot O\cdot |i_{R'}\>).(|i_{r_1}\>_{r_i}\otimes\cdots\otimes|i_{r_n}\>_{r_n} \otimes {}_{r'_1}\<i_{r'_1}|\otimes\cdots\otimes{}_{r'_{n'}}\<i_{r'_{n'}}|)$
+\end{ruletable}
+
+
+
+\begin{ruletable}{Rules for labelled Dirac notations.}
+    %
+    R-ADJDK
+    & $ ({}_r\<i|)^\dagger \ \reduce\ |i\>_r$ \\
+    %
+    R-ADJDB
+    & $ (|i\>_r)^\dagger \ \reduce\ {}_r\<i|$ \\
+    R-ADJD0
+    & $ (D_1 \otimes \cdots \otimes D_n)^\dagger \ \reduce\ D_1^\dagger \otimes \cdots \otimes D_n^\dagger$ \\
+    %
+    R-ADJD1
+    & $ (D_1\cdot D_2)^\dagger \ \reduce\ D_2^\dagger \cdot D_1^\dagger$ \\
+    %
+    R-SCRD0
+    & $ D_1 \otimes \cdots \otimes (a.D_n) \otimes \cdots \otimes D_m \ \reduce\ a.(D_1 \otimes \cdots \otimes D_m) $ \\
+    %
+    R-SCRD1
+    & $ (a.D_1) \cdot D_2 \ \reduce\ a.(D_1 \cdot D_2) $ \\
+    %
+    R-SCRD2
+    & $ D_1 \cdot (a.D_2) \ \reduce\ a.(D_1 \cdot D_2) $ \\
+    %
+    R-TSRD0
+    & $ X_1 \otimes \cdots \otimes (D_1 + \cdots + D_n) \otimes \cdots X_m$ \\
+    & $ \reduce\ X_1 \otimes \cdots D_1 \cdots \otimes X_m + \cdots + X_1 \otimes \cdots D_n  \cdots \otimes X_m $ \\
+    %
+    R-DOTD0
+    & $ (D_1 + \cdots + D_n) \cdot D\ \reduce\ D_1 \cdot D + \cdots + D_n \cdot D $ \\
+    %
+    R-DOTD1
+    & $ D \cdot (D_1 + \cdots + D_n)\ \reduce\ D \cdot D_1 + \cdots + D \cdot D_n $ \\
+    %
+    R-SUM-PUSHD0
+    & $ X_1 \otimes \cdots (\sum_{i \in M} D) \cdots \otimes X_2\ \reduce\ \sum_{i \in M} (X_1 \otimes \cdots D \cdots \otimes X_n) $ \\
+    %
+    R-SUM-PUSHD2
+    & $ (\sum_{i \in M} D_1) \cdot D_2 \ \reduce\ \sum_{i \in M} (D_1 \cdot D_2) $ \\
+    %
+    R-SUM-PUSHD3
+    & $ D_1 \cdot (\sum_{i \in M} D_2) \ \reduce\ \sum_{i \in M} (D_1 \cdot D_2) $
+\end{ruletable}
+
+\begin{ruletable} {Rules to simplify dot product in labelled Dirac notations.}
+    %
+    R-L-SORT0
+    & $ A : \DType(s_1, s_2), B : \DType(s_1', s_2'), s_2 \cap s_1'=\emptyset \Rightarrow A \cdot B \ \reduce\ A \otimes B $ \\
+    %
+    R-L-SORT1
+    & ${}_r\bra{i}\cdot\ket{j}_r \ \reduce\ \delta_{i, j}$ \\
+    %
+    R-L-SORT2
+    & ${}_r\bra{i}\cdot(Y_1 \otimes \cdots \otimes \ket{j}_r \otimes \cdots \otimes Y_m) \ \reduce\ \delta_{i, j}.(Y_1  \otimes \cdots \otimes Y_m)$ \\
+    %
+    R-L-SORT3
+    & $(X_1 \otimes \cdots \otimes {}_r\bra{i} \otimes \cdots \otimes X_n) \cdot \ket{j}_r \ \reduce\ \delta_{i,j}.(X_1 \otimes \cdots \otimes X_n)$ \\
+    %
+    R-L-SORT1
+    & $ (X_1 \otimes \cdots \otimes {}_r\bra{i} \otimes \cdots \otimes X_n) \cdot (Y_1 \otimes \cdots \otimes \ket{j}_r \otimes \cdots \otimes Y_m) $ \\
+    & $\reduce\ \delta_{i,j}.(X_1 \otimes \cdots \otimes X_n) \cdot (Y_1 \otimes \cdots \otimes Y_m)$
+\end{ruletable}

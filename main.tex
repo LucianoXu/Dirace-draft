@@ -11,7 +11,6 @@
 
 
 
-
 \usepackage{color}
 \usepackage{amsmath}
 %\usepackage{amssymb}
@@ -31,8 +30,6 @@
 \usepackage{extarrows}
 \usepackage{tikz}
 
-\input{notations}
-
 % add new commands for comments here
 \newcommand{\yx}[1]{\textit{\color{blue}[YX] : #1}}
 \newcommand{\lz}[1]{\textit{\color{red}[LZ] : #1}}
@@ -45,19 +42,38 @@
 \usepackage{hyperref}
 
 \usepackage{braket}
+\usepackage{cleveref}
 
-% framed environment
-\newmdenv[
-  skipabove=5pt,
-  skipbelow=5pt,
-  leftmargin=0pt,
-  rightmargin=0pt,
-  innerleftmargin=5pt,
-  innerrightmargin=5pt,
-  innertopmargin=5pt,
-  innerbottommargin=5pt,
-  linecolor=black,
-]{framedeq}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows}
+
+
+
+\newenvironment{ruletable}[1]
+{
+    \begin{longtable}{cl}
+    \caption{#1}\\
+    \hline
+    \textbf{Rule} & \textbf{Description} \\
+    \hline
+    \endfirsthead
+
+    \hline
+    \textbf{Rule} & \textbf{Description} \\
+    \hline
+    \endhead
+
+    % \hline
+    % \multicolumn{2}{r}{\textit{Continued on the next page}} \\
+    \hline
+    \endfoot
+
+    \hline
+    \endlastfoot
+}
+{
+    \end{longtable}
+}
 
 
 
@@ -79,35 +95,49 @@
 %
 \begin{document}
 %
-\title{DiracDec C++/Coq Implementation\cite{ExampleCitation}}
+\title{Dirace: Practical Proof Automation of Dirac Notation Equations}
 
-%
-%\titlerunning{Abbreviated paper title}
-% If the paper title is too long for the running head, you can set
-% an abbreviated paper title here
-%
-\author{First Author\inst{1}\orcidID{0000-1111-2222-3333} \and
-Second Author\inst{2,3}\orcidID{1111-2222-3333-4444} \and
-Third Author\inst{3}\orcidID{2222--3333-4444-5555}}
-%
-\authorrunning{F. Author et al.}
-% First names are abbreviated in the running head.
-% If there are more than two authors, 'et al.' is used.
-%
-\institute{Princeton University, Princeton NJ 08544, USA \and
-Springer Heidelberg, Tiergartenstr. 17, 69121 Heidelberg, Germany
-\email{lncs@springer.com}\\
-\url{http://www.springer.com/gp/computer-science/lncs} \and
-ABC Institute, Rupert-Karls-University Heidelberg, Heidelberg, Germany\\
-\email{\{abc,lncs\}@uni-heidelberg.de}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %
+% %\titlerunning{Abbreviated paper title}
+% % If the paper title is too long for the running head, you can set
+% % an abbreviated paper title here
+% %
+% \author{First Author\inst{1}\orcidID{0000-1111-2222-3333} \and
+% Second Author\inst{2,3}\orcidID{1111-2222-3333-4444} \and
+% Third Author\inst{3}\orcidID{2222--3333-4444-5555}}
+% %
+% \authorrunning{F. Author et al.}
+% % First names are abbreviated in the running head.
+% % If there are more than two authors, 'et al.' is used.
+% %
+% \institute{Princeton University, Princeton NJ 08544, USA \and
+% Springer Heidelberg, Tiergartenstr. 17, 69121 Heidelberg, Germany
+% \email{lncs@springer.com}\\
+% \url{http://www.springer.com/gp/computer-science/lncs} \and
+% ABC Institute, Rupert-Karls-University Heidelberg, Heidelberg, Germany\\
+% \email{\{abc,lncs\}@uni-heidelberg.de}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 %
 \maketitle              % typeset the header of the contribution
 %
 \begin{abstract}
-The abstract should briefly summarize the contents of the paper in
-150--250 words.
 
-\keywords{First keyword  \and Second keyword \and Another keyword.}
+Dirac notations are widely used in theoretical reasonings of quantum computation and quantum information.
+The previous work proved that the equivalence of basic Dirac notations is decidable, and provided a
+corresponding term rewriting system.
+This work focuses on developing the theory and tool that practically solves this problem. Compared to the
+previous result, this work includes a typing system and a simplified term rewriting system.
+A much more efficient algorithm.
+And a language and algorithm for labelled Dirac notation is proposed as the final contribution.
+We implement the whole algorithm in C++ with a Mathematica backend for theories of scalars, which 
+decides the 158 examples in seconds.
+
+
+% \keywords{First keyword  \and Second keyword \and Another keyword.}
 \end{abstract}
 %
 %
@@ -116,6 +146,8 @@ The abstract should briefly summarize the contents of the paper in
 
 
 %%%%%%%%%%%%%%%%
+\newcommand*{\sem}[1]{{\llbracket #1 \rrbracket}}
+\newcommand{\DiracDec}{\textsf{DiracDec}}
 
 \newcommand{\reduce}{\triangleright}
 
@@ -161,11 +193,302 @@ The abstract should briefly summarize the contents of the paper in
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\section{Introduction}
+
+In 1939, Dirac proposed his notation~\cite{dirac1939new} for quantum mechanics, which is designed to represent linear algebra formulae in a compact and convenient way.
+For instance, $a\ket{\psi} + b\ket{\phi}$ indicates the addition of two vectors, i.e., the superposition of two states $\ket{\psi}$ and $\ket{\phi}$.
+Dirac notation is also widely accepted as the working language in quantum computation and quantum information.
+The reasonings of Dirac notations play a fundamental role, but there was few works on automating this procedure.
+
+
+The absence of a working Dirac notation solver is also a main obstacle for proof automation of quantum programming languages.
+In these works, Dirac notation are used to define the program states, operations and assertions. In order to automate the verification procedure,
+we need to simplify and check the equivalence of pre-conditions. 
+
+
+Recently, the work by Yingte et al.[] provides a theory to decide the equivalence of Dirac notations, as well as a prototype implementation in Mathematica.
+They proved that the equivalence of basic Dirac notations are decidable.
+Their system sticks with a pure term rewriting system, which allows to prove important properties such as confluence and termination.
+Even though, there is still a gap to a practical solver for Dirac notation equivalence.
+The Mathematica implementation is hard to be integrated into other tools. 
+The second concern is the efficiency. To decide the theory $E$, \DiracDec\ iterates all possible permutations, which is simple and direct but has factorial complexity.
+And lastly, the previous work does not consider labelled Dirac notation.
+The original work cannot intergrate with well with the Scalar system in mathematica.
+And there were a few examples that failded to decide.
+
+
+
+
+
+This work refines the pure term-rewriting based system into a hybrid decision procedure,
+overcomes the problems mentioned above and focuses on practical
+automated equational reasonings. Our main contributions are:
+\begin{itemize}
+    \item We propose a rigorous typing system for Dirac notation. Defined symbols (e.g., transpose and trace) are modelled by functions.
+        Also, the typing system removes the difficulty of disambiguation, therefore the language and the term rewriting system are much simplified.
+    \item An efficient algorithm to decide the extra equational theories $E$ is provided. The basic idea is normalization by sorting, which considers the interplay of AC symbols, SUM-SWAP and $\alpha$-equivalence. This algorithm reduces the complexity from the factorial level to the polynomial level.
+    \item The language to support variable labels is proposed.
+\end{itemize}
+
+\paragraph{Related Work} Other previous works explore the language and decision procedure to express quantum computation differently.
+
+
+
+
+
+\section{Preliminary and Motivation}
+The preliminary for the problem are two folds: Dirac notation and the equational logic in universal algebra.
+
+Quantum states live in complex Hilbert spaces. We use vectors in the space to descirbe pure quantum states, and operations corresponds to linear transformations. 
+In 1939, Dirac proposed his notation~\cite{dirac1939new} for quantum mechanics, which is essentially a wrapping of the linear algebra language. 
+Dirac notation uses the ket $\ket{i}$ and the bra $\bra{i}$ to indicate bases of the space and the dual space. Together with other variable symbols, they are composed with each other in sequence, and the composition will be interpreted into different operations, depending on the type of operands. For example, $\braket{i|j}$ represents the inner product of $\bra{i}$ and $\ket{j}$, which is a scalar, while $\ket{i}\bra{j}$ represents the outer product, resulting in an operator. 
+\[
+    \braket{i|\phi}\braket{\psi|j} = \bra{i} (\ket{\phi}\bra{\psi}) \ket{j},
+\]
+and they are equivalent for all variables.
+Dirac notation also use $\otimes$ to indicate the vectors and operators in the tensor product space.
+
+In this manner, we can express long formulae in succint Dirac notations. The notation further enjoys the property that the interpretation is independent on the order of composition, thus parentheses can be omitted. For example, the formula \(\bra{i}\ket{\phi}\bra{\psi}\ket{j}\) can be understood as
+
+With the concrete basis, Dirac notations can be interpreted as matrices. For example ...
+
+
+
+We use universal algebra and equational logic to formally represent Dirac notations and the reasoning procedure in computers.
+
+\yx{mention the dilemma of simplicity and efficiency}
+
+
+\section{Language, Typing and Semantics}
+The syntax of Dirac notations involves three layers: the index, the type and the term. 
+Index represents classical datatypes, and they appear in type expression to denote the type of Hilbert spaces and sets.
+
+
+\begin{definition}[language syntax]
+    The syntax for type indices are defined as
+    \begin{align*}
+        \sigma ::=\ & x \mid \sigma_1 \times \sigma_2 \mid \mathsf{Bit}.
+    \end{align*}
+    The syntax for Dirac notation types is defined as 
+    \begin{align*}
+        T ::=\ & \Basis(\sigma) \mid \SType \mid \KType(\sigma) \mid \BType(\sigma) \mid \OType(\sigma_1, \sigma_2) \mid T_1 \to T_2 \mid \forall x.T \mid \SET(\sigma). \\
+    \end{align*}
+    The syntax for Dirac notation terms is defined as
+    \begin{align*}
+        e ::=\ & x \mid \lambda x : T.e \mid \mu x.e \mid e_1\ e_2 \mid e_1 \circ e_2 \\
+        & |\ \hat{0} \mid \hat{1} \mid (e_1, e_2) \\
+        & |\ 0 \mid 1 \mid \ADDS(e_1 \cdots e_n)  \mid e_1 \times \cdots \times e_n \mid e^*  \mid \delta_{e_1, e_2} \mid \DOT(e_1\ e_2) \\
+        & |\ \ZEROK(\sigma) \mid \ZEROB(\sigma) \mid \ZEROO(\sigma_1, \sigma_2) \mid \ONEO(\sigma) \\
+        & |\ \ket{e} \mid \bra{t} \mid e^\dagger \mid e_1.e_2 \mid \ADD(e_1 \cdots e_n) \mid e_1 \otimes e_2 \\
+        & |\ \MULK(e_1\ e_2) \mid \MULB(e_1\ e_2) \mid \OUTER(e_1\ e_2) \mid \MULO(e_1\ e_2) \\
+        & |\ \mathbf{U}(e) \mid e_1 \star e_2 \mid \sum_{e_1} e_2.
+    \end{align*}
+\end{definition}
+ % after consideration I still think keep DOT as binary is the best choice. It reduces the unstability of complicated matching in sequences.
+Here $i$ is a natural number and $\$i$ represents the $i$-th bound variable in de Bruijn notation. 
+Compared to [?], this syntax for Dirac notations merges the symbols with overlapped properties, such as the addition and scaling symbols for ket, bra and operator.
+Here $\ADDS$ and $\ADD$ are two different AC symbols representing the scalar addition and the linear algebra addition respectively. They will be denoted as $a_1 + \cdots + a_n$ and $X_1 + \cdots + X_n$.
+There are five kinds of linear algebra multiplications among ket, bra and operator, whose properties are similar but still diverge to some extent. For example, the rules $(O_1 \cdot O_2) \cdot K\ \reduce\ O_1 \cdot (O_2 \cdot K)$ and $B \cdot (O_1 \cdot O_2) \ \reduce\ (B \cdot O_1) \cdot O_2$ indicate that the sorting of multiplication sequences depends on the subterm types. To avoid frequent but unnecessary type checkings, we encode the typing information by using five different symbols, namely $\DOT$, $\MULK$, $\MULB$, $\OUTER$ and $\MULO$. They are denoted as $B\cdot K$, $K_1 \cdot K_2$, $B_1 \cdot B_2$, $K \cdot B$ and $O_1 \cdot O_2$, respectively.
+
+Usually, the sum body is specified by an abstraction. Therefore we use notation $\sum_s X$ to denote $\sum_{x \in s} \lambda x : T . X$ as well.
+ 
+
+
+\subsection{Typing System}
+
+
+The type checking of our language involves maintaining a well-formed environment and context $E[\Gamma]$, which is defined as follows.
+
+\begin{definition}[environment and context]
+    \begin{align*}
+        E ::=\ & [] \mid E; x : \Index \mid E; x : T \mid E; x := t : T. \\
+        \Gamma ::=\ & [] \mid \Gamma; x : \Index \mid \Gamma; x : T.
+    \end{align*}
+\end{definition}
+
+The environment and the context are sequences of assumptions $x : T$ or definitions $x := t : T$.
+With the environment, we can declare the type of variable symbols, and encode more operations on Dirac notations as definitions, such as the trace operator. Also, the existence of lambda abstractions requires a context of bound variables.
+
+
+We say an expression $t$ has type $X$ in context $E[\Gamma]$, if the typing judgement $E[\Gamma] \vdash t : X$ can be proved through the typing rules in~\Cref{sec: full typing rules}. Here we present and explain the rules selectively. Firstly, well-formed contexts $\WF(E)[\Gamma]$ are built in the incremental way, e.g.:
+\[
+    \frac{}{\WF([])[]}
+    \qquad
+    \frac{\WF(E)[] \qquad x \notin E}{\WF(E; x : \Index)[]}
+    \qquad
+    \frac{E[]\vdash t:T \qquad x \notin E}{\WF(E; x:=t:T)[]}.
+\]
+Starting from an empty context, we can assume new index symbols, and assume or define symbols with checked types. Based on the well-formed context, typing judgements can be proved by information from $E[\Gamma]$, or built inductively. In the following rules, for example, the condition $x : \Index \in E[\Gamma]$ is true if $E$ or $\Gamma$ has the assumption in their sequences, and $\sigma \times \tau$ is a index if both $\sigma$ and $\tau$ are typed as the index. $\KType(\sigma)$ and $\OType(\sigma, \tau)$ will be valid types for kets and operators, if their arguments are typed as the index.
+\begin{gather*}
+    \frac{\WF(E)[\Gamma] \qquad x : \Index \in E[\Gamma]}{E[\Gamma] \vdash x : \Index}
+    \qquad
+    \frac{E[\Gamma] \vdash \sigma : \Index \qquad E[\Gamma] \vdash \tau : \Index}{E[\Gamma] \vdash \sigma \times \tau : \Index} \\
+    \\
+    \frac{E[\Gamma] \vdash \sigma : \Index}{E[\Gamma] \vdash \KType(\sigma) : \Type}
+    \qquad
+    \frac{E[\Gamma] \vdash \sigma : \Index \qquad E[\Gamma] \vdash \tau : \Index}{E[\Gamma] \vdash \OType(\sigma, \tau) : \Type}
+\end{gather*}
+
+The Dirac notations will then be typed accordingly. For example, the ket syntax $\ket{t}$ has type $\KType(\sigma)$, if $t$ is typed as a basis term of index $\sigma$. Also, the inner product of a bra and a ket with the same type index $\sigma$ is typed as the scalar. This corresponds to the constraint of inner products that vectors should be in the same Hilbert space.
+\begin{gather*}
+    \frac{E[\Gamma]\vdash t : \Basis(\sigma)}{E[\Gamma] \vdash \ket{t} : \KType(\sigma)}
+    \qquad
+    \frac{E[\Gamma]\vdash B : \BType(\sigma) \qquad E[\Gamma]\vdash K : \KType(\sigma)}{E[\Gamma] \vdash B \cdot K : \SType}
+\end{gather*}
+
+The typing for functions and applications follow the common practice. We specify the syntax and typing rule for functions of indices $\mu x. t$: here $x$ is a bound variable of typed as $\Index$, and the type $U\{x/u\}$ of application $(t u)$ is obtained by replacing $x$ with the index instance $u$.
+
+
+\begin{gather*}
+    \frac{E[\Gamma; x : T] \vdash t : U}{E[\Gamma] \vdash (\lambda x : T . t) : T \to U}
+    \qquad
+    \frac{E[\Gamma] \vdash t:U \to T \qquad E[\Gamma] \vdash u:U}{E[\Gamma] \vdash (t\ u):T} \\
+    \\
+    \frac{E[\Gamma; x : \Index] \vdash t : U}{E[\Gamma] \vdash (\mu x.t) : \forall x.U}
+    \qquad
+    \frac{E[\Gamma] \vdash t:\forall x.U \qquad E[\Gamma] \vdash u : \Index}{E[\Gamma] \vdash (t\ u):U\{x/u\}}
+\end{gather*}
+
+
+The big operator sum is modelled by folding a function on a set, therefore the typing rule is as follows:
+\[
+    \frac{E[\Gamma] \vdash s : \SET(\sigma) \qquad E[\Gamma] \vdash f : \Basis(\sigma) \to \KType(\tau)}{E[\Gamma] \vdash \sum_{s} f : \KType(\tau)}.
+\]
+
+And lastly we have the typing rules for composition $x \circ y$. As is the case for casual Dirac notation, the typing of composition depends on the types of operands.
+\begin{gather*}
+    \frac{E[\Gamma] \vdash x : \SType \qquad E[\Gamma] \vdash y : \KType(\sigma)}{E[\Gamma] \vdash x \circ y : \KType(\sigma)}
+    \qquad
+    \frac{E[\Gamma] \vdash x : \OType(\sigma, \tau) \qquad E[\Gamma] \vdash y : \KType(\tau)}{E[\Gamma] \vdash x \circ y : \KType(\sigma)}
+\end{gather*}
+
+\begin{lemma}
+    The typing of expressions are decidable and unique.
+\end{lemma}
+
+\subsection{Semantics}
+
+Semantics assign the meanings to the expressions, and the goal of the decision procedure is to decide whether
+two expressions have the equivalent semantics. We consider two ways of definition: the axiomatic equations and the denotational semantics.
+
+The denotational way interprets every expression as a linear algebra concept, and equivalence is considered in the common mathematical sense.
+This explanation formalizes the original definition of Dirac notations, and best describes the target of the decision procedure.
+
+The semantics by equations, on the other hand, is an abstraction and axiomization. From the operational view, each equation declares a 
+valid rewriting operation, and two expressions are equiavlent if and only if they can be rewritten into the same form using the axioms.
+
+\section{Decision procedure for Dirac notations}
+
+The following two sections talk about how to decide the equivalence of Dirac notations.
+In the previous work, the equational axioms are separated into two parts: a set $E$ of equations that can not be decided by rewriting, and the remaining equations to be decided by term rewriting.
+Here, the equational theories $E$ inlude:
+\begin{itemize}
+    \item Commutativity of symbols $a + b$, $a\times b$ and $\delta_{s, t}$,
+    \item $\alpha$-equivalence of bound variables, i.e., $\lambda x.t = \lambda y . t\{x/y\}$,
+    \item swapping successive summations, i.e., $\sum_{i \in s_1} \sum_{j \in s_2} A = \sum_{j \in s_2} \sum_{i \in s_1}A$, and
+    \item equational theories for scalars.
+\end{itemize}
+
+In this work, the general idea is to carry through the normalization procedure, so that semantical equivalence can be directly checked by the syntax of normal forms. The procedure of the normalization is displayed in~\Cref{fig: normalization}.
+
+\input{flowchart.tex}
+
+The last three steps deals with the equational theory $E$, while the first three steps use term rewriting to work on the structure of Dirac notations.
+
+
+\subsection{Normalization modulo $E$ by Term Rewriting}
+Term rewriting rules, written as $l -> r$, are used to normalize terms by recursively matching the subterms of the term with the left hand side $l$, and replace them with the corresponding right hand side $r$. The procedure terminates when no more rewritings can be made, and the order of rewritings will be irrelevant if the term rewriting system is \textit{confluent}, which is a desirable property.
+
+To express the term rewriting system, the previous work adheres to use the naive universal algebra, where each function symbol has a fixed arity, and the left hand side pattern only allows constant symbols and variables. This constraint enables them to check the confluence and termination of their term rewriting system with other tools.
+
+Here to enable more efficient algorithms, our langauge uses AC symbols with a variable arity.
+
+The full list of rewriting rules are in~\Cref{sec: rewriting rules}. Here we present some of them to illustrate the design idea.
+
+When using variable arity AC symbols, the associativity can be normalized by the following flattening rule:
+
+\[
+a_1 + \cdots + (b_1 + \cdots + b_m) + \cdots + a_n
+\ \reduce\ a_1 + \cdots + b_1 + \cdots + b_m + \cdots + a_n,
+\]
+
+while commutativity is left for a sorting algorithm later on.
+
+The term rewriting rule follows the system in the previous work.
+
+The general idea is to reduce all the possible calculations, and transform multiplication into tensor product as much as possible.
+
+And some rules exists for completeness. As an example, given the following rule snippet
+\begin{align*}
+    %
+    & \text{(R-DOT10)}
+    && (B \cdot O) \cdot K \ \reduce\ B \cdot (O \cdot K), \\
+    %
+    & \text{(R-DOT11)}
+    && \bra{(s, t)} \cdot ((O_1 \otimes O_2) \cdot K) \ \reduce\ ((\bra{s} \cdot O_1) \otimes (\bra{t} \cdot O_2)) \cdot K, \\
+    %
+    & \text{(R-MULB10)}
+    && \bra{(s, t)} \cdot (O_1 \otimes O_2)\ \reduce\ (\bra{s} \cdot O_1) \otimes (\bra{t} \cdot O_2),
+\end{align*}
+the normalization of term $(\bra{(s, t)} \cdot (O_1 \otimes O_2)) \cdot K$ have two rewriting paths: (a). apply (R-MULB10) and get $((\bra{s} \cdot O_1) \otimes (\bra{t} \cdot O_2)) \cdot K$, or
+(b). first apply (R-DOT10) and sort the term into $\bra{(s, t)} \cdot ((O_1 \otimes O_2) \cdot K)$, and then apply (R-DOT11) to get the same result. Here (R-DOT11) is for completeness of cases similar to this example.
+
+One important technique revealed in the previous work is the expansion of variables:
+
+\begin{gather*}
+    \frac{E[\Gamma] \vdash K : \KType(\sigma)}{E[\Gamma] \vdash K \ \reduce\ \sum_{i \in \mathbf{U}(\sigma)}(\bra{i}\cdot K).\ket{i}}
+    \qquad \qquad
+    \frac{E[\Gamma] \vdash B : \BType(\sigma)}{E[\Gamma] \vdash B \ \reduce\ \sum_{i \in \mathbf{U}(\sigma)}(B \cdot \ket{i}).\bra{i}} \\
+    \\
+    \frac{E[\Gamma] \vdash O : \OType(\sigma, \tau)}{E[\Gamma] \vdash O \ \reduce\ \sum_{i \in \mathbf{U}(\sigma)} \sum_{j \in \mathbf{U}(\tau)}(\bra{i} \cdot O \cdot \ket{j}).(\ket{i} \cdot \bra{j})}
+\end{gather*}
+The above three rules are obviously not terminating, and this is why we have the rewriting-expansion-rewriting steps in the decision procedure. On the other hand, we discovered that doing the expansion on all variables only once is already sufficient.
+
+\begin{lemma}
+    Let $\text{expand}(e)$ indicate the result of expanding all variables in $e$ once.
+    For all well-typed term $e$ in $E[\Gamma]$, we have $\text{expand}(\text{expand}(e)) \downarrow = \text{expand}(e)\downarrow$.
+\end{lemma}
+\begin{proof}
+\end{proof}
+
+
+
+\section{Deciding Equational Theory $E$}
+
+The previous work did not consider the algorithm to decide equational theory $E$. In their Mathematica implementation, it is implemented by a unification, which tries to find a substitution of summation bound variables that makes the two expressions syntactically equivalent. To decide AC-equivalence and (SUM-SWAP), they iterate through all the permutations, and the complexity is factorial to the number of AC symbol arguments and successive summations.
+
+A standard approach to decide this permutation equivalence is to normalize by sorting with a given order. For example, given the dictionary order $a < b < c$, the term $b + c + a$ (and any other AC equivalent ones) will be normalized into $a + b + c$. For our setting, there are two related difficulties: how to assign such an order to all terms in our language, and how to normalize with respect to AC-equivalence and (SUM-SWAP) at the same time.
+
+
+
+
+
+
+At last, we will prove that equivalence by this normalization procedure is sound in the semantics. 
+
+\begin{theorem}[soundness]
+    For any well-formed context $E[\Gamma]$ and well-typed expressions $e_1$ and $e_2$, if $e_1\downarrow = e_2\downarrow$, then $\sem{e_1} = \sem{e_2}$.
+\end{theorem}
+\begin{proof}
+    
+\end{proof}
+
+% Labelled Dirac Notation
+
+\input{labelled}
+
+\section{Implementation and Case Study}
+
+
+
+\section{Conclusion}
+
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \section{Consideration}
 \begin{itemize}
-    \item We can emphasize that we are moving from pure term rewriting to a hybrid algorithm.
-    \item AC equivalence and alpha equivalence.
-    \item Efficient AC equivalence checking by sorting on syntax.
     \item Sorting requires that alpha equivalent terms have the same syntax.
     \item de Bruijn expression satisfies this requirement, but the typing and substitution becomes very complicated in the type index scenario.
     \item only compute de Bruijn form in the equivalence checking and sorting phase.
@@ -209,918 +532,6 @@ The abstract should briefly summarize the contents of the paper in
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\section{Language Syntax}
-\begin{definition}[syntax]
-    The syntax for type indices are defined as
-    \begin{align*}
-        \sigma ::=\ & x \mid \sigma_1 \times \sigma_2 \mid \mathsf{Qdit}_n.
-    \end{align*}
-    The syntax for Dirac notation types is defined as 
-    \begin{align*}
-        T ::=\ & x \mid \Basis(\sigma) \mid \SType \mid \KType(\sigma) \mid \BType(\sigma) \mid \OType(\sigma_1, \sigma_2) \mid T_1 \to T_2 \mid \forall x.T \mid \SET(\sigma). \\
-    \end{align*}
-    The syntax for Dirac notation terms is defined as
-    \begin{align*}
-        e ::=\ & x \mid (e_1, e_2) \mid \lambda x : T.e \mid \mu x.e \mid e_1\ e_2 \\
-        & |\ 0 \mid 1 \mid \ADDS(e_1 \cdots e_n)  \mid e_1 \times \cdots \times e_n \mid e^*  \mid \delta_{e_1, e_2} \mid \DOT(e_1\ e_2) \\
-        & |\ \ZEROK(\sigma) \mid \ZEROB(\sigma) \mid \ZEROO(\sigma_1, \sigma_2) \mid \ONEO(\sigma) \\
-        & |\ \ket{e} \mid \bra{t} \mid e^\dagger \mid e_1.e_2 \mid \ADD(e_1 \cdots e_n) \mid e_1 \otimes e_2 \\
-        & |\ \MULK(e_1\ e_2) \mid \MULB(e_1\ e_2) \mid \OUTER(e_1\ e_2) \mid \MULO(e_1\ e_2) \\
-        & |\ \mathbf{U}(e) \mid e_1 \star e_2 \mid \sum_{e_1} e_2.
-    \end{align*}
-\end{definition}
- % after consideration I still think keep DOT as binary is the best choice. It reduces the unstability of complicated matching in sequences.
-Here $i$ is a natural number and $\$i$ represents the $i$-th bound variable in de Bruijn notation. 
-Compared to [?], this syntax for Dirac notations merges the symbols with overlapped properties, such as the addition and scaling symbols for ket, bra and operator.
-Here $\ADDS$ and $\ADD$ are two different AC symbols representing the scalar addition and the linear algebra addition respectively. They will be denoted as $a_1 + \cdots + a_n$ and $X_1 + \cdots + X_n$.
-There are five kinds of linear algebra multiplications among ket, bra and operator, whose properties are similar but still diverge to some extent. For example, the rules $(O_1 \cdot O_2) \cdot K\ \reduce\ O_1 \cdot (O_2 \cdot K)$ and $B \cdot (O_1 \cdot O_2) \ \reduce\ (B \cdot O_1) \cdot O_2$ indicate that the sorting of multiplication sequences depends on the subterm types. To avoid frequent but unnecessary type checkings, we encode the typing information by using five different symbols, namely $\DOT$, $\MULK$, $\MULB$, $\OUTER$ and $\MULO$. They are denoted as $B\cdot K$, $K_1 \cdot K_2$, $B_1 \cdot B_2$, $K \cdot B$ and $O_1 \cdot O_2$, respectively.
-
-Usually, the sum body is specified by an abstraction. Therefore we use notation $\sum_s X$ to denote $\sum_{x \in s} \lambda x : T . X$ as well.
- 
-\section{Typing System}
-The type checking of Dirac notations involves maintaining a well-formed environment and context $E[\Gamma]$, which specifies the definitions and typing assumtpions for variables.
-The environment and the conetxt are defined as follows.
-
-\begin{definition}[environment and context]
-    \begin{align*}
-        E ::=\ & [] \mid E; x : \Index \mid E; T : \Type \mid E; x : T \mid E; x := t : T. \\
-        \Gamma ::=\ & [] \mid \Gamma; x : \Index \mid \Gamma; x : T.
-    \end{align*}
-\end{definition}
-
-Note that in the following rules, $x : \Index$ and $x : \Type$ are not considered as $x : T$ judgements.
-
-\begin{figure}[h]
-    \begin{gather*}
-        \textbf{W-Empty} \qquad
-        \frac{}{\WF([])[]} \\
-        \\
-        \textbf{W-AssumE-Index} \qquad
-        \frac{\WF(E)[] \qquad x \notin E}{\WF(E; x : \Index)[]}\qquad \qquad
-        \textbf{W-AssumE-Type} \qquad
-        \frac{\WF(E)[] \qquad x \notin E}{\WF(E; x : \Type)[]} \\
-        \\
-        \textbf{W-AssumE-Term} \qquad
-        \frac{E[] \vdash T : \Type \qquad x \notin E}{\WF(E; x:T)[]}
-        \qquad \qquad
-        \textbf{W-Def-Term} \qquad
-        \frac{E[]\vdash t:T \qquad x \notin E}{\WF(E; x:=t:T)[]} \\
-        \\
-        \textbf{W-AssumC-Index} \qquad
-        \frac{\WF(E)[\Gamma]}{\WF(E)[\Gamma; x : \Index]}
-        \qquad \qquad
-        \textbf{W-AssumC-Term} \qquad
-        \frac{E[\Gamma] \vdash T : \Type}{\WF(E)[\Gamma; x : T]}
-    \end{gather*}
-    \caption{Rules for a well-formed environment and context.}
-\end{figure}
-
-\begin{figure}
-    \begin{gather*}
-        \textbf{Index-Var} \qquad
-        \frac{\WF(E)[\Gamma] \qquad x : \Index \in E[\Gamma]}{E[\Gamma] \vdash x : \Index}
-        \qquad \qquad
-        \textbf{Index-Prod} \qquad
-        \frac{E[\Gamma] \vdash \sigma : \Index \qquad E[\Gamma] \vdash \tau : \Index}{E[\Gamma] \vdash \sigma \times \tau : \Index} \\
-        \\
-        \textbf{Index-Qudit} \qquad
-        \frac{\WF(E)[\Gamma]}{E[\Gamma] \vdash \mathsf{Qudit}_n : \Index}
-    \end{gather*}
-    \caption{Rules for type index.}
-\end{figure}
-
-\begin{figure}
-    \begin{gather*}
-        \textbf{Type-Arrow} \qquad
-        \frac{E[\Gamma] \vdash T : \Type \qquad E[\Gamma] \vdash U : \Type}{E[\Gamma] \vdash T \to U : \Type}
-        \qquad \qquad
-        \textbf{Type-Index} \qquad
-        \frac{E[\Gamma ; x : \Index] \vdash U : \Type}{E[\Gamma] \vdash \forall x.U : \Type} \\
-        \\        
-        \textbf{Type-Basis} \qquad
-        \frac{E[\Gamma] \vdash \sigma : \Index}{E[\Gamma] \vdash \Basis(\sigma) : \Type}  \\
-        \\
-        \textbf{Type-Ket} \qquad
-        \frac{E[\Gamma] \vdash \sigma : \Index}{E[\Gamma] \vdash \KType(\sigma) : \Type}
-        \qquad \qquad
-        \textbf{Type-Bra} \qquad
-        \frac{E[\Gamma] \vdash \sigma : \Index}{E[\Gamma] \vdash \BType(\sigma) : \Type} \\
-        \\
-        \textbf{Type-Opt} \qquad
-        \frac{E[\Gamma] \vdash \sigma : \Index \qquad E[\Gamma] \vdash \tau : \Index}{E[\Gamma] \vdash \OType(\sigma, \tau) : \Type}
-        \qquad \qquad
-        \textbf{Type-Scalar} \qquad
-        \frac{\WF(E)[\Gamma]}{E[\Gamma] \vdash \SType : \Type} \\
-        \\
-        \textbf{Type-Set} \qquad
-        \frac{E[\Gamma] \vdash \sigma : \Index}{E[\Gamma] \vdash \SET(\sigma) : \Type}
-    \end{gather*}
-    \caption{Rules for types.}
-\end{figure}
-
-\begin{figure}[h]
-    \begin{gather*}
-        \textbf{Term-Var} \qquad
-        \frac{\WF(E)[\Gamma] \qquad (x:T) \in E[\Gamma] \text{ or } (x := t : T) \in E \text{ for some $t$}}{E[\Gamma] \vdash x : T} \\
-        \\
-        \textbf{Lam} \qquad
-        \frac{E[\Gamma; x : T] \vdash t : U}{E[\Gamma] \vdash (\lambda x : T . t) : T \to U}
-        \qquad \qquad
-        \textbf{Index} \qquad
-        \frac{E[\Gamma; x : \Index] \vdash t : U}{E[\Gamma] \vdash (\mu x.t) : \forall x.U} \\
-        \\
-        \textbf{App-Arrow} \qquad
-        \frac{E[\Gamma] \vdash t:U \to T \qquad E[\Gamma] \vdash u:U}{E[\Gamma] \vdash (t\ u):T}
-        \qquad \qquad
-        \textbf{App-Index} \qquad
-        \frac{E[\Gamma] \vdash t:\forall x.U \qquad E[\Gamma] \vdash u : \Index}{E[\Gamma] \vdash (t\ u):U\{x/u\}}
-    \end{gather*}
-    \caption{Rules for variable and function typings. Here $U[u]$ means instantiate the first bound variable with $u$ in $U$.}
-\end{figure}
-
-
-\begin{figure}[h]
-    \begin{gather*}
-        % this two rules can be considered later
-        % \textbf{Base-Def} \qquad
-        % \frac{\WF(\Gamma) \qquad a_i \notin \Gamma \text{ for all $i$}}
-        % {\Gamma\vdash \{a_1, a_2, \cdots, a_n\} : \Basis}
-        % \qquad \qquad
-        % \textbf{Base-Element} \qquad
-        % \frac{\WF(\Gamma) \qquad c \in \{a_1, a_2, \cdots a_n\}}{\Gamma\vdash c : \{a_1, a_2, \cdots, a_n\}} \\
-        % \\
-        \textbf{Pair-Base} \qquad
-        \frac{
-            E[\Gamma]\vdash s : \Basis(\sigma) \qquad E[\Gamma]\vdash t : \Basis(\tau)} {E[\Gamma]\vdash (s, t) : \Basis(\sigma \times \tau)} 
-        \textbf{}
-    \end{gather*}
-    \caption{Typing rules for Basis. }
-\end{figure}
-
-\begin{figure}[h]
-    \begin{gather*}
-        \textbf{Sca-0} \qquad
-        \frac{\WF(E)[\Gamma]}{E[\Gamma] \vdash 0 : \SType}
-        \qquad \qquad
-        \textbf{Sca-1} \qquad
-        \frac{\WF(E)[\Gamma]}{E[\Gamma] \vdash 1 : \SType} \\
-        \\
-        \textbf{Sca-Delta} \qquad
-        \frac{ E[\Gamma]\vdash s : \Basis(\sigma) \qquad E[\Gamma]\vdash t : \Basis(\sigma) } {E[\Gamma] \vdash \delta_{s, t} : \SType} \\
-        \\
-        \textbf{Sca-Add} \qquad
-        \frac{E[\Gamma]\vdash a_i : \SType \text{ for all $i$}}{E[\Gamma]\vdash a_1 + \cdots + a_n : \SType}
-        \qquad \qquad
-        \textbf{Sca-Mul} \qquad
-        \frac{E[\Gamma]\vdash a_i : \SType \text{ for all $i$}}{E[\Gamma]\vdash a_1 \times \cdots \times a_n : \SType} \\
-        \\
-        \textbf{Sca-Conj} \qquad
-        \frac{E[\Gamma] \vdash a : \SType}{E[\Gamma] \vdash a^*:\SType}
-        \qquad \qquad
-        \textbf{Sca-Dot} \qquad
-        \frac{E[\Gamma]\vdash B : \BType(\sigma) \qquad E[\Gamma]\vdash K : \KType(\sigma)}{E[\Gamma] \vdash B \cdot K : \SType}
-    \end{gather*}
-    \caption{Scalar typing rules.}
-\end{figure}
-
-
-
-\begin{figure}[h]
-    \begin{gather*}
-        \textbf{Ket-0} \qquad
-        \frac{E[\Gamma] \vdash \sigma : \Index}{E[\Gamma] \vdash \ZEROK(\sigma) : \KType(\sigma)} 
-        \qquad \qquad
-        \textbf{Ket-Base} \qquad
-        \frac{E[\Gamma]\vdash t : \Basis(\sigma)}{E[\Gamma] \vdash \ket{t} : \KType(\sigma)} \\
-        \\
-        \textbf{Ket-Adj} \qquad
-        \frac{E[\Gamma] \vdash B : \BType(\sigma)}{E[\Gamma] \vdash B^\dagger : \KType(\sigma)} 
-        \qquad \qquad
-        \textbf{Ket-Scr} \qquad
-        \frac{E[\Gamma] \vdash a : \SType \qquad E[\Gamma] \vdash K : \KType(\sigma)}{E[\Gamma] \vdash a.K : \KType(\sigma)} \\
-        \\
-        \textbf{Ket-Add} \qquad
-        \frac{E[\Gamma] \vdash K_i : \KType(\sigma) \text{ for all $i$}}{E[\Gamma] \vdash K_1 + \cdots + K_n : \KType(\sigma)}
-        \qquad \qquad
-        \textbf{Ket-MulK} \qquad
-        \frac{E[\Gamma] \vdash O : \OType(\sigma, \tau) \qquad E[\Gamma] \vdash K : \KType(\tau)}{E[\Gamma] \vdash O \cdot K : \KType(\sigma)} \\
-        \\
-        \textbf{Ket-Tsr} \qquad
-        \frac{E[\Gamma] \vdash K_1 : \KType(\sigma) \qquad E[\Gamma] \vdash K_2 : \KType(\tau)} {E[\Gamma] \vdash K_1 \otimes K_2 : \KType(\sigma \times \tau)}
-    \end{gather*}
-    \caption{Ket typing rules.}
-\end{figure}
-
-\begin{figure}[h]
-    \begin{gather*}
-        \textbf{Bra-0} \qquad
-        \frac{E[\Gamma] \vdash \sigma : \Index}{E[\Gamma] \vdash \ZEROB(\sigma) : \BType(\sigma)} 
-        \qquad \qquad
-        \textbf{Bra-Base} \qquad
-        \frac{E[\Gamma]\vdash t : \Basis(\sigma)}{E[\Gamma] \vdash \bra{t} : \BType(\sigma)} \\
-        \\
-        \textbf{Bra-Adj} \qquad
-        \frac{E[\Gamma] \vdash K : \KType(\sigma)}{E[\Gamma] \vdash K^\dagger : \BType(\sigma)} 
-        \qquad \qquad
-        \textbf{Bra-Scr} \qquad
-        \frac{E[\Gamma] \vdash a : \SType \qquad E[\Gamma] \vdash B : \BType(\sigma)}{E[\Gamma] \vdash a.B : \BType(\sigma)} \\
-        \\
-        \textbf{Bra-Add} \qquad
-        \frac{E[\Gamma] \vdash B_i : \BType(\sigma) \text{ for all $i$}}{E[\Gamma] \vdash B_1 + \cdots + B_n : \BType(\sigma)}
-        \qquad \qquad
-        \textbf{Bra-MulB} \qquad
-        \frac{E[\Gamma] \vdash B : \KType(\sigma) \qquad E[\Gamma] \vdash O : \OType(\sigma, \tau)}{E[\Gamma] \vdash B \cdot O : \BType(\tau)} \\
-        \\
-        \textbf{Bra-Tsr} \qquad
-        \frac{E[\Gamma] \vdash B_1 : \BType(\sigma) \qquad E[\Gamma] \vdash B_2 : \BType(\tau)} {E[\Gamma] \vdash B_1 \otimes B_2 : \BType(\sigma \times \tau)}
-    \end{gather*}
-    \caption{Bra typing rules.}
-\end{figure}
-
-
-\begin{figure}[h]
-    \begin{gather*}
-        \textbf{Opt-0} \qquad
-        \frac{E[\Gamma] \vdash \sigma : \Index \qquad E[\Gamma] \vdash \tau : \Index}{E[\Gamma] \vdash \ZEROO(\sigma, \tau) : \OType(\sigma, \tau)} 
-        \qquad \qquad
-        \textbf{Opt-1} \qquad
-        \frac{E[\Gamma] \vdash \sigma : \Index}{E[\Gamma] \vdash \ONEO(\sigma) : \OType(\sigma, \sigma)} \\
-        \\
-        \textbf{Opt-Adj} \qquad
-        \frac{E[\Gamma] \vdash O : \OType(\sigma, \tau)}{E[\Gamma] \vdash O^\dagger : \OType(\tau, \sigma)} 
-        \qquad \qquad
-        \textbf{Opt-Scr} \qquad
-        \frac{E[\Gamma] \vdash a : \SType \qquad E[\Gamma] \vdash O : \OType(\sigma, \tau)}{E[\Gamma] \vdash a.O : \OType(\sigma, \tau)} \\
-        \\
-        \textbf{Opt-Add} \qquad
-        \frac{E[\Gamma] \vdash O_i : \OType(\sigma, \tau) \text{ for all $i$}}{E[\Gamma] \vdash O_1 + \cdots + O_n : \OType(\sigma, \tau)}
-        \qquad \qquad
-        \textbf{Opt-Outer} \qquad
-        \frac{E[\Gamma]\vdash K : \KType(\sigma) \qquad E[\Gamma]\vdash B : \BType(\tau)}{E[\Gamma]\vdash K \cdot B : \OType(\sigma, \tau)} \\
-        \\
-        \textbf{Opt-MulO} \qquad
-        \frac{E[\Gamma] \vdash O_1 : \OType(\sigma, \tau) \qquad E[\Gamma] \vdash O_2 : \OType(\tau, \rho)}{E[\Gamma] \vdash O_1 \cdot O_2 : \OType(\sigma, \rho)} \\
-        \\
-        \textbf{Opt-Tsr} \qquad
-        \frac{E[\Gamma] \vdash O_1 : \OType(\sigma_1, \tau_1) \qquad E[\Gamma] \vdash O_2 : \OType(\sigma_2, \tau_2)} {E[\Gamma] \vdash O_1 \otimes O_2 : \OType(\sigma_1 \times \sigma_2, \tau_1 \times \tau_2)}
-    \end{gather*}
-    \caption{Operator typing rules.}
-\end{figure}
-
-
-\begin{figure}[h]
-    \begin{gather*}
-        \textbf{Set-U} \qquad
-        \frac{E[\Gamma] \vdash \sigma : \Index}{E[\Gamma] \vdash \mathbf{U}(\sigma) : \SET(\sigma)} 
-        \qquad \qquad
-        \textbf{Set-Prod} \qquad
-        \frac{E[\Gamma] \vdash A : \SET(\sigma) \qquad E[\Gamma] \vdash B : \SET(\tau)}{E[\Gamma] \vdash A \star B : \SET(\sigma \times \tau)}
-    \end{gather*}
-    \caption{Set typing rules.}
-\end{figure}
-
-
-\begin{figure}[h]
-    \begin{gather*}
-        \textbf{Sum-Scalar} \qquad
-        \frac{E[\Gamma] \vdash s : \SET(\sigma) \qquad E[\Gamma] \vdash f : \Basis(\sigma) \to \SType}{E[\Gamma] \vdash \sum_{s} f : \SType} \\
-        \\
-        \textbf{Sum-Ket} \qquad
-        \frac{E[\Gamma] \vdash s : \SET(\sigma) \qquad E[\Gamma] \vdash f : \Basis(\sigma) \to \KType(\tau)}{E[\Gamma] \vdash \sum_{s} f : \KType(\tau)} \\
-        \\
-        \textbf{Sum-Bra} \qquad
-        \frac{E[\Gamma] \vdash s : \SET(\sigma) \qquad E[\Gamma] \vdash f : \Basis(\sigma) \to \BType(\tau)}{E[\Gamma] \vdash \sum_{s} f : \BType(\tau)} \\
-        \\
-        \textbf{Sum-Opt} \qquad
-        \frac{E[\Gamma] \vdash s : \SET(\sigma) \qquad E[\Gamma] \vdash f : \Basis(\sigma) \to \OType(\tau, \rho)}{E[\Gamma] \vdash \sum_{s} f : \OType(\tau, \rho)}
-    \end{gather*}
-    \caption{Sum typing rules.}
-\end{figure}
-
-\clearpage
-\section{Conversions and Reductions}
-
-\begin{figure}[h]
-    \begin{gather*}
-        \frac{E[\Gamma] \vdash K : \KType(\sigma)}{E[\Gamma] \vdash K \ \reduce\ \sum_{i \in \mathbf{U}(\sigma)}(\bra{i}\cdot K).\ket{i}} \\
-        \\
-        \frac{E[\Gamma] \vdash B : \BType(\sigma)}{E[\Gamma] \vdash B \ \reduce\ \sum_{i \in \mathbf{U}(\sigma)}(B \cdot \ket{i}).\bra{i}} \\
-        \\
-        \frac{E[\Gamma] \vdash O : \OType(\sigma, \tau)}{E[\Gamma] \vdash O \ \reduce\ \sum_{i \in \mathbf{U}(\sigma)} \sum_{j \in \mathbf{U}(\tau)}(\bra{i} \cdot O \cdot \ket{j}).(\ket{i} \cdot \bra{j})}
-    \end{gather*}
-\end{figure}
-
-\begin{figure}[h]
-    \begin{gather*}
-        \textbf{Beta-Arrow} \qquad
-        \frac{}{E[\Gamma] \vdash ((\lambda x : T.t)\ u)\ \reduce\ t\{x/u\}} 
-        \qquad \qquad
-        \textbf{Beta-Index} \qquad
-        \frac{}{E[\Gamma] \vdash ((\mu x.t)\ u)\ \reduce\ t\{x/u\}} 
-        \\
-        \\
-        \textbf{Delta} \qquad
-        \frac{\WF(E)[\Gamma] \qquad (c:=t:T) \in E}{E[\Gamma] \vdash c\ \reduce\ t}
-    \end{gather*}
-    \caption{Conversions and reductions for the typed lambda calculus.}
-\end{figure}
-
-\newenvironment{ruletable}[1]
-{
-    \begin{longtable}{cl}
-    \caption{#1}\\
-    \hline
-    \textbf{Rule} & \textbf{Description} \\
-    \hline
-    \endfirsthead
-
-    \hline
-    \textbf{Rule} & \textbf{Description} \\
-    \hline
-    \endhead
-
-    \hline
-    \multicolumn{2}{r}{\textit{Continued on the next page}} \\
-    \hline
-    \endfoot
-
-    \hline
-    \endlastfoot
-}
-{
-    \end{longtable}
-}
-
-\renewcommand{\arraystretch}{1.2} % Increases row height by 50%
-
-\begin{ruletable}{The special flattening rule.}
-    %
-    R-FLATTEN
-    & $a_1 + \cdots + (b_1 + \cdots + b_m) + \cdots + a_n\ \reduce\ a_1 + \cdots + b_1 + \cdots + b_m + \cdots + a_n$ \\
-    & $a_1 \times \cdots \times (b_1 \times \cdots \times b_m) \times \cdots \times a_n\ \reduce\ a_1 \times \cdots \times b_1 \times \cdots \times b_m \times \cdots \times a_n$ \\
-    & $X_1 + \cdots + (X_1' + \cdots + X_m') + \cdots + X_n\ \reduce\ X_1 + \cdots + X_1' + \cdots + X_m' + \cdots + X_n$ \\
-    & \textcolor{gray}{A special rule to flatten all AC symbols within one call.}    
-\end{ruletable}
-
-\begin{ruletable}{Rules for scalar addition and multiplication.}
-    %
-    R-ADDSID 
-    & $+(a) \ \reduce\ a$ \\
-    & \textcolor{gray}{Reduce the term if the AC symbol $+$ only has one argument.} \\
-    %
-    R-MULSID 
-    & $\times(a) \ \reduce\ a$ \\
-    & \textcolor{gray}{Similar to (R-ADDSID).} \\
-    %
-    R-ADDS0 
-    & $a_1 + \cdots + 0 + \cdots + a_n \ \reduce\ a_1 + \cdots + a_n$ \\
-    & \textcolor{gray}{This rule removes all $\ZERO$ occurances and keeps the order of remaining subterms.} \\
-    %
-    R-MULS0
-    & $a_1 \times \cdots \times 0 \times \cdots \times a_n \ \reduce\ 0$ \\
-    %
-    R-MULS1
-    & $a_1 \times \cdots \times \ONE \times \cdots \times a_n \ \reduce\ a_1 \times \cdots \times a_n$ \\
-    & \textcolor{gray}{Similar to (R-ADDS0).} \\
-    %
-    R-MULS2
-    & $b_1 \times \cdots \times (a_1 + \cdots + a_n) \times \cdots \times b_m$ \\
-    & $\reduce\ (b_1 \times \cdots \times a_1 \times \cdots \times b_m) + \cdots + (b_1 \times \cdots \times a_n \times \cdots \times b_m)$ \\
-    & \textcolor{gray}{This rule matches the first scalar addition subterm in the list.} \\
-\end{ruletable}
-
-\begin{ruletable}{Rules for other scalar symbols.}
-    %
-    R-CONJ0
-    & $0^* \ \reduce\ 0$ \\
-    %
-    R-CONJ1
-    & $1^* \ \reduce\ 1$ \\
-    %
-    R-CONJ2
-    & $(a_1 + \cdots + a_n)^* \ \reduce\ a_1^* + \cdots + a_n^*$ \\
-    %
-    R-CONJ3
-    & $(a_1 \times \cdots \times a_n)^* \ \reduce\ a_1^* \times \cdots \times a_n^*$ \\
-    %
-    R-CONJ4
-    & $ (a^*)^* \ \reduce\ a$ \\
-    % 
-    R-CONJ5
-    & $ \delta_{s, t}^* \ \reduce\ \delta_{s, t}$ \\
-    %
-    R-CONJ6
-    & $ (B \cdot K)^* \ \reduce\ K^\dagger \cdot B^\dagger $ \\
-    %
-    R-DOT0
-    & $ \ZEROB(\sigma) \cdot K \ \reduce\ 0 $ \\
-    %
-    R-DOT1
-    & $ B \cdot \ZEROK(\sigma) \ \reduce\ 0 $ \\
-    %
-    R-DOT2
-    & $ (a.B) \cdot K \ \reduce\ a \times (B \cdot K) $ \\
-    %
-    R-DOT3
-    & $ B \cdot (a.K) \ \reduce\ a \times (B \cdot K) $ \\
-    %
-    R-DOT4
-    & $ (B_1 + \cdots + B_n) \cdot K \ \reduce\ B_1 \cdot K + \cdots + B_n \cdot K $ \\
-    %
-    R-DOT5
-    & $ B \cdot (K_1 + \cdots + K_n) \ \reduce\ B \cdot K_1 + \cdots + B \cdot K_n $ \\
-    %
-    R-DOT6
-    & $ \bra{s} \cdot \ket{t} \ \reduce\ \delta_{s, t} $ \\
-    %
-    R-DOT7
-    & $ (B_1 \otimes B_2) \cdot \ket{(s, t)} \ \reduce\ (B_1 \cdot \ket{s}) \times (B_2 \cdot \ket{t}) $ \\
-    %
-    R-DOT8
-    & $ \bra{(s, t)} \cdot (K_1 \otimes K_2) \ \reduce\ (\bra{s} \cdot K_1) \times (\bra{t} \cdot K_2) $ \\
-    %
-    R-DOT9
-    & $ (B_1 \otimes B_2) \cdot (K_1 \otimes K_2) \ \reduce\ (B_1 \cdot K_1) \times (B_2 \cdot K_2) $ \\
-    %
-    R-DOT10
-    & $ (B \cdot O) \cdot K \ \reduce\ B \cdot (O \cdot K) $ \\
-    %
-    R-DOT11
-    & $ \bra{(s, t)} \cdot ((O_1 \otimes O_2) \cdot K) \ \reduce\ ((\bra{s} \cdot O_1) \otimes (\bra{t} \cdot O_2)) \cdot K $ \\
-    %
-    R-DOT12
-    & $ (B_1 \otimes B_2) \cdot ((O_1 \otimes O_2) \cdot K) \ \reduce\ ((B_1 \cdot O_1) \otimes (B_2 \cdot O_2)) \cdot K $ \\
-    %
-    R-DELTA0
-    & $ \delta_{a, a} \ \reduce\ 1$ \\
-    %
-    R-DELTA1
-    & $ \delta_{(a, b), (c, d)} \ \reduce\ \delta_{a, c} \times \delta_{b, d}$ \\
-\end{ruletable}
-
-
-\begin{ruletable}{Rules for linear algebra scaling.}
-    %
-    R-SCR0
-    & $ 1.X \ \reduce\ X $ \\
-    %
-    R-SCR1
-    & $ a.(b.X) \ \reduce\ (a \times b).X $ \\
-    %
-    R-SCR2
-    & $ a.(X_1 + \cdots + X_n) \ \reduce\ a.X_1 + \cdots + a.X_n $ \\
-    %
-    R-SCRK0
-    & $ K : \KType(\sigma) \Rightarrow 0.K \ \reduce\ \ZEROK(\sigma)$ \\
-    %
-    R-SCRK1
-    & $ a.\ZEROK(\sigma) \ \reduce\ \ZEROK(\sigma) $ \\
-    % 
-    R-SCRB0
-    & $ B : \BType(\sigma) \Rightarrow 0.B \ \reduce\ \ZEROB(\sigma)$ \\
-    % 
-    R-SCRB1
-    & $ a.\ZEROB(\sigma) \ \reduce\ \ZEROB(\sigma) $ \\
-    % 
-    R-SCRO0
-    & $ O : \OType(\sigma, \tau) \Rightarrow 0.O \ \reduce\ \ZEROO(\sigma, \tau)$ \\
-    % 
-    R-SCRO1
-    & $ a.\ZEROO(\sigma, \tau) \ \reduce\ \ZEROO(\sigma, \tau) $ \\
-\end{ruletable}
-
-\begin{ruletable}{Rules for linear algebra addition. }
-    %
-    R-ADDID
-    & $+(X) \ \reduce\ X$ \\
-    & \textcolor{gray}{Reduce the term if the AC symbol $+$ only has one argument.} \\
-    %
-    R-ADD0
-    & $Y_1 + \cdots + X + \cdots + X + \cdots + Y_n \ \reduce\ Y_1 + \cdots + Y_n + \cdots + (1+1).X$ \\
-    & \textcolor{gray}{\makecell[l]{This rule matches the first $X$ in the list satisfying the pattern. \\ The result $(1+1).X$ will be placed at the end of the list.}} \\
-    %
-    R-ADD1
-    & $Y_1 + \cdots + X + \cdots + a.X + \cdots + Y_n \ \reduce\ Y_1 + \cdots + Y_n + (1+a).X$ \\
-    & \textcolor{gray}{Similar to (R-ADD0).} \\
-    %
-    R-ADD2
-    & $Y_1 + \cdots + a.X + \cdots + X + \cdots + Y_n \ \reduce\ Y_1 + \cdots + Y_n + (a+1).X$ \\
-    & \textcolor{gray}{Similar to (R-ADD0).} \\
-    %
-    R-ADD3
-    & $Y_1 + \cdots + a.X + \cdots + b.X + \cdots + Y_n \ \reduce\ Y_1 + \cdots + Y_n + (a+b).X$ \\
-    & \textcolor{gray}{Similar to (R-ADD0).} \\
-    %
-    R-ADDK0
-    & $K_1 + \cdots + \ZEROK(\sigma) + \cdots + K_n\ \reduce K_1 + \cdots + K_n$ \\
-    & \textcolor{gray}{Similar to (R-ADDS0).} \\
-    %
-    R-ADDB0
-    & $B_1 + \cdots + \ZEROB(\sigma) + \cdots + B_n \ \reduce\ B_1 + \cdots + B_n$ \\
-    & \textcolor{gray}{Similar to (R-ADDS0).} \\
-    %
-    R-ADDO0
-    & $O_1 + \cdots + \ZEROO(\sigma, \tau) + \cdots + O_n \ \reduce\ O_1 + \cdots + O_n$ 
-    \\
-    & \textcolor{gray}{Similar to (R-ADDS0).} \\
-\end{ruletable}
-
-\begin{ruletable}{Rules for adjoint.}
-    %
-    R-ADJ0
-    & $ (X^\dagger)^\dagger \ \reduce\ X $ \\
-    %
-    R-ADJ1
-    & $ (a.X)^\dagger \ \reduce\ (a^*).(X^\dagger) $ \\
-    %
-    R-ADJ2
-    & $ (X_1 + \cdots + X_n)^\dagger \ \reduce\ X_1^\dagger + \cdots + X_n^\dagger $ \\
-    %
-    R-ADJ3
-    & $ (X \otimes Y)^\dagger \ \reduce\ X^\dagger \otimes Y^\dagger$ \\
-    %
-    R-ADJK0
-    & $ \ZEROB(\sigma)^\dagger \ \reduce\ \ZEROK(\sigma) $ \\
-    %
-    R-ADJK1
-    & $ \bra{t}^\dagger \ \reduce\ \ket{t} $ \\
-    %
-    R-ADJK2
-    & $ (B \cdot O)^\dagger\ \reduce\ O^\dagger \cdot B^\dagger $ \\
-    %
-    R-ADJB0
-    & $ \ZEROK(\sigma)^\dagger \ \reduce\ \ZEROB(\sigma) $ \\
-    %
-    R-ADJB1
-    & $ \ket{t}^\dagger \ \reduce\ \bra{t} $ \\
-    %
-    R-ADJB2
-    & $ (O \cdot K)^\dagger\ \reduce\ K^\dagger \cdot O^\dagger $ \\
-    %
-    R-ADJO0
-    & $ \ZEROO(\sigma, \tau)^\dagger \ \reduce\ \ZEROO(\tau, \sigma) $ \\
-    %
-    R-ADJO1
-    & $ \ONEO(\sigma)^\dagger \ \reduce\ \ONEO(\sigma)$ \\
-    %
-    R-ADJO2
-    & $ (K \cdot B)^\dagger \ \reduce\ B^\dagger \cdot K^\dagger$ \\
-    %
-    R-ADJO3
-    & $ (O_1 \cdot O_2)^\dagger \ \reduce\ O_2^\dagger \cdot O_1^\dagger $ \\
-\end{ruletable}
-
-\begin{ruletable}{Rules for tensor product.}
-    R-TSR0
-    & $ (a.X_1) \otimes X_2 \ \reduce\ a.(X_1 \otimes X_2) $ \\
-    %
-    R-TSR1
-    & $ X_1 \otimes (a.X_2) \ \reduce\ a.(X_1 \otimes X_2) $ \\
-    %
-    R-TSR2
-    & $ (X_1 + \cdots + X_n) \otimes X' \reduce X_1 \otimes X' + \cdots + X_n \otimes X' $ \\
-    %
-    R-TSR3
-    & $ X' \otimes (X_1 + \cdots + X_n) \reduce X' \otimes X_1 + \cdots + X' \otimes X_n $ \\
-    %
-    R-TSRK0
-    & $ K : \KType(\tau) \Rightarrow \ZEROK(\sigma) \otimes K\ \reduce\ \ZEROK(\sigma \times \tau) $ \\
-    %
-    R-TSRK1
-    & $ K : \KType(\tau) \Rightarrow K \otimes \ZEROK(\sigma)\ \reduce\ \ZEROK(\tau \times \sigma) $ \\
-    %
-    R-TSRK2
-    & $\ket{s} \otimes \ket{t} \ \reduce\ \ket{(s, t)}$ \\
-    %
-    R-TSRB0
-    & $ B : \BType(\tau) \Rightarrow \ZEROB(\sigma) \otimes B\ \reduce\ \ZEROB(\sigma \times \tau) $ \\
-    %
-    R-TSRB1
-    & $ B : \BType(\tau) \Rightarrow B \otimes \ZEROB(\sigma)\ \reduce\ \ZEROB(\tau \times \sigma) $ \\
-    %
-    R-TSRB2
-    & $\bra{s} \otimes \bra{t} \ \reduce\ \bra{(s, t)}$ \\
-    %
-    R-TSRO0
-    & $ O : \OType(\sigma, \tau) \Rightarrow O \otimes \ZEROO(\sigma', \tau') \ \reduce\ \ZEROO(\sigma \times \sigma', \tau \times \tau') $ \\
-    % 
-    R-TSRO1
-    & $ O : \OType(\sigma, \tau) \Rightarrow \ZEROO(\sigma', \tau') \otimes O \ \reduce\ \ZEROO(\sigma' \times \sigma, \tau' \times \tau) $ \\
-    %
-    R-TSRO2
-    & $\ONEO(\sigma) \otimes \ONEO(\tau)\ \reduce\ \ONEO(\sigma \times \tau)$ \\
-    %
-    R-TSRO3
-    & $ (K_1 \cdot B_1) \otimes (K_2 \cdot B_2)\ \reduce\ (K_1 \otimes K_2) \cdot (B_1 \otimes B_2) $ \\
-    %
-\end{ruletable}
-
-\begin{ruletable}{Rule for $O\cdot K$.}
-    %
-    R-MULK0
-    & $ \ZEROO(\sigma, \tau) \cdot K \ \reduce\ \ZEROK(\sigma) $ \\
-    %
-    R-MULK1
-    & $ O : \OType(\sigma, \tau) \Rightarrow O \cdot \ZEROK(\tau) \ \reduce\ \ZEROK(\sigma) $ \\
-    %
-    R-MULK2
-    & $ \ONEO(\sigma) \cdot K \ \reduce K $ \\
-    %
-    R-MULK3
-    & $ (a.O) \cdot K \ \reduce\ a.(O \cdot K) $ \\
-    %
-    R-MULK4
-    & $ O \cdot (a.K) \ \reduce\ a.(O \cdot K) $ \\
-    %
-    R-MULK5
-    & $ (O_1 + \cdots + O_n) \cdot K \ \reduce\ O_1 \cdot K + \cdots + O_n \cdot K $ \\
-    %
-    R-MULK6
-    & $ O \cdot (K_1 + \cdots + K_n) \ \reduce\ O \cdot K_1 + \cdots + O \cdot K_n $ \\
-    %
-    R-MULK7
-    & $ (K_1 \cdot B) \cdot K_2 \ \reduce\ (B \cdot K_2).K_1 $ \\
-    %
-    R-MULK8
-    & $ (O_1 \cdot O_2) \cdot K \ \reduce\ O_1 \cdot (O_2 \cdot K) $ \\
-    %
-    R-MULK9
-    & $ (O_1 \otimes O_2) \cdot ((O_1' \otimes O_2') \cdot K)\ \reduce\ ((O_1 \cdot O_1') \otimes (O_2 \cdot O_2')) \cdot K $ \\
-    %
-    R-MULK10
-    & $ (O_1 \otimes O_2) \cdot \ket{(s, t)}\ \reduce\ (O_1 \cdot \ket{s}) \otimes (O_2 \cdot \ket{t}) $ \\
-    %
-    R-MULK11
-    & $ (O_1 \otimes O_2) \cdot (K_1 \otimes K_2)\ \reduce\ (O_1 \cdot K_1) \otimes (O_2 \cdot K_2) $
-\end{ruletable}
-
-
-\begin{ruletable}{Rule for $B\cdot O$.}
-    %
-    R-MULB0
-    & $ B \cdot \ZEROO(\sigma, \tau) \ \reduce\ \ZEROB(\tau) $ \\
-    %
-    R-MULB1
-    & $ O : \OType(\sigma, \tau) \Rightarrow \ZEROB(\sigma) \cdot O\ \reduce\ \ZEROB(\tau) $ \\
-    %
-    R-MULB2
-    & $ B \cdot \ONEO(\sigma) \ \reduce B $ \\
-    %
-    R-MULB3
-    & $ (a.B) \cdot O \ \reduce\ a.(B \cdot O) $ \\
-    %
-    R-MULB4
-    & $ B \cdot (a.O) \ \reduce\ a.(B \cdot O) $ \\
-    %
-    R-MULB5
-    & $ (B_1 + \cdots + B_n) \cdot O \ \reduce\ B_1 \cdot O + \cdots + B_n \cdot O $ \\
-    %
-    R-MULB6
-    & $ B \cdot (O_1 + \cdots + O_n) \ \reduce\ B \cdot O_1 + \cdots + B \cdot O_n $ \\
-    %
-    R-MULB7
-    & $ B_1 \cdot (K \cdot B_2) \ \reduce\ (B_1 \cdot K).B_2 $ \\
-    %
-    R-MULB8
-    & $ B \cdot (O_1 \cdot O_2) \ \reduce\ (B \cdot O_1) \cdot O_2 $ \\
-    %
-    R-MULB9
-    & $ (B \cdot (O_1' \otimes O_2')) \cdot (O_1 \otimes O_2) \ \reduce\ B \cdot ((O_1' \otimes O_2') \cdot (O_1 \otimes O_2)) $ \\
-    %
-    R-MULB10
-    & $ \bra{(s, t)} \cdot (O_1 \otimes O_2)\ \reduce\ (\bra{s} \cdot O_1) \otimes (\bra{t} \cdot O_2) $ \\
-    %
-    R-MULB11
-    & $ (B_1 \otimes B_2) \cdot (O_1 \otimes O_2)\ \reduce\ (B_1 \cdot O_1) \otimes (B_2 \cdot O_2) $
-\end{ruletable}
-
-\begin{ruletable}{Rules for $K \cdot B$.}
-    %
-    R-OUTER0
-    & $ B : \BType(\tau) \Rightarrow \mathbf{0}_\mathcal{K}(\sigma) \cdot B\ \reduce\ \mathbf{0}_\mathcal{O}(\sigma, \tau) $ \\
-    %
-    R-OUTER1
-    & $ K : \KType(\sigma) \Rightarrow K \cdot \mathbf{0}_\mathcal{B}(\tau)\ \reduce\ \mathbf{0}_\mathcal{O}(\sigma, \tau) $ \\
-    %
-    R-OUTER2
-    & $ (a.K) \cdot B\ \reduce\ a.(K \cdot B) $ \\
-    %
-    R-OUTER3
-    & $ K \cdot (a.B)\ \reduce\ a.(K \cdot B) $ \\
-    %
-    R-OUTER4
-    & $ (K_1 + \cdots + K_n) \cdot B\ \reduce\ K_1 \cdot B + \cdots + K_n \cdot B $ \\
-    %
-    R-OUTER5
-    & $ K \cdot (B_1 + \cdots + B_n)\ \reduce\ K \cdot B_1 + \cdots + K \cdot B_n $ \\
-\end{ruletable}
-
-\begin{ruletable}{Rules for $O_1 \cdot O_2$.}
-    %
-    R-MULO0
-    & $ O : \OType(\tau, \rho) \Rightarrow \ZEROO(\sigma, \tau) \cdot O\ \reduce\ \ZEROO(\sigma, \rho) $ \\
-    %
-    R-MULO1
-    & $ O : \OType(\sigma, \tau) \Rightarrow O \cdot \ZEROO(\tau, \rho)\ \reduce\ \mathbf{0}_\mathcal{O}(\sigma, \rho) $ \\
-    %
-    R-MULO2
-    & $ \ONEO(\sigma) \cdot O \ \reduce\ O $ \\
-    %
-    R-MULO3
-    & $ O \cdot \ONEO(\sigma) \ \reduce\ O $ \\
-    %
-    R-MULO4
-    & $ (K \cdot B) \cdot O \ \reduce\ K \cdot (B \cdot O) $ \\
-    %
-    R-MULO5
-    & $ O \cdot (K \cdot B) \ \reduce\ (O \cdot K) \cdot B $ \\
-    %
-    R-MULO6
-    & $ (a.O_1) \cdot O_2 \ \reduce\ a.(O_1 \cdot O_2) $ \\
-    %
-    R-MULO7
-    & $ O_1 \cdot (a.O_2) \ \reduce\ a.(O_1 \cdot O_2) $ \\
-    %
-    R-MULO8
-    & $ (O_1 + \cdots + O_n) \cdot O'\ \reduce\ O_1 \cdot O' + \cdots + O_n \cdot O' $ \\
-    %
-    R-MULO9
-    & $ O' \cdot (O_1 + \cdots + O_n)\ \reduce\ O' \cdot O_1 + \cdots + O' \cdot O_n $ \\
-    %
-    R-MULO10
-    & $ (O_1 \cdot O_2) \cdot O_3\ \reduce\ O_1 \cdot (O_2 \cdot O_3) $ \\
-    %
-    R-MULO11
-    & $ (O_1 \otimes O_2) \cdot (O_1' \otimes O_2')\ \reduce\ (O_1 \cdot O_1') \otimes (O_2 \cdot O_2') $ \\
-    %
-    R-MULO12
-    & $ (O_1 \otimes O_2) \cdot ((O_1' \otimes O_2') \cdot O_3)\ \reduce\ ((O_1 \cdot O_1') \otimes (O_2 \cdot O_2')) \cdot O_3 $ \\  
-\end{ruletable}
-
-\begin{ruletable}{Rules for sets.}
-    %
-    R-SET0
-    & $ \mathbf{U}(\sigma) \star \mathbf{U}(\tau) \ \reduce\ \mathbf{U}(\sigma \times \tau) $
-\end{ruletable}
-
-\begin{ruletable}{Rules for sum operators.}
-    %
-    R-SUM-CONST0
-    & $ \sum_{x \in s} 0 \ \reduce\ 0 $ \\
-    %
-    R-SUM-CONST1
-    & $ \sum_{x \in s} \ZEROK(\sigma)\ \reduce\ \ZEROK(\sigma) $ \\
-    %
-    R-SUM-CONST2
-    & $ \sum_{x \in s} \ZEROB(\sigma)\ \reduce\ \ZEROB(\sigma) $ \\
-    %
-    R-SUM-CONST3
-    & $ \sum_{x \in s} \ZEROO(\sigma, \tau)\ \reduce\ \ZEROO(\sigma, \tau) $ \\
-    %
-    R-SUM-CONST4
-    & $ \ONEO(\sigma) \ \reduce\ \sum_{i \in \mathbf{U}(\sigma)} \ket{i} \cdot \bra{i} $
-\end{ruletable}
-
-\begin{ruletable}{Rules for eliminating $\delta_{s, t}$. Note that these rules will match the $\delta$ operator modulo the commutativity of its arguments.}
-    %
-    R-SUM-ELIM0
-    & $ i \text{ free in } t \vdash \sum_{i \in \mathbf{U}(\sigma)} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} \delta_{i, t} \ \reduce\ \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n}  1$ \\
-    %
-    R-SUM-ELIM1
-    & $ i \text{ free in } t \vdash \sum_{i \in \mathbf{U}(\sigma)} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (a_1 \times \cdots \times \delta_{i, t} \times \cdots \times a_n) $ \\
-    & $ \reduce\ \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} a_1\{i/t\} \times \cdots \times a_n\{i/t\} $ \\
-    %
-    R-SUM-ELIM2
-    & $ i \text{ free in } t \vdash \sum_{i \in \mathbf{U}(\sigma)} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (\delta_{i, t}.A) \ \reduce\ \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} A\{i/t\} $ \\
-    %
-    R-SUM-ELIM3
-    & $ i \text{ free in } t \vdash \sum_{i \in \mathbf{U}(\sigma)} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (a_1 \times \cdots \times \delta_{i, t} \times \cdots \times a_n).A $ \\
-    & $ \reduce\ \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n}  (a_1\{i/t\} \times \cdots \times a_n\{i/t\}).A\{i/t\} $ \\
-    R-SUM-ELIM4
-    & $ \sum_{i \in M} \sum_{j \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n}  \delta_{i, j} \ \reduce\ \sum_{j \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} 1 $ \\
-    %
-    R-SUM-ELIM5
-    & $ \sum_{i \in M} \sum_{j \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (a_1 \times \dots \times \delta_{i, j} \times \cdots \times a_n) $ \\
-    & $ \reduce\ \sum_{j \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (a_1\{j/i\} \times \cdots \times a_n\{j/i\}) $ \\
-    %
-    R-SUM-ELIM6
-    & $ \sum_{i \in M} \sum_{j \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (\delta_{i, j}.A) \ \reduce\ \sum_{j \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} A\{j/i\} $ \\
-    %
-    R-SUM-ELIM7
-    & $ \sum_{i \in M} \sum_{j \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (a_1 \times \cdots \times \delta_{i, j} \times \cdots \times a_n).A $ \\
-    & $ \reduce\ \sum_{j \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (a_1\{j/i\} \times \cdots \times a_n\{j/i\}).A\{j/i\} $ \\
-    %
-    R-SUM-ELIM8
-    & $ \sum_{i \in M} \sum_{j \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} ((a_1 \times \cdots \times \delta_{i, j} \times \cdots \times a_n) + \cdots + (b_1 \times \cdots \times \delta_{i, j} \times \cdots \times b_n)).A $ \\
-    & $ \reduce\ \sum_{j \in M} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} ((a_1\{j/i\} \times \cdots \times a_n\{j/i\}) + \cdots + (b_1\{j/i\} \times \cdots \times b_n\{j/i\})).A\{j/i\} $ \\
-\end{ruletable}
-
-\begin{ruletable}{Rules for pushing terms into sum operators}
-    %
-    R-SUM-PUSH0
-    & $ b_1 \times \cdots \times (\sum_{i \in M} a) \times \cdots \times b_n \ \reduce\ \sum_{i \in M} (b_1 \times \cdots \times a \times \cdots \times b_n) $ \\
-    %
-    R-SUM-PUSH1
-    & $ (\sum_{i \in M} a)^* \ \reduce\ \sum_{i \in M} a^* $ \\
-    %
-    R-SUM-PUSH2
-    & $ (\sum_{i \in M} X)^\dagger \ \reduce\ \sum_{i \in M} X^\dagger $ \\
-    %
-    R-SUM-PUSH3
-    & $ a.(\sum_{i \in M} X) \ \reduce\ \sum_{i \in M} (a.X) $ \\
-    %
-    R-SUM-PUSH4
-    & $ (\sum_{i \in M} a).X \ \reduce\ \sum_{i \in M} (a.X) $ \\
-    %
-    R-SUM-PUSH5
-    & $ (\sum_{i \in M} B)\cdot K \ \reduce\ \sum_{i \in M}(B \cdot K) $ \\
-    %
-    R-SUM-PUSH6
-    & $ (\sum_{i \in M} O)\cdot K \ \reduce\ \sum_{i \in M}(O \cdot K) $ \\
-    %
-    R-SUM-PUSH7
-    & $ (\sum_{i \in M} B)\cdot O \ \reduce\ \sum_{i \in M}(B \cdot O) $ \\
-    %
-    R-SUM-PUSH8
-    & $ (\sum_{i \in M} K)\cdot B \ \reduce\ \sum_{i \in M}(K \cdot B) $ \\
-    %
-    R-SUM-PUSH9
-    & $ (\sum_{i \in M} O_1)\cdot O_2 \ \reduce\ \sum_{i \in M}(O_1 \cdot O_2) $ \\
-    %
-    R-SUM-PUSH10
-    & $ B \cdot (\sum_{i \in M} K) \ \reduce\ \sum_{i \in M}(B \cdot K) $ \\
-    %
-    R-SUM-PUSH11
-    & $ O \cdot (\sum_{i \in M} K) \ \reduce\ \sum_{i \in M}(O \cdot K) $ \\
-    %
-    R-SUM-PUSH12
-    & $ B \cdot (\sum_{i \in M} O) \ \reduce\ \sum_{i \in M}(B \cdot O) $ \\
-    %
-    R-SUM-PUSH13
-    & $ K \cdot (\sum_{i \in M} B) \ \reduce\ \sum_{i \in M}(K \cdot B) $ \\
-    %
-    R-SUM-PUSH14
-    & $ O_1 \cdot (\sum_{i \in M} O_2) \ \reduce\ \sum_{i \in M}(O_1 \cdot O_2) $ \\
-    %
-    R-SUM-PUSH15
-    & $ (\sum_{i \in M} X_1) \otimes X_2 \ \reduce\ \sum_{i \in M} (X_1 \otimes X_2) $ \\
-    %
-    R-SUM-PUSH16
-    & $ X_1 \otimes (\sum_{i \in M} X_2) \ \reduce\ \sum_{i \in M} (X_1 \otimes X_2) $
-\end{ruletable}
-\yx{Note: because we apply type checking on variables, and stick to unique bound variables, these pushing in operations are always sound.}
-
-\begin{ruletable}{Rules for addition and index in sum}
-    %
-    R-SUM-ADDS0
-    & $\sum_{i \in M}(a_1 + \cdots + a_n) \ \reduce\ (\sum_{i \in M} a_1) + \cdots + (\sum_{i \in M} a_n) $ \\
-    % %
-    % R-SUM-ADDS1
-    % & $\sum_{i \in M}(b_1 \times \cdots \times (a_1 + \cdots + a_n) \times \cdots \times b_m) $ \\
-    % & $ \reduce\ (\sum_{i \in M} (b_1 \times \cdots \times a_1 \times \cdots \times b_m) + \cdots + (\sum_{i \in M} (b_1 \times \cdots \times a_n \times \cdots \times b_m)) $ \\
-    %
-    R-SUM-ADD0
-    & $\sum_{i \in M}(X_1 + \cdots + X_n) \ \reduce\ (\sum_{i \in M} X_1) + \cdots + (\sum_{i \in M} X_n) $ \\
-    R-SUM-ADD1
-    & $ Y_1 + \cdots + Y_n + \sum_{i \in M}(a+b).X \ \reduce\ Y_1 + \cdots + \sum_{i \in M}(a.X) + \cdots + \sum_{i \in M}(b.X) + Y_n$ \\
-    %
-    R-SUM-INDEX0
-    & $ \sum_{i \in \mathbf{U}(\sigma \times \tau)} A \ \reduce\ \sum_{j \in \mathbf{U}(\sigma)} \sum_{k \in \mathbf{U}(\tau)} A\{i/(j, k)\} $ \\
-    %
-    R-SUM-INDEX1
-    & $ \sum_{i \in M_1 \star M_2} A \ \reduce\ \sum_{j \in M_1} \sum_{k \in M_2} A\{i/(j, k)\} $
-\end{ruletable}
-
-\yx{The rules R-SUM-ADD1 to R-SUM-ADD3 needs identical sum terms, which requires the rewriting to be after the alpha normalization. We don't implement them for now.}
-
-
-
-\begin{ruletable}{Rules for Qubit}
-    %
-    R-QBIT-DELTA
-    & $\delta_{0, 1} \ \reduce\ 0$ \\
-    %
-    R-QBIT-ONEO
-    & $\ONEO(QBIT)\ \reduce\ \ket{0}\bra{0} + \ket{1}\bra{1} $ \\
-    %
-    R-QBIT-SUM
-    & $\sum_{i \in \mathbf{U}(QBIT)} A\ \reduce\ A\{i/0\} + A\{i/1\}$
-\end{ruletable}
-
-
-\section{Preprocessing}
-\begin{figure}
-    \begin{gather*}
-        \frac{E[\Gamma] \vdash B : \BType(\sigma) \qquad E[\Gamma] \vdash K : \KType(\sigma)}{E[\Gamma] \vdash B \circ K : \SType}
-    \end{gather*}
-    \caption{The typing rules for preprocessing}
-\end{figure}
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\clearpage
 
 \section{\texttt{Diracoq} language}
 
@@ -1176,53 +587,11 @@ These symbols will be transformed into internal language:
     \item \texttt{SSUM(i S e)} : \texttt{SUM(s FUN(i T e))}
 \end{itemize}
 
-
-
-
-\section{Rewriting Control and Intermediate Language}
-The associativity is already handled by the (R-FLATTEN) rule. In order to decide two terms $A$ and $B$ are equivalent under commutativity, we need to proof that $A$ can be transformed into $B$ with a structured permutation, which is described by the \textit{permutation tree}.
-
-\begin{definition}[permutation tree]
-    The syntax for permutation trees are inductively defined below:
-    \[
-    P ::= \mathsf{E} \mid [(i:P)^+].
-    \]
-    Here $i$ represents positive numbers.
-\end{definition}
-We always only consider \textit{well-formed} permutation trees. That is, if $P \equiv [i_1:P_1\ i_2:P_2\ \cdots\ i_n:P_n]$, then $\{i_1, ... i_n\}$ forms the set of integers from $0$ to $n-1$.
-
-We can transform a term A with a suitable permutation tree. The transformation is defined as
-
-\begin{align*}
-    \texttt{apply}(A, P) :=\ & \texttt{match}\ P\ \texttt{with} \\
-    & \quad |\ \textsf{E} \Rightarrow A \\
-    & \quad |\ [i_1:P_1\ \cdots\ i_n:P_n] \Rightarrow \texttt{A.head}(\texttt{apply(A.args[$i_1$], $P_{i_1}$)}\ \cdots\ \texttt{apply(A.args[$i_n$], $P_{i_n}$)}) \\
-    & \texttt{end}
-\end{align*}
-
-\clearpage
-
-\input{labelled}
-%\input{labelled_dirac.tex}
-
-
-
-\begin{credits}
-    \subsubsection{\ackname} A bold run-in heading in small font size at the end of the paper is
-    used for general acknowledgments, for example: This study was funded
-    by X (grant number Y).
-
-    \subsubsection{\discintname}
-    It is now necessary to declare any competing interests or to specifically
-    state that the authors have no competing interests. Please place the
-    statement with a bold run-in heading in small font size beneath the
-    (optional) acknowledgments\footnote{If EquinOCS, our proceedings submission
-    system, is used, then the disclaimer can be provided directly in the system.},
-    for example: The authors have no competing interests to declare that are
-    relevant to the content of this article. Or: Author A has received research
-    grants from Company W. Author B has received a speaker honorarium from
-    Company X and owns stock in Company Y. Author C is a member of committee Z.
-\end{credits}
+% \begin{credits}
+%     \subsubsection{\ackname} A bold run-in heading in small font size at the end of the paper is
+%     used for general acknowledgments, for example: This study was funded
+%     by X (grant number Y).
+% \end{credits}
     
     
 
@@ -1236,4 +605,8 @@ We can transform a term A with a suitable permutation tree. The transformation i
 \bibliographystyle{splncs04}
 \bibliography{ref}
 %
+
+\appendix
+\include{appendix}
+
 \end{document}
