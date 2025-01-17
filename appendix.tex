@@ -44,7 +44,7 @@ This section includes the full list of typing rules.
     \]
     \[
         \textbf{Index-Qudit} \qquad
-        \frac{\WF(E)[\Gamma]}{E[\Gamma] \vdash \mathsf{Bit} : \Index}
+        \frac{\WF(E)[\Gamma]}{E[\Gamma] \vdash \mathsf{bool} : \Index}
     \]
 
 
@@ -120,10 +120,10 @@ This section includes the full list of typing rules.
     
     \item Basis term typing rules. 
     \[  \textbf{Basis-0} \qquad
-        \frac{\WF(E[\Gamma])}{E[\Gamma] \vdash 0 : \Basis(\mathsf{Bit})}
+        \frac{\WF(E[\Gamma])}{E[\Gamma] \vdash 0 : \Basis(\mathsf{bool})}
     \]
     \[  \textbf{Basis-1} \qquad
-        \frac{\WF(E[\Gamma])}{E[\Gamma] \vdash 1 : \Basis(\mathsf{Bit})}
+        \frac{\WF(E[\Gamma])}{E[\Gamma] \vdash 1 : \Basis(\mathsf{bool})}
     \]
     \[
         \textbf{Basis-Pair} \qquad
@@ -173,6 +173,21 @@ This section includes the full list of typing rules.
     \]
     \[  \textbf{Compo-OO} \qquad
         \frac{E[\Gamma] \vdash x : \OType(\sigma, \tau) \qquad E[\Gamma] \vdash y : \OType(\sigma', \tau')}{E[\Gamma] \vdash x \circ y : \OType(\sigma \times \sigma', \tau \times \tau')}
+    \]
+    \[
+        \textbf{Compo-DD} \qquad
+        \frac{
+            \begin{aligned}
+                E[\Gamma] \vdash x : \DType(s_1,s_1') \\
+                E[\Gamma] \vdash y : \DType(s_2,s_2')
+            \end{aligned}
+            \qquad 
+            \begin{aligned}
+                s_1 \cap s_2 \backslash s_1' = \emptyset \\
+                s_2' \cap s_1' \backslash s_2 = \emptyset
+            \end{aligned}
+        }
+        {E[\Gamma] \vdash x\circ y : \DType(s_1 \cup (s_2\backslash s_1'), s_2' \cup (s_1'\backslash s_2))}
     \]
 
 
@@ -334,32 +349,38 @@ This section includes the full list of typing rules.
     \]
     \[
         \textbf{Reg-Pair}\qquad
-        \frac{E[\Gamma] \vdash R : \reg \sigma\qquad E[\Gamma] \vdash Q : \reg \tau\qquad R\| Q}{E[\Gamma] \vdash (R,Q) : \reg \sigma \times \tau}
+        \frac{
+            \begin{aligned}
+                E[\Gamma] \vdash R : \reg(\sigma) \\
+                E[\Gamma] \vdash Q : \reg(\tau)
+            \end{aligned}
+            \qquad \var(R) \cap \var(Q) = \emptyset
+        }{E[\Gamma] \vdash (R,Q) : \reg(\sigma \times \tau)}
     \]
 
     \item Typing rules for labelled Dirac notations.
     \[
         \textbf{L-Basis-Ket}\qquad 
-        \frac{r : \reg \sigma \in E\qquad E[\Gamma] \vdash i : \Basis(\sigma)}{E[\Gamma] \vdash |i\>_r : \DType(\{r\}, \emptyset)}
+        \frac{r : \reg(\sigma) \in E\qquad E[\Gamma] \vdash i : \Basis(\sigma)}{E[\Gamma] \vdash |i\>_r : \DType(\{r\}, \emptyset)}
     \]
     \[
         \textbf{L-Basis-Bra}\qquad 
-        \frac{r : \reg \sigma \in E \qquad E[\Gamma] \vdash i : \Basis(\sigma)}{E[\Gamma] \vdash {}_r\<i| : \DType(\emptyset, \{r\})}
+        \frac{r : \reg(\sigma) \in E \qquad E[\Gamma] \vdash i : \Basis(\sigma)}{E[\Gamma] \vdash {}_r\<i| : \DType(\emptyset, \{r\})}
     \]
     \[
         \textbf{L-Ket}\qquad 
-        \frac{E[\Gamma] \vdash R : \reg \sigma\qquad E[\Gamma] \vdash K : \KType(\sigma)}{E[\Gamma] \vdash K_R : \DType(\var R, \emptyset)}
+        \frac{E[\Gamma] \vdash R : \reg(\sigma)\qquad E[\Gamma] \vdash K : \KType(\sigma)}{E[\Gamma] \vdash K_R : \DType(\var R, \emptyset)}
     \]
     \[
         \textbf{L-Bra}\qquad 
-        \frac{E[\Gamma] \vdash R : \reg \sigma\qquad E[\Gamma] \vdash B : \BType(\sigma)}{E[\Gamma] \vdash B_R : \DType(\emptyset, \var R)}
+        \frac{E[\Gamma] \vdash R : \reg(\sigma)\qquad E[\Gamma] \vdash B : \BType(\sigma)}{E[\Gamma] \vdash B_R : \DType(\emptyset, \var R)}
     \]
     \[
         \textbf{L-Opt}\qquad 
         \frac{
             \begin{aligned}
-                E[\Gamma] \vdash R_1 : \reg \sigma_1 \\
-                E[\Gamma] \vdash R_2 : \reg \sigma_2
+                E[\Gamma] \vdash R_1 : \reg (\sigma_1) \\
+                E[\Gamma] \vdash R_2 : \reg (\sigma_2)
             \end{aligned}
             \qquad
             E[\Gamma] \vdash O : \OType(\sigma_1, \sigma_2)
@@ -368,37 +389,31 @@ This section includes the full list of typing rules.
     \]
     \[
         \textbf{L-Conj}\qquad 
-        \frac{E[\Gamma] \vdash \tD : \DType(s_1,s_2)}{E[\Gamma] \vdash \tD^\dagger : \DType(s_2,s_1)}
+        \frac{E[\Gamma] \vdash D : \DType(s_1,s_2)}{E[\Gamma] \vdash D^\dagger : \DType(s_2,s_1)}
     \]
     \[
         \textbf{L-Scl}\qquad 
-        \frac{E[\Gamma] \vdash S : \SType\qquad E[\Gamma] \vdash \tD : \DType(s_1,s_2)}{E[\Gamma] \vdash S.\tD : \DType(s_1,s_2)}
+        \frac{E[\Gamma] \vdash S : \SType\qquad E[\Gamma] \vdash D : \DType(s_1,s_2)}{E[\Gamma] \vdash S.D : \DType(s_1,s_2)}
     \]
     \[
         \textbf{L-Add}\qquad
-        \frac{E[\Gamma] \vdash \tD_i : \DType(s_1,s_2)\quad \text{forall } i}{E[\Gamma] \vdash \tD_1+\cdots+\tD_n : \DType(s_1,s_2)}
+        \frac{E[\Gamma] \vdash D_i : \DType(s_1,s_2)\quad \text{forall } i}{E[\Gamma] \vdash D_1+\cdots+D_n : \DType(s_1,s_2)}
     \]
     \[
         \textbf{L-Tsr}\qquad
         \frac{
-            \begin{aligned}
-                E[\Gamma] \vdash \tD_1 : \DType(s_1,s_1') \\
-                E[\Gamma] \vdash \tD_2 : \DType(s_2,s_2')
-            \end{aligned}
-            \qquad 
-            \begin{aligned}
-                s_1\cap s_2 = \emptyset \\
-                s_1'\cap s_2' = \emptyset
-            \end{aligned}
+            E[\Gamma] \vdash D_i : \DType(s_i,s_i') \qquad
+            \bigcap_i s_i = \emptyset \qquad
+            \bigcap_i s_i' = \emptyset
         }
-        {E[\Gamma] \vdash \tD_1\otimes\tD_2 : \DType(s_1\cup s_2,s_1'\cup s_2')}
+        {E[\Gamma] \vdash D_1 \otimes \cdots \otimes D_i : \DType(\bigcup_i s_i, \bigcup_i s_i')}
     \]
     \[
         \textbf{L-Dot}\qquad
         \frac{
             \begin{aligned}
-                E[\Gamma] \vdash \tD_1 : \DType(s_1,s_1') \\
-                E[\Gamma] \vdash \tD_2 : \DType(s_2,s_2')
+                E[\Gamma] \vdash D_1 : \DType(s_1,s_1') \\
+                E[\Gamma] \vdash D_2 : \DType(s_2,s_2')
             \end{aligned}
             \qquad 
             \begin{aligned}
@@ -406,7 +421,7 @@ This section includes the full list of typing rules.
                 s_2' \cap s_1' \backslash s_2 = \emptyset
             \end{aligned}
         }
-        {E[\Gamma] \vdash \tD_1\cdot\tD_2 : \DType(s_1 \cup (s_2\backslash s_1'), s_2' \cup (s_1'\backslash s_2))}
+        {E[\Gamma] \vdash D_1\cdot D_2 : \DType(s_1 \cup (s_2\backslash s_1'), s_2' \cup (s_1'\backslash s_2))}
     \]
     \[
         \textbf{L-Sum}\qquad
@@ -1058,16 +1073,16 @@ This section includes all the rewriting rules used in the system. Related rules 
 \end{ruletable}
 
 
-\begin{ruletable}{Rules for Bit index.}
+\begin{ruletable}{Rules for bool index.}
     %
     R-BIT-DELTA
     & $\delta_{0, 1} \ \reduce\ 0$ \\
     %
     R-BIT-ONEO
-    & $\ONEO(\textsf{Bit})\ \reduce\ \ket{0}\bra{0} + \ket{1}\bra{1} $ \\
+    & $\ONEO(\textsf{bool})\ \reduce\ \ket{0}\bra{0} + \ket{1}\bra{1} $ \\
     %
     R-BIT-SUM
-    & $\sum_{i \in \mathbf{U}(\textsf{Bit})} A\ \reduce\ A\{i/0\} + A\{i/1\}$
+    & $\sum_{i \in \mathbf{U}(\textsf{bool})} A\ \reduce\ A\{i/0\} + A\{i/1\}$
 \end{ruletable}
 
 \begin{ruletable}{Rules about addition and sum.}
@@ -1146,10 +1161,10 @@ This section includes all the rewriting rules used in the system. Related rules 
     R-SUM-PUSHD0
     & $ X_1 \otimes \cdots (\sum_{i \in M} D) \cdots \otimes X_2\ \reduce\ \sum_{i \in M} (X_1 \otimes \cdots D \cdots \otimes X_n) $ \\
     %
-    R-SUM-PUSHD2
+    R-SUM-PUSHD1
     & $ (\sum_{i \in M} D_1) \cdot D_2 \ \reduce\ \sum_{i \in M} (D_1 \cdot D_2) $ \\
     %
-    R-SUM-PUSHD3
+    R-SUM-PUSHD2
     & $ D_1 \cdot (\sum_{i \in M} D_2) \ \reduce\ \sum_{i \in M} (D_1 \cdot D_2) $
 \end{ruletable}
 

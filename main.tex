@@ -44,6 +44,8 @@
 \usepackage{braket}
 \usepackage{cleveref}
 
+\input{lstlisting}
+
 \usepackage{tikz}
 \usetikzlibrary{shapes.geometric, arrows}
 
@@ -75,6 +77,9 @@
     \end{longtable}
 }
 
+% define C++ logo
+\newcommand{\CC}{C\nolinebreak\hspace{-.05em}\raisebox{.4ex}{\tiny\bf +}\nolinebreak\hspace{-.10em}\raisebox{.4ex}{\tiny\bf +}}
+\def\CC{{C\nolinebreak[4]\hspace{-.05em}\raisebox{.4ex}{\tiny\bf ++}}}
 
 
 %
@@ -126,15 +131,7 @@
 %
 \begin{abstract}
 
-Dirac notations are widely used in theoretical reasonings of quantum computation and quantum information.
-The previous work proved that the equivalence of basic Dirac notations is decidable, and provided a
-corresponding term rewriting system.
-This work focuses on developing the theory and tool that practically solves this problem. Compared to the
-previous result, this work includes a typing system and a simplified term rewriting system.
-A much more efficient algorithm.
-And a language and algorithm for labelled Dirac notation is proposed as the final contribution.
-We implement the whole algorithm in C++ with a Mathematica backend for theories of scalars, which 
-decides the 158 examples in seconds.
+    Dirac notations is the fundamental language in quantum computation and quantum information reasoning. Recently, the term rewriting system DiracDec~\cite{diracdec} was introduced to automate equational reasoning with Dirac notations, a critical yet time-intensive component of formalization tasks. This work bases upon and extends DiracDec, aiming to develop a solver optimized for practical applications. Enhancements include an improved typing system, a simplified language and rewriting system, more efficient algorithms, and added support for labelled Dirac notations. The solver Dirace, implemented in \CC\ with a Mathematica backend, demonstrates superior decision-making power and computational efficiency, successfully addressing all examples in its benchmark suite.
 
 
 % \keywords{First keyword  \and Second keyword \and Another keyword.}
@@ -197,40 +194,39 @@ decides the 158 examples in seconds.
 
 In 1939, Dirac proposed his notation~\cite{dirac1939new} for quantum mechanics, which is designed to represent linear algebra formulae in a compact and convenient way.
 For instance, $a\ket{\psi} + b\ket{\phi}$ indicates the addition of two vectors, i.e., the superposition of two states $\ket{\psi}$ and $\ket{\phi}$.
-Dirac notation is also widely accepted as the working language in quantum computation and quantum information.
-The reasonings of Dirac notations play a fundamental role, but there was few works on automating this procedure.
+Dirac notation is now widely accepted as the working language in quantum computation and quantum information. The reasonings of Dirac notation play a fundamental role in research and application, just like boolean and integer logic to classical computer science. 
+For example, formalization works of quantum algorithms and quantum programming languages involves plenty of equational proofs of Dirac notation, which are critical, repeating but time-intensive jobs.
+Dirac notation are also used in quantum programming languages to define the program states, operations and assertions. In order to automate the verification procedure, we need to simplify and check the equivalence of pre-conditions. 
+However, unlike the existence of SAT and SMT solver, we are still in need of a working Dirac notation solver, and this absence has become an obstacle of many areas.
 
-
-The absence of a working Dirac notation solver is also a main obstacle for proof automation of quantum programming languages.
-In these works, Dirac notation are used to define the program states, operations and assertions. In order to automate the verification procedure,
-we need to simplify and check the equivalence of pre-conditions. 
-
-
-Recently, the work by Yingte et al.[] provides a theory to decide the equivalence of Dirac notations, as well as a prototype implementation in Mathematica.
+Recently, Xu et al.~\cite{diracdec} proposed a theory to decide the equivalence of Dirac notations, as well as a prototype implementation in Mathematica called DiracDec.
 They proved that the equivalence of basic Dirac notations are decidable.
-Their system sticks with a pure term rewriting system, which allows to prove important properties such as confluence and termination.
-Even though, there is still a gap to a practical solver for Dirac notation equivalence.
-The Mathematica implementation is hard to be integrated into other tools. 
-The second concern is the efficiency. To decide the theory $E$, \DiracDec\ iterates all possible permutations, which is simple and direct but has factorial complexity.
-And lastly, the previous work does not consider labelled Dirac notation.
-The original work cannot intergrate with well with the Scalar system in mathematica.
-And there were a few examples that failded to decide.
+Their decision procedure sticks with a pure term rewriting system, which allows to prove important properties such as confluence and termination of the system.
+Even though, there is still a gap between DiracDec and a practical solver for Dirac notation equivalence.
+
+One problem is the algorithm efficiency for equivalence out of the scope of rewritings. DiracDec decides the whole equational theory by rewriting modulo $E$, where $E$ is a set of equational axioms that cannot be decided by normalization in rewritings, e.g. the associativity and commutativity (AC) of some function symbols. DiracDec uses a direct by inefficient algorithm to decide $E$, which search through all possible permutations and has factorial complexity.
+This is witnessed in their evaluation: DiracDec is not good at dealing with "computational" examples, which has many AC symbols and are therefore time consuming.
+
+Another problem is the lack of labelled Dirac notations.
+which makes the reasoning more convenient and scaleable.
+
+One last problem is about usability.
+The typing of DiracDec only deals with Dirac notations, which is not sufficient for a working scenario, where defined symbols are desirable, and variables have their typing assumptions in the context.
+Moreover, to avoid type checking during term rewriting, DiracDec uses different symbols for the same casual notation to disambiguate, which 
+is not close to the natural way of using the langauge, and makes the system bloated.
+It is hard to integrate the Mathematica implementation as solvers into into other tools.  
+Although DiracDec solve most examples in the benchmark, including some very complicated equations, there are still a few examples that DiracDec failds to decide.
 
 
 
-
-
-This work refines the pure term-rewriting based system into a hybrid decision procedure,
-overcomes the problems mentioned above and focuses on practical
-automated equational reasonings. Our main contributions are:
+Aimming at building a practical solver, this work bases on and extends the DiracDec result, transform the term rewriting system into a hybrid decision procedure, and overcomes the problems mentioned above. Our main contributions and techniques are:
 \begin{itemize}
-    \item We propose a rigorous typing system for Dirac notation. Defined symbols (e.g., transpose and trace) are modelled by functions.
-        Also, the typing system removes the difficulty of disambiguation, therefore the language and the term rewriting system are much simplified.
-    \item An efficient algorithm to decide the extra equational theories $E$ is provided. The basic idea is normalization by sorting, which considers the interplay of AC symbols, SUM-SWAP and $\alpha$-equivalence. This algorithm reduces the complexity from the factorial level to the polynomial level.
-    \item The language to support variable labels is proposed.
+    \item An efficient algorithm to decide the extra equational theories $E$. The basic idea is normalization by sorting, which considers the interplay of AC symbols, SUM-SWAP and $\alpha$-equivalence. This algorithm reduces the complexity from the factorial level to the polynomial level.
+    \item The support for constant register labels. The equivalence decision of labelled Dirac notations is then reduced into the unlabelled situation.
+    \item A more usable \CC\ solver Dirace with usable language and typing. Defined symbols (e.g., transpose and trace) are modelled by functions.
 \end{itemize}
 
-\paragraph{Related Work} Other previous works explore the language and decision procedure to express quantum computation differently.
+As an evaluation, we tested Dirace on the benchmark of DiracDec and new example for labelled Dirac notations. Dirace successfully decides all the examples that are expressable in its language, including those failed by DiracDec because of complexity or insufficient decision power.
 
 
 
@@ -240,58 +236,99 @@ automated equational reasonings. Our main contributions are:
 The preliminary for the problem are two folds: Dirac notation and the equational logic in universal algebra.
 
 Quantum states live in complex Hilbert spaces. We use vectors in the space to descirbe pure quantum states, and operations corresponds to linear transformations. 
-In 1939, Dirac proposed his notation~\cite{dirac1939new} for quantum mechanics, which is essentially a wrapping of the linear algebra language. 
-Dirac notation uses the ket $\ket{i}$ and the bra $\bra{i}$ to indicate bases of the space and the dual space. Together with other variable symbols, they are composed with each other in sequence, and the composition will be interpreted into different operations, depending on the type of operands. For example, $\braket{i|j}$ represents the inner product of $\bra{i}$ and $\ket{j}$, which is a scalar, while $\ket{i}\bra{j}$ represents the outer product, resulting in an operator. 
+Dirac notation are used to express the linear algebra formula in a convenient and compat way.
+It uses the ket $\ket{i}$ and the bra $\bra{i}$ to indicate bases of the space and the dual space. Together with other variable symbols, they are composed with each other in sequence, and the composition will be interpreted into different operations, depending on the type of operands. For example, $\braket{i|j}$ represents the inner product of $\bra{i}$ and $\ket{j}$, which is a scalar, while $\ket{i}\bra{j}$ represents the outer product, resulting in an operator. 
+Dirac notation also use $\otimes$ to indicate the vectors and operators in the tensor product space.
+
+Dirac notation further enjoys the property that the interpretation is independent on the order of composition, thus parentheses can be omitted. For example, the formula \(\bra{i}\ket{\phi}\bra{\psi}\ket{j}\) can be understood as
 \[
     \braket{i|\phi}\braket{\psi|j} = \bra{i} (\ket{\phi}\bra{\psi}) \ket{j},
 \]
 and they are equivalent for all variables.
-Dirac notation also use $\otimes$ to indicate the vectors and operators in the tensor product space.
 
-In this manner, we can express long formulae in succint Dirac notations. The notation further enjoys the property that the interpretation is independent on the order of composition, thus parentheses can be omitted. For example, the formula \(\bra{i}\ket{\phi}\bra{\psi}\ket{j}\) can be understood as
+With the concrete basis, Dirac notations can be interpreted as matrices. For example, the ket of two basis of qubit states are column vectors $\ket{0} = \begin{bmatrix} 1 \\ 0 \end{bmatrix}$ and $\ket{1} = \begin{bmatrix} 0 \\ 1 \end{bmatrix}$, and the corresponding bras are row vectors in the dual space $\bra{0} = \begin{bmatrix} 1 & 0 \end{bmatrix}$ and $\bra{1} = \begin{bmatrix} 0 & 1 \end{bmatrix}$.
+The calculation between Dirac notations then corresponds to matrix operatoins. For example, inner product $\braket{0| 1} = \begin{bmatrix} 0 & 1 \end{bmatrix} \begin{bmatrix} 1 \\ 0 \end{bmatrix} = 0$, and tensor product $\ket{0} \otimes \ket{1} = \ket{(0, 1)} = \begin{bmatrix} 1 \\ 0 \end{bmatrix} \otimes \begin{bmatrix} 0 \\ 1 \end{bmatrix} = \begin{bmatrix} 0 \\ 1 \\ 0 \\ 0 \end{bmatrix}$.
 
-With the concrete basis, Dirac notations can be interpreted as matrices. For example ...
+In practice, Dirac notations are combined with other syntax for better expressiveness. For example, the big operator sum $\sum_{i \in S} A$ are used in theoretical reasonings. We also use labelled Dirac notation, where Dirac notations are subscripted with registers to denote the quantum system in consideration, e.g. $\ket{i}_q \otimes \ket{i}_r$.
+
+We use universal algebra and equational logic to formally represent Dirac notations and the reasoning procedure.
+A universal algebra defines a signature of function symbols and the axioms. Terms in the algebra are constructed by constants, variables or function application on terms. In our case of Dirac notation, the signature consists of constructors and operations like $\ket{i}$ or $A \otimes B$, and the axioms Dirac notation equivalenc rules with equational logic.
+
+Here is an example proof of a equivalence lemma.
+\begin{example}
+    Let $q$ and $r$ be two quantum systems on $\mathcal{H}_T$ space. Let $M$ be a quantum operation on $\mathcal{H}_T$,
+    and $\ket{\Phi} = \sum_{i \in T} \ket{i}\otimes \ket{i}$ be the maximally entangled state, then we have
+    \[
+    M_q \ket{\Phi}_{q; r} = M_r^T \ket{\Phi}_{q; r}.
+    \]
+\end{example}
 
 
+\yx{I guess it's wise to avoid mentioning that we don't impose fixed arity.}
 
-We use universal algebra and equational logic to formally represent Dirac notations and the reasoning procedure in computers.
-
-\yx{mention the dilemma of simplicity and efficiency}
+% \yx{mention the dilemma of simplicity and efficiency}
 
 
 \section{Language, Typing and Semantics}
-The syntax of Dirac notations involves three layers: the index, the type and the term. 
-Index represents classical datatypes, and they appear in type expression to denote the type of Hilbert spaces and sets.
+The syntax of Dirac notations involves three layers: the index, the type and the term.
+Terms describe the concrete instances like ket, bra and operator, which will be checked and typed.
+Index represents classical datatypes, and they appear in type expression to distinguish between different Hilbert spaces and sets.
 
-
-\begin{definition}[language syntax]
-    The syntax for type indices are defined as
+\begin{definition}[index syntax]
+    The syntax for type indices is
     \begin{align*}
-        \sigma ::=\ & x \mid \sigma_1 \times \sigma_2 \mid \mathsf{Bit}.
+        \sigma ::=\ & x \mid \sigma_1 \times \sigma_2 \mid \mathsf{bool}.
     \end{align*}
-    The syntax for Dirac notation types is defined as 
+\end{definition}
+Here $x$ is a variable. $\sigma_1 \times \sigma_2$ is the product type, which is used to represent the type of tensor product space, or Cartesian product sets.
+$\mathsf{bool}$ is a constant index with two basis, and is used in Dirac notations of qubit systems.
+
+
+
+\begin{definition}[type syntax]
+    The syntax for Dirac notation types is
     \begin{align*}
         T ::=\ & \Basis(\sigma) \mid \SType \mid \KType(\sigma) \mid \BType(\sigma) \mid \OType(\sigma_1, \sigma_2) \mid T_1 \to T_2 \mid \forall x.T \mid \SET(\sigma). \\
     \end{align*}
-    The syntax for Dirac notation terms is defined as
+\end{definition}
+$\Basis(\sigma)$ is the type for basis in index $\sigma$. $\SType$ indicates scalars, $\KType(\sigma)$ and $\BType(\sigma)$ indicates ket and bra terms in Hilbert space $\sigma$, and $\OType(\sigma_1, \sigma_2)$ indicates linear operators with Hilbert space $\sigma_2$ as domain and $\sigma_1$ as codomain.
+$\mathsf{Set}(\sigma)$ is the type of subsets in $\sigma$ index, and is used to denote the values of bound variables in summation.
+The remaining two generators are types for functions. $T_1 \to T_2$ denotes normal functions, which accepts a $T_1$ type argument and results in a $T_2$ type term. $\forall x. T$ denotes index functions, which accepts an index argument $x$ and results in a $T$ type term, where $T$ can depend on $x$.
+
+\begin{definition}[term syntax]
+    The syntax for Dirac notation terms is
     \begin{align*}
         e ::=\ & x \mid \lambda x : T.e \mid \mu x.e \mid e_1\ e_2 \mid e_1 \circ e_2 \\
         & |\ \hat{0} \mid \hat{1} \mid (e_1, e_2) \\
-        & |\ 0 \mid 1 \mid \ADDS(e_1 \cdots e_n)  \mid e_1 \times \cdots \times e_n \mid e^*  \mid \delta_{e_1, e_2} \mid \DOT(e_1\ e_2) \\
+        & |\ 0 \mid 1 \mid \ADDS(e_1, \cdots, e_n)  \mid e_1 \times \cdots \times e_n \mid e^*  \mid \delta_{e_1, e_2} \mid \DOT(e_1, e_2) \\
         & |\ \ZEROK(\sigma) \mid \ZEROB(\sigma) \mid \ZEROO(\sigma_1, \sigma_2) \mid \ONEO(\sigma) \\
-        & |\ \ket{e} \mid \bra{t} \mid e^\dagger \mid e_1.e_2 \mid \ADD(e_1 \cdots e_n) \mid e_1 \otimes e_2 \\
-        & |\ \MULK(e_1\ e_2) \mid \MULB(e_1\ e_2) \mid \OUTER(e_1\ e_2) \mid \MULO(e_1\ e_2) \\
+        & |\ \ket{e} \mid \bra{t} \mid e^\dagger \mid e_1.e_2 \mid \ADD(e_1, \cdots, e_n) \mid e_1 \otimes e_2 \\
+        & |\ \MULK(e_1, e_2) \mid \MULB(e_1, e_2) \mid \OUTER(e_1, e_2) \mid \MULO(e_1, e_2) \\
         & |\ \mathbf{U}(e) \mid e_1 \star e_2 \mid \sum_{e_1} e_2.
     \end{align*}
 \end{definition}
- % after consideration I still think keep DOT as binary is the best choice. It reduces the unstability of complicated matching in sequences.
-Here $i$ is a natural number and $\$i$ represents the $i$-th bound variable in de Bruijn notation. 
-Compared to [?], this syntax for Dirac notations merges the symbols with overlapped properties, such as the addition and scaling symbols for ket, bra and operator.
-Here $\ADDS$ and $\ADD$ are two different AC symbols representing the scalar addition and the linear algebra addition respectively. They will be denoted as $a_1 + \cdots + a_n$ and $X_1 + \cdots + X_n$.
-There are five kinds of linear algebra multiplications among ket, bra and operator, whose properties are similar but still diverge to some extent. For example, the rules $(O_1 \cdot O_2) \cdot K\ \reduce\ O_1 \cdot (O_2 \cdot K)$ and $B \cdot (O_1 \cdot O_2) \ \reduce\ (B \cdot O_1) \cdot O_2$ indicate that the sorting of multiplication sequences depends on the subterm types. To avoid frequent but unnecessary type checkings, we encode the typing information by using five different symbols, namely $\DOT$, $\MULK$, $\MULB$, $\OUTER$ and $\MULO$. They are denoted as $B\cdot K$, $K_1 \cdot K_2$, $B_1 \cdot B_2$, $K \cdot B$ and $O_1 \cdot O_2$, respectively.
 
-Usually, the sum body is specified by an abstraction. Therefore we use notation $\sum_s X$ to denote $\sum_{x \in s} \lambda x : T . X$ as well.
+The generators are explained in order.
+$\lambda x : T.e$ is the abstraction for normal functions, and $\mu x.e$ is the abstraction for index functions.
+$e_1\ e_2$ is function application. 
+$e_1 \circ e_2$ is the composition operator of Dirac notations.
+$\hat{0}$ and $\hat{1}$ are constant basis of $\Basis(\mathsf{bool})$ type.
+$(e_1, e_2)$ is the basis pair for product types. $0$, $1$, $\ADDS$, $e_1 \times \cdots \times e_n$ and $e^*$ are symbols for scalars. 
+The next line includes constant symbols for ket, bra and operator.
+$e^\dagger$ denotes the conjugate transpose of $e$. $e_1.e_2$ denotes scaling the term $e_2$ with scalar $e_1$.
+$\mathbf{U}(e)$ is the universal set with index $e$. $e_1 \star e_2$ is the Cartesian product. $\sum_{e_1} e_2$ is the big operator sum, which is modelled by folding the function $e_2$ over value sets $e_1$. Usually, the sum body is specified by an abstraction. Therefore we use the notation $\sum_{x \in s} X$ to denote $\sum_{s} \lambda x : T . X$ as well.
  
+
+
+
+
+Here $\ADDS$ and $\ADD$ are two different AC symbols representing the scalar addition and the linear algebra addition respectively. 
+% They will be denoted as $a_1 + \cdots + a_n$ and $X_1 + \cdots + X_n$.
+There are five kinds of linear algebra multiplications among ket, bra and operator. We encode the typing information by using five different symbols, namely $\DOT$, $\MULK$, $\MULB$, $\OUTER$ and $\MULO$. They are denoted as $B\cdot K$, $K_1 \cdot K_2$, $B_1 \cdot B_2$, $K \cdot B$ and $O_1 \cdot O_2$, respectively.
+
+
+Compared to DiracDec, our language for Dirac notations merges the symbols with identital properties, such as the addition and scaling symbols for ket, bra and operator. One important difference is that AC symbols are treated as functions with indefinite arities.
+
 
 
 \subsection{Typing System}
@@ -355,16 +392,22 @@ The big operator sum is modelled by folding a function on a set, therefore the t
     \frac{E[\Gamma] \vdash s : \SET(\sigma) \qquad E[\Gamma] \vdash f : \Basis(\sigma) \to \KType(\tau)}{E[\Gamma] \vdash \sum_{s} f : \KType(\tau)}.
 \]
 
-And lastly we have the typing rules for composition $x \circ y$. As is the case for casual Dirac notation, the typing of composition depends on the types of operands.
+And lastly we have the typing rules for composition $x \circ y$. Similar to casual Dirac notations, the typing of composition depends on the types of operands.
 \begin{gather*}
     \frac{E[\Gamma] \vdash x : \SType \qquad E[\Gamma] \vdash y : \KType(\sigma)}{E[\Gamma] \vdash x \circ y : \KType(\sigma)}
     \qquad
     \frac{E[\Gamma] \vdash x : \OType(\sigma, \tau) \qquad E[\Gamma] \vdash y : \KType(\tau)}{E[\Gamma] \vdash x \circ y : \KType(\sigma)}
 \end{gather*}
 
+
+
 \begin{lemma}
     The typing of expressions are decidable and unique.
 \end{lemma}
+
+\begin{proof}
+    The type can be calculated in the recursive manner. There is at most one typing rule for the same function symbol and argument types, which leads to the uniqueness of typing.
+\end{proof}
 
 \subsection{Semantics}
 
@@ -376,6 +419,25 @@ This explanation formalizes the original definition of Dirac notations, and best
 
 The semantics by equations, on the other hand, is an abstraction and axiomization. From the operational view, each equation declares a 
 valid rewriting operation, and two expressions are equiavlent if and only if they can be rewritten into the same form using the axioms.
+
+
+\yx{where should we put the example?}
+To conclude the design introduction, we demonstrate part of the formalization of the preliminary example.
+\begin{example}[formalizing the preliminary example]
+    Definitions and assumptions in the environment:
+    \begin{align*}
+        & \textrm{TPO} && := \mu T_1. \mu T_2. \lambda O : \OType(T_1, T_2). \sum_{i \in \mathbf{U}(T_1)} \sum_{j \in \mathbf{U}(T_2)} \bra{i} O \ket{j} . \ket{j}\bra{i} \\
+        & && : \forall T_1. \forall T_2. \OType(T1, T2) \to \OType(T2, T1); \\
+        & \textrm{phi} && := \mu T. \sum_{i \in \mathbf{U}(T)} \sum_{j \in \mathbf{U}(T)} \ket{(i, j)} : \forall T.\KType(T \times T); \\
+        & \textrm{T} && : \Index; \\
+        & \textrm{M} && : \OType(T, T).
+    \end{align*}
+\end{example}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 \section{Decision procedure for Dirac notations}
 
@@ -459,9 +521,40 @@ The previous work did not consider the algorithm to decide equational theory $E$
 
 A standard approach to decide this permutation equivalence is to normalize by sorting with a given order. For example, given the dictionary order $a < b < c$, the term $b + c + a$ (and any other AC equivalent ones) will be normalized into $a + b + c$. For our setting, there are two related difficulties: how to assign such an order to all terms in our language, and how to normalize with respect to AC-equivalence and (SUM-SWAP) at the same time.
 
+As a typical example, the two terms 
+\[
+    \sum_{i \in s_1} \sum_{j \in s_2} \bra{i}A\ket{j} \times \bra{j}B\ket{i}
+    = 
+    \sum_{i \in s_2} \sum_{j \in s_1} \bra{i}B\ket{j} \times \bra{j}A\ket{i}
+\]
+are equivalent due to the swap of summations and commutativity of scalar multiplication. 
+
+We propose an algorithm to ...
+
+To describe the algorithm, we introduce two notations: for a term $e = f(a_1, a_2, \cdots, a_n)$, $\textrm{head}(e)$ indicates the function symbol $f$,
+and $\textrm{arg}(e, i)$ indicates the $i$-th argument $a_i$. Variables and constants are considered as functions with zero arguments.
+\begin{definition}[order modulo bound variables]
+    Assume we have a total order of all symbols.
+    Let $\mathcal{B}$ be the set of bound variables.
+    For simplicity, we assume all bound variables are unique. 
+    The relation $e_1 < e_2$ between the two terms holds when:
+    \begin{itemize}
+        \item $e_1 \notin \mathcal{B}$ and $e_2 \in \mathcal{B}$, or
+        \item $head(e_1) < head(e_2)$, or
+        \item $head(e_1) = head(e_2)$, and there exists $n$ with $arg(e_1, n) < arg(e_2, n)$, and for all $i < n$, either $arg(e_1, i) = arg(e_2, i)$, or $arg(e_1, i) \in \mathcal{B}$ and $arg(e_2, i) \in \mathcal{B}$.
+    \end{itemize}
+\end{definition}
+
+The order depends on there occurances in the last sorting result. If no occurance, then the order will depend on the set (for sum) and the type (for lambda abstraction only).
+
+%%%%%%%%%%%%%%%%%%%%%%%
+
+
+The idea is to assign an order to terms, which is independent on the bound variables. Because we can have terms with nested AC symbols.
 
 
 
+And in the end, the $\alpha$-equivalence are checked by de Bruijn index~\cite{deBruijn1972lambda}, where references to bound variable names are replaced by the distance of the lambda abstraction to the variable. For example, the nominal lambda abstraction $\lambda x. x$ is transformed into $\lambda . 1$, while $\lambda x. \lambda y. (x\ (y\ x))$ will is transformed into $\lambda.\lambda. (2\ (1\ 2))$. Therefore, transformation into de Bruijn index is at the last step of the normalization to check the equivalence of terms with different bound variable names.
 
 
 At last, we will prove that equivalence by this normalization procedure is sound in the semantics. 
@@ -477,49 +570,70 @@ At last, we will prove that equivalence by this normalization procedure is sound
 
 \input{labelled}
 
+
 \section{Implementation and Case Study}
+
+The main purpose of this work is to build a practical tool that works well in checking Dirac notation equations. The refinements and extensions above concludes in our implementation called Dirace. Dirace is a solver written in \CC\ working as a command line tool. It has a parser built by ANTLR4, and scalar reasonings are powered by a Mathematica kernel. The user can use commands to make definitions and assumptions in the maintained context, conduct the normalization and equivalence checking, and obtain the rewriting trace output. This implementation 
+is tested on the benchmark of the DiracDec work, and succeeds in proving most of them efficiently.
+
+Here is the code for the preliminary example.
+
+    \begin{lstlisting}[style=dirace]
+Var T : INDEX. Var M : OTYPE[T, T].
+Def phi := idx T => Sum nv in USET[T], |(nv, nv)>.
+Var r1 : REG[T]. Var r2 : REG[T].
+CheckEq M_r1;r1 (phi T)_(r1, r2) with (TPO T T M)_r2;r2 (phi T)_(r1, r2).
+    \end{lstlisting}        
+
+The first three lines use the \texttt{Var} and \texttt{Def} commands to set up the context for the Dirac notation.
+Here \texttt{T} is a type index, representing arbitrary Hilbert space type. \texttt{M} is assume to be an operator in Hilbert space with type \texttt{T}. \texttt{phi} is defined as the maximally entangled state.
+
+Besides, the symbol \texttt{TPO} represents transpose of operators, and the definition is provided as
+\begin{lstlisting}[style=dirace]
+Def TPO := idx sigma => idx tau => fun O : OTYPE[sigma, tau] => Sum i in USET[sigma], Sum j in USET[tau], (<i| O |j>).(|j> <i|).
+\end{lstlisting}
+
+
+And the output result is:
+    \begin{lstlisting}[style=dirace]
+The two terms are equal.
+[Normalized Term] SUM[USET[T], FUN[BASIS[T], SUM[USET[T], FUN[BASIS[T], SCR[DOT[BRA[$\texttt{\$1}$], MULK[M, KET[$\texttt{\$0}$]]], LTSR[LKET[$\texttt{\$1}$, r1], LKET[$\texttt{\$0}$, r2]]]]]]] : DTYPE[RSET[r1, r2], RSET]
+    \end{lstlisting}
+
+The normal form can be transformed into the formatted version:
+
+\[
+\sum_{\mathbf{U}(T)} \sum_{\mathbf{U}(T)} \bra{\$1}M\ket{\$ 0} . \ket{\$1}_{r1} \otimes \ket{\$0}_{r2} : \DType(\{r1, r2\}, \emptyset)
+\]
+Here $\$0$ and $\$1$ are de Bruijn indices. The result is a ket on the \{r1, r2\} system as expected.
+
+\subsection{Benchmark performance}
+It does not support fst and snd projectors.
+It does not support interactive proof, as is used in the reasonings of quantum programming language theory.
+
+
+
+
+\section{Related Work}
+
+Other previous works explore the language and decision procedure to express quantum computation differently.
+
 
 
 
 \section{Conclusion}
+Based on the first Dirac notation equational reasoning tool DiracDec, this work refines and extends the theory for practical application, and provides the solver Dirace. Experimental results shows that the tool can correctly identify all encoded equivalent expressions efficiently. 
+We expect Dirace will play a role in areas like quantum program verification or proofs of post-quantum cryptography protocols.
 
 \clearpage
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Consideration}
-\begin{itemize}
-    \item Sorting requires that alpha equivalent terms have the same syntax.
-    \item de Bruijn expression satisfies this requirement, but the typing and substitution becomes very complicated in the type index scenario.
-    \item only compute de Bruijn form in the equivalence checking and sorting phase.
-    \item pipeline: 
-        \begin{enumerate}
-            \item preprocessing
-            \item rename unique bound variable names
-            \item 1st rewritings
-            \item variable expansion
-            \item 2nd rewritings 
-            \item sorting modulo bound variables
-            \item sorting successive sum. The order depends on there occurances in the last sorting result. If no occurance, then the order will depend on the set (for sum) and the type (for lambda abstraction only).
-            \item computing de Bruijn
-        \end{enumerate}
-
-    \item I found that typing of inner bound variables also requires modifying the context.
-    Need to modify the tree visiting algorithm
-    (Typed term rewriting with bound variables is not that easy)    
-\end{itemize}
-
 \section{TODO}
 \begin{itemize}
-    \item implemented trace output for the whole pipeline.
     \item better output.
-    \item add Mathematica support for scalars
-    \item output trace to Coq
-    \item consider labelled Dirac notations
-    \item better trace output
     \item better error logic
-    \item better format output
-    \item remove term bank and hash consing
+    \item the $\bar{U_{AC}}$, $\bar{U_{BC}}$ terms can be modelled by quantum registers.
 \end{itemize}
 
 \section{Things to Note}
@@ -527,8 +641,6 @@ At last, we will prove that equivalence by this normalization procedure is sound
     \item The context should also be maintained during rewriting matching.
     \item We don't allow eta reduction. It will intertwine with SUM-SWAP and break the confluence.
     \item In each Delta reduction, the bound variables are replaced with unique variables. This should help solve the problem of conflicting variable names during substitution.
-    \item I guess it may still be necessary to try all different bound variable assignments.
-    \item the $\bar{U_{AC}}$, $\bar{U_{BC}}$ terms can be modelled by quantum registers.
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%

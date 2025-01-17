@@ -1,0 +1,22 @@
+
+\usepackage{listings}
+\usepackage[dvipsnames]{xcolor}
+
+
+\lstdefinestyle{dirace}{
+    columns=fullflexible,
+    mathescape = true,
+    sensitive=true,
+    basicstyle=\ttfamily\small, % Set sans-serif font as basic font
+    breaklines=true,
+    backgroundcolor=\color{lightgray!50!white}, % Light gray background
+    morekeywords=[1]{Def, Var, CheckEq, with},
+    morekeywords=[2]{INDEX, OTYPE, REG, USET}, 
+    keywordstyle=[1]\bfseries\color{NavyBlue},
+    keywordstyle=[2]\bfseries\color{black}, 
+    %  emph={self},
+    % emphstyle=\bfseries\color{Rhodamine},
+    morecomment=[l]{//},
+    commentstyle=\itshape\color{black!50!white},
+    string=[b]"
+}
