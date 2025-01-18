@@ -201,7 +201,7 @@ However, unlike the existence of SAT and SMT solver, we are still in need of a w
 
 Recently, Xu et al.~\cite{diracdec} proposed a theory to decide the equivalence of Dirac notations, as well as a prototype implementation in Mathematica called DiracDec.
 They proved that the equivalence of basic Dirac notations are decidable.
-Their decision procedure sticks with a pure term rewriting system, which allows to prove important properties such as confluence and termination of the system.
+Their algorithm sticks with a pure term rewriting system, which allows to prove important properties such as confluence and termination of the system.
 Even though, there is still a gap between DiracDec and a practical solver for Dirac notation equivalence.
 
 One problem is the algorithm efficiency for equivalence out of the scope of rewritings. DiracDec decides the whole equational theory by rewriting modulo $E$, where $E$ is a set of equational axioms that cannot be decided by normalization in rewritings, e.g. the associativity and commutativity (AC) of some function symbols. DiracDec uses a direct by inefficient algorithm to decide $E$, which search through all possible permutations and has factorial complexity.
@@ -219,7 +219,7 @@ Although DiracDec solve most examples in the benchmark, including some very comp
 
 
 
-Aimming at building a practical solver, this work bases on and extends the DiracDec result, transform the term rewriting system into a hybrid decision procedure, and overcomes the problems mentioned above. Our main contributions and techniques are:
+Aimming at building a practical solver, this work bases on and extends the DiracDec result, transform the term rewriting system into a hybrid algorithm, and overcomes the problems mentioned above. Our main contributions and techniques are:
 \begin{itemize}
     \item An efficient algorithm to decide the extra equational theories $E$. The basic idea is normalization by sorting, which considers the interplay of AC symbols, SUM-SWAP and $\alpha$-equivalence. This algorithm reduces the complexity from the factorial level to the polynomial level.
     \item The support for constant register labels. The equivalence decision of labelled Dirac notations is then reduced into the unlabelled situation.
@@ -411,14 +411,61 @@ And lastly we have the typing rules for composition $x \circ y$. Similar to casu
 
 \subsection{Semantics}
 
-Semantics assign the meanings to the expressions, and the goal of the decision procedure is to decide whether
-two expressions have the equivalent semantics. We consider two ways of definition: the axiomatic equations and the denotational semantics.
+Semantics define the meanings of expressions, and the goal of the desirable algorithm is to decide whether
+two expressions have the equivalent semantics. We can give the semantics by axiomatic equations and the denotational interpretations.
 
-The denotational way interprets every expression as a linear algebra concept, and equivalence is considered in the common mathematical sense.
-This explanation formalizes the original definition of Dirac notations, and best describes the target of the decision procedure.
+\subsubsection{Denotational semantics} The denotational way interprets every expression as a set theory object in linear algebra, according to a valuation mapping $v$ from variables to their values. This explanation formalizes the common explanation of Dirac notations, and best describes the target of the algorithm.
+The semantics of $e$ with valuation $v$ is written as $\sem{e}_v$, and two expressions $e_1$ and $e_2$ are equivalence if they have equal semantics in the mathematical sense for all valuations, written as $\sem{e_1} = \sem{e_2}$.
 
-The semantics by equations, on the other hand, is an abstraction and axiomization. From the operational view, each equation declares a 
-valid rewriting operation, and two expressions are equiavlent if and only if they can be rewritten into the same form using the axioms.
+Variables typed with $\Index$ are interpreted as finite sets, and index product $\sem{\sigma_1 \times \sigma_2} = \sem{\sigma_1} \times \sem{\sigma_2}$ are defined as Cartesian product of sets. Following on, every type is interpreted as a set. For example, the scalar type $\sem{\SType} = \mathbb{C}$ is interpreted as complex number set, the the ket and bra type $\sem{\KType(\sigma)} = \mathcal{H}_{\sem{\sigma}}$, $\sem{\KType(\sigma)} = \mathcal{H}_{\sem{\sigma}}^*$ are interpreted as the Hilbert space and dual space depending on $\sigma$. One special case is the delta symbol 
+$\sem{\delta_{s, t}} = 
+\left \{  
+    \begin{array}{ll}
+        1, & \text{where } \sem{s} = \sem{t}, \\
+        0, & \text{where } \sem{s} \neq \sem{t}.
+    \end{array} 
+\right .
+$.
+
+The idea behind the interpretation of types and terms is to characterize the typing relation with set theory inclusion. Therefore we have the following lemma.
+\begin{lemma}
+    For all well-formed context $E[\Gamma]$, term $t$ and type $T$, if $E[\Gamma]\vdash t : T$, then for all valuations $v$, $\sem{t}_v \in \sem{T}_v$.
+\end{lemma}
+
+
+\subsubsection{Axiomatic semantics} 
+An other way is to express the equivalence by a set of axioms. 
+% From the operational view, each equation declares a valid rewriting operation, and two expressions are equiavlent if and only if they can be rewritten into the same form using the axioms.
+For example, we have the absorption law of zero symbols $X \cdot \mathbf{0} = \mathbf{0}$, and the bilinearity of dot product
+\begin{align*}
+    (a.X) \cdot Y = a.(X \cdot Y) \qquad X \cdot (Y_1 + Y_2) = X \cdot Y_1 + X \cdot Y_2 \\
+    X \cdot (a.Y) = a.(X \cdot Y) \qquad (X_1 + X_2) \cdot Y = X_1 \cdot Y + X_2 \cdot Y
+\end{align*}
+
+Note that some equational theories cannot be decided by term rewriting, and are collected in the set $E$:
+
+\begin{align*}
+    & \textrm{AC-equivalence} 
+    && \textrm{e.g.} \qquad a + b = b + a \qquad (a + b) + c = a + (b + c) \\
+    & \textrm{$\alpha$-equivalence}
+    && \lambda x . A = \lambda y . A\{x/y\} \\
+    & \textrm{(SUM-SWAP)}
+    && \sum_{i \in s_1} \sum_{j \in s_2} A = \sum_{j \in s_2} \sum_{i \in s_1} A
+\end{align*}
+
+The equations should also include axioms for scalars. In the implementation, we use the Mathematica kernel to decide scalar equivalences, so the axioms are not given here.
+
+The equational axioms provide an operable theory for the proof automation algorithm,
+and the denotational semantics can be considered as one model for the theory.
+In this sense, the equivalence derived by axioms is weaker than the denotational semantics.
+
+\begin{lemma}
+    For all well-formed context $E[\Gamma]$ and terms $e_1$, $e_2$, if $AX \vdash e_1 = e_2$, then $\sem{e_1} = \sem{e_2}$.
+\end{lemma}
+
+Unfortunately, the inverse does not hold: there are expressions that are equivalent in denotational interpretations but not provable through the axioms.
+One notorious example is $\delta_{i, j} \times \delta_{j, k} = \delta_{i, k} \times \delta_{j, k}$. Intuitively, the two terms will be evaluated to $1$ if and only if $i = j = k$, but it is difficult to incorporate such properties as axioms.
+This incapability further limits the algorithmm, which is designed to automate reasonings using the axioms, and blocks us from proving complete results with respect to the semantics. But our work focuses on solving the practical examples, which are covered by our axioms, as is shown by experiments.
 
 
 \yx{where should we put the example?}
@@ -427,11 +474,17 @@ To conclude the design introduction, we demonstrate part of the formalization of
     Definitions and assumptions in the environment:
     \begin{align*}
         & \textrm{TPO} && := \mu T_1. \mu T_2. \lambda O : \OType(T_1, T_2). \sum_{i \in \mathbf{U}(T_1)} \sum_{j \in \mathbf{U}(T_2)} \bra{i} O \ket{j} . \ket{j}\bra{i} \\
-        & && : \forall T_1. \forall T_2. \OType(T1, T2) \to \OType(T2, T1); \\
+        & && : \forall T_1. \forall T_2. \OType(T_1, T_2) \to \OType(T_2, T_1); \\
         & \textrm{phi} && := \mu T. \sum_{i \in \mathbf{U}(T)} \sum_{j \in \mathbf{U}(T)} \ket{(i, j)} : \forall T.\KType(T \times T); \\
         & \textrm{T} && : \Index; \\
         & \textrm{M} && : \OType(T, T).
     \end{align*}
+    The symbol TPO is the encoding of operator transpose. It takes two index $T_1$ and $T_2$, and transforms the operators.
+    phi takes the index $T$ and defines the maximally entangled states. It sums over all basis in $T$, indicated by the universal set $\mathbf{U}(T)$.
+    With the assumption of index T and operator M, we can write the equivalence as 
+    \[
+        (\textrm{M} \otimes \mathbf{1}_\mathcal{O}(\textrm{T})) \cdot (\textrm{phi T}) = (\mathbf{1}_\mathcal{O}(\textrm{T}) \otimes (\textrm{TPO T T M})) \cdot (\textrm{phi T}).
+    \]
 \end{example}
 
 
@@ -439,13 +492,13 @@ To conclude the design introduction, we demonstrate part of the formalization of
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-\section{Decision procedure for Dirac notations}
+\section{Algorithm for Deciding Dirac notations equations}
 
-The following two sections talk about how to decide the equivalence of Dirac notations.
+The following two sections discuss how to decide the equivalence of Dirac notations implied by the axioms.
 In the previous work, the equational axioms are separated into two parts: a set $E$ of equations that can not be decided by rewriting, and the remaining equations to be decided by term rewriting.
 Here, the equational theories $E$ inlude:
 \begin{itemize}
-    \item Commutativity of symbols $a + b$, $a\times b$ and $\delta_{s, t}$,
+    \item commutativity of symbols $a + b$, $a\times b$ and $\delta_{s, t}$,
     \item $\alpha$-equivalence of bound variables, i.e., $\lambda x.t = \lambda y . t\{x/y\}$,
     \item swapping successive summations, i.e., $\sum_{i \in s_1} \sum_{j \in s_2} A = \sum_{j \in s_2} \sum_{i \in s_1}A$, and
     \item equational theories for scalars.
@@ -463,25 +516,39 @@ Term rewriting rules, written as $l -> r$, are used to normalize terms by recurs
 
 To express the term rewriting system, the previous work adheres to use the naive universal algebra, where each function symbol has a fixed arity, and the left hand side pattern only allows constant symbols and variables. This constraint enables them to check the confluence and termination of their term rewriting system with other tools.
 
-Here to enable more efficient algorithms, our langauge uses AC symbols with a variable arity.
+% Here to enable more efficient algorithms, our langauge uses AC symbols with a variable arity.
 
 The full list of rewriting rules are in~\Cref{sec: rewriting rules}. Here we present some of them to illustrate the design idea.
-
-When using variable arity AC symbols, the associativity can be normalized by the following flattening rule:
+The whole rule list consists of several types.
+Firstly, we use the following flattening rule to decide the associative with AC symbols.
 
 \[
 a_1 + \cdots + (b_1 + \cdots + b_m) + \cdots + a_n
 \ \reduce\ a_1 + \cdots + b_1 + \cdots + b_m + \cdots + a_n,
 \]
 
-while commutativity is left for a sorting algorithm later on.
+and commutativity is left for a sorting algorithm later on.
 
-The term rewriting rule follows the system in the previous work.
+Some equational axioms imply obvious rewriting diraction, for example:
 
-The general idea is to reduce all the possible calculations, and transform multiplication into tensor product as much as possible.
-
-And some rules exists for completeness. As an example, given the following rule snippet
 \begin{align*}
+    &\textrm{(R-DOT6)} && \bra{s} \cdot \ket{t} \ \reduce \delta_{s, t} \\
+    &\textrm{(R-DELTA0)} && \delta_{s, s} \ \reduce\ 1 \\
+    &\textrm{(R-MULK1)} && O : \OType(\sigma, \tau) \Rightarrow O \cdot \mathbf{0}_{\KType(\tau)} \ \reduce \mathbf{0}_{\KType(\sigma)}
+\end{align*}
+
+The (R-DOT6) says that inner product of two basis will be evaluated to a delta expression,
+and (R-DELTA0) further transforms delta on identical basis to scalar $1$.
+(R-MULK1) corresponds to the axiom that multiplication on zero vectors results in zero. It has a condition on typing, which is calculated during rewriting.
+They share the common feature that right hand side is simpler than the left hand side.
+
+Other part of rules assign the rewriting diraction to equations according to the property of symbols and intuitive observations of their relations.
+When different rules rewrites the same term to different forms, rules for confluence purpose are added.
+
+\begin{align*}
+    %
+    & \text{(R-SCR1)} 
+    && a.(b.X) \ \reduce\ (a \times b).X \\
     %
     & \text{(R-DOT10)}
     && (B \cdot O) \cdot K \ \reduce\ B \cdot (O \cdot K), \\
@@ -492,10 +559,27 @@ And some rules exists for completeness. As an example, given the following rule 
     & \text{(R-MULB10)}
     && \bra{(s, t)} \cdot (O_1 \otimes O_2)\ \reduce\ (\bra{s} \cdot O_1) \otimes (\bra{t} \cdot O_2),
 \end{align*}
-the normalization of term $(\bra{(s, t)} \cdot (O_1 \otimes O_2)) \cdot K$ have two rewriting paths: (a). apply (R-MULB10) and get $((\bra{s} \cdot O_1) \otimes (\bra{t} \cdot O_2)) \cdot K$, or
+The (R-SCR1) rule follows the idea to reduce linear algebra scaling into scalar multiplications,
+and (R-MULB10) transform inner product into tensor product. 
+As an example of the completetion rule, here the normalization of term $(\bra{(s, t)} \cdot (O_1 \otimes O_2)) \cdot K$ have two rewriting paths: (a). apply (R-MULB10) and get $((\bra{s} \cdot O_1) \otimes (\bra{t} \cdot O_2)) \cdot K$, or
 (b). first apply (R-DOT10) and sort the term into $\bra{(s, t)} \cdot ((O_1 \otimes O_2) \cdot K)$, and then apply (R-DOT11) to get the same result. Here (R-DOT11) is for completeness of cases similar to this example.
 
-One important technique revealed in the previous work is the expansion of variables:
+There are also rules dealing with sum expressions. For example, 
+
+\begin{align*}
+    & \textrm{(R-SUM-ELIM2)}
+    && i \text{ free in } t \Rightarrow \sum_{i \in \mathbf{U}(\sigma)} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (\delta_{i, t}.A) \\
+    & && \reduce\ \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} A\{i/t\} \\
+    & \textrm{(R-SUM-PUSH5)}
+    && (\sum_{i \in M} B)\cdot K \ \reduce\ \sum_{i \in M}(B \cdot K)
+\end{align*}
+
+The (R-SUM-ELIM2) rule will try to eliminate the delta expression in summations.
+And the (R-SUM-PUSH5) rule will lift sum to the outside of inner product.
+
+
+
+One important technique revealed in the DiracDec work is the expansion of variables:
 
 \begin{gather*}
     \frac{E[\Gamma] \vdash K : \KType(\sigma)}{E[\Gamma] \vdash K \ \reduce\ \sum_{i \in \mathbf{U}(\sigma)}(\bra{i}\cdot K).\ket{i}}
@@ -504,7 +588,7 @@ One important technique revealed in the previous work is the expansion of variab
     \\
     \frac{E[\Gamma] \vdash O : \OType(\sigma, \tau)}{E[\Gamma] \vdash O \ \reduce\ \sum_{i \in \mathbf{U}(\sigma)} \sum_{j \in \mathbf{U}(\tau)}(\bra{i} \cdot O \cdot \ket{j}).(\ket{i} \cdot \bra{j})}
 \end{gather*}
-The above three rules are obviously not terminating, and this is why we have the rewriting-expansion-rewriting steps in the decision procedure. On the other hand, we discovered that doing the expansion on all variables only once is already sufficient.
+The above three rules are not terminating, and this is why we have the rewriting-expansion-rewriting steps in the algorithm. On the other hand, we discovered that doing the expansion on all variables only once is already sufficient.
 
 \begin{lemma}
     Let $\text{expand}(e)$ indicate the result of expanding all variables in $e$ once.
@@ -517,44 +601,56 @@ The above three rules are obviously not terminating, and this is why we have the
 
 \section{Deciding Equational Theory $E$}
 
-The previous work did not consider the algorithm to decide equational theory $E$. In their Mathematica implementation, it is implemented by a unification, which tries to find a substitution of summation bound variables that makes the two expressions syntactically equivalent. To decide AC-equivalence and (SUM-SWAP), they iterate through all the permutations, and the complexity is factorial to the number of AC symbol arguments and successive summations.
+In the Mathematica implementation of DiracDec, the equational theory $E$ is decided by a unification, which tries to find a substitution of summation bound variables and AC symbol arguments that makes the two expressions syntactically equivalent. The unification iterates through all permutations, and the complexity is factorial in general.
 
-A standard approach to decide this permutation equivalence is to normalize by sorting with a given order. For example, given the dictionary order $a < b < c$, the term $b + c + a$ (and any other AC equivalent ones) will be normalized into $a + b + c$. For our setting, there are two related difficulties: how to assign such an order to all terms in our language, and how to normalize with respect to AC-equivalence and (SUM-SWAP) at the same time.
+As the first improvement, the $\alpha$-equivalence are checked by de Bruijn index~\cite{deBruijn1972lambda}, where references to bound variable names are replaced by the distance of the lambda abstraction to the variable. For example, the nominal lambda abstraction $\lambda x. x$ is transformed into $\lambda . 1$, while $\lambda x. \lambda y. (x\ (y\ x))$ will is transformed into $\lambda.\lambda. (2\ (1\ 2))$. Therefore, transformation into de Bruijn index is at the last step of the normalization to check the equivalence of terms with different bound variable names.
 
+
+A standard approach to decide this permutation equivalence is to normalize by sorting with a given order. For example, given the dictionary order $a < b < c$, the term $b + c + a$ (and any other AC equivalent ones) will be normalized into $a + b + c$. For our setting, there are two difficulties intertwined together: how to assign such an order to all terms in our language, and how to normalize with respect to $E$.
 As a typical example, the two terms 
 \[
     \sum_{i \in s_1} \sum_{j \in s_2} \bra{i}A\ket{j} \times \bra{j}B\ket{i}
     = 
     \sum_{i \in s_2} \sum_{j \in s_1} \bra{i}B\ket{j} \times \bra{j}A\ket{i}
 \]
-are equivalent due to the swap of summations and commutativity of scalar multiplication. 
+are equivalent due to the swap of summations and commutativity of scalar multiplication. However,
+directly sorting elemnts of scalar multiplication will not lead to the same form.
 
-We propose an algorithm to ...
+We propose an algorithm to solve the problem by sorting without bound variables. The observation is that in a successive sum expression $\sum_{i \in s_1}\cdots\sum_{j \in s_n}A$, the name and order of bound variables $i, \cdots, j$ can be permuted freely. Therefore, all bound variables should be treated uniformly during sorting, and the order of sum can then be decided according to the position of their bound variables.
+
+In the above example, we ignore the bound variables first, and sort the sum body into $\bra{\bullet}A\ket{\bullet} \times \bra{\bullet}B\ket{\bullet}$. Then we swap the sum so that the bound variable at first $\bullet$ position appears at the outside, and the two terms will have the same de Bruijn normal form as $\sum_{s_1} \sum_{s_2} \bra{\$1} A \ket{\$0} \times \bra{\$0} B \ket{\$1}$.
 
 To describe the algorithm, we introduce two notations: for a term $e = f(a_1, a_2, \cdots, a_n)$, $\textrm{head}(e)$ indicates the function symbol $f$,
-and $\textrm{arg}(e, i)$ indicates the $i$-th argument $a_i$. Variables and constants are considered as functions with zero arguments.
-\begin{definition}[order modulo bound variables]
+and $\textrm{arg}(e, i)$ indicates the $i$-th argument $a_i$. 
+% Variables and constants are considered as functions with zero arguments.
+\begin{definition}[order without bound variables]
     Assume we have a total order of all symbols.
     Let $\mathcal{B}$ be the set of bound variables.
-    For simplicity, we assume all bound variables are unique. 
-    The relation $e_1 < e_2$ between the two terms holds when:
+    For simplicity, we assume all bound variables are unique.
+    The relation $e_1 =_\mathcal{B} e_2$ holds when
+    \begin{itemize}
+        \item $head(e_1) = head(e_2)$ and $arg(e_1, i) =_\mathcal{B} arg(e_2, i)$ for all $i$, or
+        \item $e_1 \in \mathcal{B}$ and $e_2 \in \mathcal{B}$.
+    \end{itemize} 
+
+    The relation $e_1 <_\mathcal{B} e_2$ between the two terms holds when:
     \begin{itemize}
         \item $e_1 \notin \mathcal{B}$ and $e_2 \in \mathcal{B}$, or
         \item $head(e_1) < head(e_2)$, or
-        \item $head(e_1) = head(e_2)$, and there exists $n$ with $arg(e_1, n) < arg(e_2, n)$, and for all $i < n$, either $arg(e_1, i) = arg(e_2, i)$, or $arg(e_1, i) \in \mathcal{B}$ and $arg(e_2, i) \in \mathcal{B}$.
+        \item $head(e_1) = head(e_2)$, and there exists $n$ with $arg(e_1, n) <_\mathcal{B} arg(e_2, n)$, where $arg(e_1, i) =_\mathcal{B} arg(e_2, i)$ for all $i < n$.
     \end{itemize}
 \end{definition}
+It can be checked that $e_1 =_\mathcal{B} e_2$ if and only if neither $e_1 <_\mathcal{B} e_2$ or $e_2 <_\mathcal{B} e_1$ holds.
+The idea is to compare the function symbols in the top down order, and omit bound variable occurance.
 
-The order depends on there occurances in the last sorting result. If no occurance, then the order will depend on the set (for sum) and the type (for lambda abstraction only).
+
+% The order depends on there occurances in the last sorting result. If no occurance, then the order will depend on the set (for sum) and the type (for lambda abstraction only).
 
 %%%%%%%%%%%%%%%%%%%%%%%
 
 
 The idea is to assign an order to terms, which is independent on the bound variables. Because we can have terms with nested AC symbols.
 
-
-
-And in the end, the $\alpha$-equivalence are checked by de Bruijn index~\cite{deBruijn1972lambda}, where references to bound variable names are replaced by the distance of the lambda abstraction to the variable. For example, the nominal lambda abstraction $\lambda x. x$ is transformed into $\lambda . 1$, while $\lambda x. \lambda y. (x\ (y\ x))$ will is transformed into $\lambda.\lambda. (2\ (1\ 2))$. Therefore, transformation into de Bruijn index is at the last step of the normalization to check the equivalence of terms with different bound variable names.
 
 
 At last, we will prove that equivalence by this normalization procedure is sound in the semantics. 
@@ -616,7 +712,7 @@ It does not support interactive proof, as is used in the reasonings of quantum p
 
 \section{Related Work}
 
-Other previous works explore the language and decision procedure to express quantum computation differently.
+Other previous works exploring the language and algorithm to reasong about quantum computation differently.
 
 
 
