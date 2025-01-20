@@ -23,7 +23,7 @@ Labelled Dirac notation uses register names to indicate the quantum system of ve
 \[
     M_Q \cdot \ket{\Phi}_{(Q, R)} = ((M \otimes I) \ket{\Phi})_{(Q, R)}.
 \]
-In the left hand side, the state of two subsystems is $\ket{\Phi}$, and we apply quantum operation $M$ on the system $Q$.
+On the left hand side, the state of two subsystems is $\ket{\Phi}$, and we apply quantum operation $M$ on the system $Q$. It is equivalent to extend the operation using identity operators on other subsystems (i.e. the cylinder extension), and consider the application in the whole system.
 
 
 In this section, we introduce the language and typing of registers and labelled Dirac notations, and demonstrate how to transform the equivalence problem into the Dirac notations studied above.
@@ -31,25 +31,24 @@ In this section, we introduce the language and typing of registers and labelled 
 We assume the set of register symbols is $\cR$. The syntax of quantum registers is defined as follows.
 \begin{definition}[quantum registers]
   \begin{align*}
-    R ::= r\in\cR \mid (R, R)
+    R ::= r\in\cR \mid (R, R).
   \end{align*}
 \end{definition}
 
 Registers can be composed by pairs of $(R, R)$, and this structure corresponds to the structure of tensor product spaces in Dirac notations.
-
 To reason about the registers, we define their variable set as the enumeration of all register symbols involved.
 
 \begin{definition}[register variable set]
 The variable set of a register is defined inductively by:
 \begin{itemize}
-    \item $R\equiv r$: $\var(R) = \{r\}$;
-    \item $R\equiv (R_1,R_2)$: $\var(R) = \var(R_1) \cup\var(R_2)$.
+    \item $\var(R) = \{r\}$, if $R\equiv r$; or
+    \item $\var(R) = \var(R_1) \cup\var(R_2)$, if $R\equiv (R_1,R_2)$.
 \end{itemize}
 \end{definition}
 
-\textbf{Remark: } Set operations: $\cup$ for union; $\cap$ for intersection; $\setminus$ for difference. So,
-% \begin{itemize}
-$ S_1 \cap S_2 \equiv S_1 \cup S_2 \setminus (S_1 \setminus S_2) \setminus (S_2 \setminus S_1) $.
+% \textbf{Remark: } Set operations: $\cup$ for union; $\cap$ for intersection; $\setminus$ for difference. So,
+% % \begin{itemize}
+% $ S_1 \cap S_2 \equiv S_1 \cup S_2 \setminus (S_1 \setminus S_2) \setminus (S_2 \setminus S_1) $.
 % \end{itemize}
 
 \begin{definition}[labelled Dirac notation]
@@ -69,6 +68,9 @@ Following the unified type $\DType(s,s)$, all kinds of multiplications are repre
 Finally, $\ket{i}_r$ and ${}_r\bra{i}$ are labelled basis for the normal form of labelled Dirac notations, where $r$ are registers symbols in $\mathcal{R}$. 
 
 \subsubsection*{Typing rules}
+Some typing rules are introduced here.
+The rule for $\DType(s_1, s_2)$ requires that all registers in variable set $s_1$ and $s_2$ are well-typed.
+The rule for $K_R$ demonstrates how a register label is added to the Dirac notation, and the rule for $D^\dagger$ shows that labelled Dirac notation also have symbols for calculation, such as the adjoint.
 
 \[
     \frac{E[\Gamma] \vdash  \sigma : \Index}{E[\Gamma] \vdash \reg(\sigma) : \Type}
@@ -82,7 +84,7 @@ Finally, $\ket{i}_r$ and ${}_r\bra{i}$ are labelled basis for the normal form of
     \frac{E[\Gamma] \vdash D : \DType(s_1,s_2)}{E[\Gamma] \vdash D^\dagger : \DType(s_2,s_1)}
 \]
 
-The typing rule for tensor product is
+The dot and the tensor product symbols are different from those in unlabelled Dirac notation. Since the goal of labels is to replace the order and structure of tensor products by the reference to registers, the tensor product becomes an AC symbol. The typing still checks whether the component subsystems are disjoint with each other.
 \[
     \frac{
         E[\Gamma] \vdash D_i : \DType(s_i,s_i') \qquad
@@ -91,8 +93,7 @@ The typing rule for tensor product is
     }
     {E[\Gamma] \vdash D_1 \otimes \cdots \otimes D_i : \DType(\bigcup_i s_i, \bigcup_i s_i')}.
 \]
-
-The typing rule for dot product is
+As for the dot product, the disjointness is considered except registers contracted by multiplication.
 \[
     \qquad
     \frac{
@@ -122,15 +123,17 @@ The main idea of normalizing labelled Dirac notations is \textit{label eliminati
     & \qquad (\<i_R|\cdot O\cdot |i_{R'}\>).(|i_{r_1}\>_{r_i}\otimes\cdots\otimes|i_{r_n}\>_{r_n} \otimes {}_{r'_1}\<i_{r'_1}|\otimes\cdots\otimes{}_{r'_{n'}}\<i_{r'_{n'}}|)
 \end{align*}
 
+This step reduces all terms in the form of $K_R$ or $O_{R;R}$.
+Other symbols on labelled Dirac notations are also reduced by rules like $(D_1 \cdot D_2)^\dagger \ \reduce\ D_2^\dagger \cdot D_1^\dagger$.
+
+The final part of rules operates on sum and dot product. They will lift summation to the outside, and eliminate the bra-ket pairs whenever possible.
+
 \begin{align*}
     & \textrm{(R-SUM-PUSHD0)}
     && X_1 \otimes \cdots (\sum_{i \in M} D) \cdots \otimes X_2\ \reduce\ \sum_{i \in M} (X_1 \otimes \cdots D \cdots \otimes X_n) \\
     %
     & \textrm{(R-SUM-PUSHD1)}
     && (\sum_{i \in M} D_1) \cdot D_2 \ \reduce\ \sum_{i \in M} (D_1 \cdot D_2) \\
-\end{align*}
-
-\begin{align*}
     %
     & \textrm{(R-L-SORT0)}
     && A : \DType(s_1, s_2), B : \DType(s_1', s_2'), s_2 \cap s_1'=\emptyset \Rightarrow A \cdot B \ \reduce\ A \otimes B \\
@@ -143,34 +146,17 @@ The main idea of normalizing labelled Dirac notations is \textit{label eliminati
     %
 \end{align*}
 
-\subsubsection*{Eliminating the registers}
+These rules are added to the rewriting system in ~\Cref{sec: decide} and executed together.
+In the end, if there are no variables of $\DType(s_1, s_2)$, the expression will be reduced to the addition of big operator sum, and each sum body is Dirac notation scalar with labelled basis.
 
-\begin{enumerate}
-  \item For any register $R$ s.t. $E[\Gamma]\vdash R : \reg \sigma$, suppose $\var R = \{r_1,r_2,\cdots,r_n\}$, 
-  we introduce variables $i_{r_k} : \Basis(\sigma_{r_k})$ with $r_k : \reg \sigma_{r_k} \in E$ for $k = 1,\cdots, n$. We reconstruct the basis $|i_R\>$ (which is of type $\KType(\sigma)$) and $\<i_R|$ (which is of type $\BType(\sigma)$) of $R$ by:
-  \begin{itemize}
-    \item $R = r_k$, $|i_R\> \triangleq |i_{r_k}\>$ and $\<i_R| \triangleq \<i_{r_k}|$;
-    \item $R = (R_1,R_2)$: $|i_R\> \triangleq |i_{R_1}\> \otimes |i_{R_2}\>$ and $\<i_R| \triangleq \<i_{R_1}| \otimes \<i_{R_2}|$.
-  \end{itemize}
-    \item Expansion of all $K_R,B_R,O_{R,R'}$
+\begin{lemma}
+    For a well-typed term $e$ in $E[\Gamma]$, if $e$ does not contain variables of $\DType(s_1, s_2)$ type, the normal form of $e$ will be
+    \[
+    \sum_{i}\cdots\sum_{j} a_1 . (\ket{i}_{p} \otimes \cdots \otimes \bra{j}_{q})
+    + \cdots +
+    \sum_{k}\cdots\sum_{l} a_m . (\ket{k}_{r} \otimes \cdots \otimes \bra{l}_{s})
+    \]
+    Where $a_i$ are scalar typed Dirac notations.
+\end{lemma}
 
-    
-    After the rewriting of this step, the expression we have is always in the following form:
-    $$
-    \Big(\sum_{i_1}\cdots\sum_{i_n} a.\tD_f\Big) + \cdots + \Big(\sum_{i_1}\cdots\sum_{i_{n'}} a.\tD_f\Big)
-    $$
-    where $\tD_f$ is generated by :
-    $$\tD_f ::= |i\>_r \mid {}_r\<i| \mid \te\otimes\te \mid \te\cdot\te. $$
-    \item
-    Suppose $\mathsf{CDom}(\tD_{f}) = \{(i_1,r_1),\cdots,(i_n,r_n)\}$ and $\mathsf{Dom}(\tD_{f}) = \{(i'_1,r'_1),\cdots,(i'_{n'},r'_{n'})\}$ where the list is sorted by a default order of variables in $\cR$. We define:
-    $$D_f = \bigg(\prod_{(i,j)\in \mathsf{Can}(\tD_f)}\delta_{i,j}\bigg).\Big((|i_1\>\otimes\cdots\otimes|i_n\>) \cdot (\<i'_1|\otimes\cdots\otimes\<i'_{n'}|)\Big).$$
-    If $\mathsf{Dom}$ or $\mathsf{CDom}$ is an empty list, the $D_f$ is just a Ket or Bra.
-    Then we claim:
-    \begin{itemize}
-        \item If $E[\Gamma]\vdash \tD_f : \DType(s_1,s_2)$, then $\{r_1,\cdots,r_n\} = s_1$ and
-        $\{r'_1,\cdots,r'_{n'}\} = s_2$.
-        \item Set $R = ((\cdots(r_1,r_2),\cdots),r_n)$ and $R' = ((\cdots(r'_1,r'_2),\cdots),r'_{n'})$, then
-        $$\tD_{f} = (D_f)_{R,R'}$$
-    \end{itemize}
-    \item For the obtained formula in (3), we replace each $\tD_f$ by $D_f$ which is computed by step (4). Note that $D_f$ is a Dirac term without labels, so the equivalence of two labelled Dirac terms is reduced to decide the equivalence of two Dirac terms. This is guaranteed if two labelled Dirac terms are of the same type (by typing rules).
-\end{enumerate}
+

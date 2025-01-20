@@ -249,10 +249,17 @@ and they are equivalent for all variables.
 With the concrete basis, Dirac notations can be interpreted as matrices. For example, the ket of two basis of qubit states are column vectors $\ket{0} = \begin{bmatrix} 1 \\ 0 \end{bmatrix}$ and $\ket{1} = \begin{bmatrix} 0 \\ 1 \end{bmatrix}$, and the corresponding bras are row vectors in the dual space $\bra{0} = \begin{bmatrix} 1 & 0 \end{bmatrix}$ and $\bra{1} = \begin{bmatrix} 0 & 1 \end{bmatrix}$.
 The calculation between Dirac notations then corresponds to matrix operatoins. For example, inner product $\braket{0| 1} = \begin{bmatrix} 0 & 1 \end{bmatrix} \begin{bmatrix} 1 \\ 0 \end{bmatrix} = 0$, and tensor product $\ket{0} \otimes \ket{1} = \ket{(0, 1)} = \begin{bmatrix} 1 \\ 0 \end{bmatrix} \otimes \begin{bmatrix} 0 \\ 1 \end{bmatrix} = \begin{bmatrix} 0 \\ 1 \\ 0 \\ 0 \end{bmatrix}$.
 
-In practice, Dirac notations are combined with other syntax for better expressiveness. For example, the big operator sum $\sum_{i \in S} A$ are used in theoretical reasonings. We also use labelled Dirac notation, where Dirac notations are subscripted with registers to denote the quantum system in consideration, e.g. $\ket{i}_q \otimes \ket{i}_r$.
+In practice, Dirac notations are combined with other syntax, such as the big operator sum $\sum_{i \in S} A$, for better expressiveness. We also use labelled Dirac notations like $\ket{i}_q \otimes \ket{i}_r$ to denote the quantum system in consideration, where Dirac notations are subscripted with registers.
 
 We use universal algebra and equational logic to formally represent Dirac notations and the reasoning procedure.
-A universal algebra defines a signature of function symbols and the axioms. Terms in the algebra are constructed by constants, variables or function application on terms. In our case of Dirac notation, the signature consists of constructors and operations like $\ket{i}$ or $A \otimes B$, and the axioms Dirac notation equivalenc rules with equational logic.
+A universal algebra defines a signature of function. Terms in the algebra are constructed by constants, variables or function application on terms. In our case of Dirac notation, the signature consists of constructors and operations like $\ket{i}$ or $A \otimes B$.
+Reasonings of Dirac notation terms follow the equational logic, where an equaitonal relation $e_1 \doteq e_2$ is defined, consistent with substitution and term construction:
+\[
+    \frac{E \vdash s \doteq t}{E \vdash v(s) \doteq v(t)}
+    \qquad
+    \frac{E \vdash s_1 \doteq t_1 \qquad \cdots \qquad E \vdash s_n \doteq t_n}{E \vdash f(s_1, \dots, s_n) \doteq f(t_1, \dots, t_n)}
+\]
+Here $v(s)$ represent a substitution of variables, and $E$ is set of Dirac notation equational axioms.
 
 Here is an example proof of a equivalence lemma.
 \begin{example}
@@ -263,8 +270,6 @@ Here is an example proof of a equivalence lemma.
     \]
 \end{example}
 
-
-\yx{I guess it's wise to avoid mentioning that we don't impose fixed arity.}
 
 % \yx{mention the dilemma of simplicity and efficiency}
 
@@ -469,8 +474,8 @@ This incapability further limits the algorithmm, which is designed to automate r
 
 
 \yx{where should we put the example?}
-To conclude the design introduction, we demonstrate part of the formalization of the preliminary example.
-\begin{example}[formalizing the preliminary example]
+To conclude the design introduction, we demonstrate part of the formalization of the motivating example.
+\begin{example}[formalizing the motivating example]
     Definitions and assumptions in the environment:
     \begin{align*}
         & \textrm{TPO} && := \mu T_1. \mu T_2. \lambda O : \OType(T_1, T_2). \sum_{i \in \mathbf{U}(T_1)} \sum_{j \in \mathbf{U}(T_2)} \bra{i} O \ket{j} . \ket{j}\bra{i} \\
@@ -493,6 +498,7 @@ To conclude the design introduction, we demonstrate part of the formalization of
 
 
 \section{Algorithm for Deciding Dirac notations equations}
+\label{sec: decide}
 
 The following two sections discuss how to decide the equivalence of Dirac notations implied by the axioms.
 In the previous work, the equational axioms are separated into two parts: a set $E$ of equations that can not be decided by rewriting, and the remaining equations to be decided by term rewriting.
@@ -512,7 +518,7 @@ The last three steps deals with the equational theory $E$, while the first three
 
 
 \subsection{Normalization modulo $E$ by Term Rewriting}
-Term rewriting rules, written as $l -> r$, are used to normalize terms by recursively matching the subterms of the term with the left hand side $l$, and replace them with the corresponding right hand side $r$. The procedure terminates when no more rewritings can be made, and the order of rewritings will be irrelevant if the term rewriting system is \textit{confluent}, which is a desirable property.
+Term rewriting rules, written as $l \to r$, are used to normalize terms by recursively matching the subterms of the term with the left hand side $l$, and replace them with the corresponding right hand side $r$. The procedure terminates when no more rewritings can be made, and the order of rewritings will be irrelevant if the term rewriting system is \textit{confluent}, which is a desirable property.
 
 To express the term rewriting system, the previous work adheres to use the naive universal algebra, where each function symbol has a fixed arity, and the left hand side pattern only allows constant symbols and variables. This constraint enables them to check the confluence and termination of their term rewriting system with other tools.
 
@@ -641,7 +647,25 @@ and $\textrm{arg}(e, i)$ indicates the $i$-th argument $a_i$.
     \end{itemize}
 \end{definition}
 It can be checked that $e_1 =_\mathcal{B} e_2$ if and only if neither $e_1 <_\mathcal{B} e_2$ or $e_2 <_\mathcal{B} e_1$ holds.
-The idea is to compare the function symbols in the top down order, and omit bound variable occurance.
+The idea is to compare the function symbols in the top down order, and omit bound variable occurance. 
+With the order, the sort function normalize the term with respect to AC equivalence.
+
+\begin{definition}[sort transformation]
+    For a term $e$ with bound variable set $\mathcal{B}$,
+    The sort transformation sort(e) is defined as
+    \begin{itemize}
+        \item $e$, if $e$ is a variable or constant;
+        \item $\lambda x:T. \textrm{sort}(e')$, if $e \equiv \lambda x : T. e'$;
+        \item $\mu x. \textrm{sort}(e')$, if $e \equiv \mu x. \textrm{sort}(e')$; or
+        \item $f(\textrm{sort}(a_1), \cdots, \textrm{sort}(a_n))$, if $e \equiv f(a_1, \cdots, a_n)$. If $f$ is an AC symbol, then the order of sort($a_i$) is sorted ascendingly according to $<_\mathcal{B}$.
+    \end{itemize}
+\end{definition}
+
+The order of bound variables can be decided according to the result of the sort transformation, and then successive summations can be normalized by swapping.
+\begin{definition}[swap transformation]
+    For a term $e$ with sorting result sort$(e)$, we can obtain a total order of all bound variables appearing in the term $e$. Specifically, they are ordered by their first appearances, except in function definitions $\lambda x$ and $\mu x$.
+    The swap transformation then arrange successive summation according to this order.
+\end{definition}
 
 
 % The order depends on there occurances in the last sorting result. If no occurance, then the order will depend on the set (for sum) and the type (for lambda abstraction only).
@@ -649,9 +673,7 @@ The idea is to compare the function symbols in the top down order, and omit boun
 %%%%%%%%%%%%%%%%%%%%%%%
 
 
-The idea is to assign an order to terms, which is independent on the bound variables. Because we can have terms with nested AC symbols.
-
-
+% The idea is to assign an order to terms, which is independent on the bound variables. Because we can have terms with nested AC symbols.
 
 At last, we will prove that equivalence by this normalization procedure is sound in the semantics. 
 
@@ -672,7 +694,7 @@ At last, we will prove that equivalence by this normalization procedure is sound
 The main purpose of this work is to build a practical tool that works well in checking Dirac notation equations. The refinements and extensions above concludes in our implementation called Dirace. Dirace is a solver written in \CC\ working as a command line tool. It has a parser built by ANTLR4, and scalar reasonings are powered by a Mathematica kernel. The user can use commands to make definitions and assumptions in the maintained context, conduct the normalization and equivalence checking, and obtain the rewriting trace output. This implementation 
 is tested on the benchmark of the DiracDec work, and succeeds in proving most of them efficiently.
 
-Here is the code for the preliminary example.
+Here is the code for the motivating example.
 
     \begin{lstlisting}[style=dirace]
 Var T : INDEX. Var M : OTYPE[T, T].
@@ -720,6 +742,7 @@ Other previous works exploring the language and algorithm to reasong about quant
 \section{Conclusion}
 Based on the first Dirac notation equational reasoning tool DiracDec, this work refines and extends the theory for practical application, and provides the solver Dirace. Experimental results shows that the tool can correctly identify all encoded equivalent expressions efficiently. 
 We expect Dirace will play a role in areas like quantum program verification or proofs of post-quantum cryptography protocols.
+
 
 \clearpage
 

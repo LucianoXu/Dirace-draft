@@ -12,16 +12,16 @@
     \node (rewrite1) [rewriting] {first rewritings};
     \node (expansion) [process, below of=rewrite1] {variable expansion};
     \node (rewrite2) [rewriting, below of=expansion] {second rewritings};
-    \node (sorting) [process, below of=rewrite2] {sorting without bound variables};
-    \node (successive) [process, below of=sorting] {sorting successive summation};
-    \node (deBruijn) [process, below of=successive] {de Bruijn normalization};
+    \node (sort) [process, below of=rewrite2] {sorting without bound variables};
+    \node (swap) [process, below of=sort] {swap successive summation};
+    \node (deBruijn) [process, below of=swap] {de Bruijn normalization};
 
     % \draw [arrow] (rename) -- (rewrite1);
     \draw [arrow] (rewrite1) -- (expansion);
     \draw [arrow] (expansion) -- (rewrite2);
-    \draw [arrow] (rewrite2) -- (sorting);
-    \draw [arrow] (sorting) -- (successive);
-    \draw [arrow] (successive) -- (deBruijn);
+    \draw [arrow] (rewrite2) -- (sort);
+    \draw [arrow] (sort) -- (swap);
+    \draw [arrow] (swap) -- (deBruijn);
 
     \end{tikzpicture}
     \caption{A flowchart for normalization of Dirac notations.}
