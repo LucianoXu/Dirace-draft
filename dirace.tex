@@ -1,0 +1,53 @@
+
+\tikzstyle{module} = [draw, rounded corners, fill=blue!20, text centered]
+\tikzstyle{file} = [draw, rounded corners, fill=green!20, text centered]
+\tikzstyle{thirdparty} = [draw, rounded corners, fill=red!20, text centered]
+
+\begin{figure}
+    \centering
+    \ttfamily
+    \begin{minipage}{0.4\textwidth}
+        \centering
+        \begin{tikzpicture}
+
+            % \node (rename) [process] {rename unique bound variable names};
+            \node (examples) [module] {examples};
+            \node (toplevel) [file, right of=examples, xshift=1cm] {toplevel.cpp};
+            \node (dirace) [module, below right of=examples, xshift=0.3cm] {dirace};
+            \node (ualg) [module, below left of=dirace] {ualg};
+            \node (ANTLR4) [thirdparty, below of =ualg] {ANTLR4};
+            \node (WSTP) [thirdparty, below right of =dirace, xshift=1cm, yshift=-0.3cm, align=center] {WSTP interface\\(Mathematica)};
+            
+            \draw [arrow] (examples) -- (dirace);
+            \draw [arrow] (toplevel) -- (dirace);
+            \draw [arrow] (dirace) -- (ualg);
+            \draw [arrow] (ualg) -- (ANTLR4);
+            \draw [arrow] (dirace) -- (WSTP);
+        \end{tikzpicture}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.55\textwidth}
+        \centering
+        \begin{tikzpicture}
+            \node (prover) [file] {prover.cpp};
+            \node (diracparser) [file, below left of=prover, xshift = -1cm] {dirac\_parser.cpp};
+            \node (reduction) [file, below right of=prover, xshift = 1cm] {reduction.cpp};
+            \node (calculus) [file, below of=prover, yshift=-0.5cm]{calculus.cpp};
+            \node (syntaxtheory) [file, below right of=calculus, xshift = 1cm]{syntax\_theory.cpp};
+            \node (symbols) [file, below left of=calculus, yshift=-0.8cm]{symbols.cpp};
+
+            \draw [arrow] (prover) -- (diracparser);
+            \draw [arrow] (prover) -- (reduction);
+            \draw [arrow] (prover) -- (calculus);
+            \draw [arrow] (reduction) -- (calculus);
+            \draw [arrow] (reduction) -- (syntaxtheory);
+            \draw [arrow] (syntaxtheory) -- (symbols);
+            \draw [arrow] (calculus) -- (symbols);
+            \draw [arrow] (diracparser) -- (symbols);
+        \end{tikzpicture}
+    \end{minipage}
+    \rmfamily
+    \caption{The structure of Dirace. The left figure illustrates the whole system, and the right figure illustrates the \texttt{dirace} module. Blue nodes denote modules, red nodes denote third-party libraries, and green nodes denote files. Arrows represent dependency.}
+    \label{fig: dirace structure}
+\end{figure}
+  

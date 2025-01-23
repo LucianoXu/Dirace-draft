@@ -146,10 +146,11 @@ The final part of rules operates on sum and dot product. They will lift summatio
     %
 \end{align*}
 
-These rules are added to the rewriting system in ~\Cref{sec: decide} and executed together.
+These rules are added to the rewriting system in~\Cref{sec: decide} and executed together.
 In the end, if there are no variables of $\DType(s_1, s_2)$, the expression will be reduced to the addition of big operator sum, and each sum body is Dirac notation scalar with labelled basis.
 
-\begin{lemma}
+\begin{lemma}[normal form]
+    \label{lem: labelled normal form}
     For a well-typed term $e$ in $E[\Gamma]$, if $e$ does not contain variables of $\DType(s_1, s_2)$ type, the normal form of $e$ will be
     \[
     \sum_{i}\cdots\sum_{j} a_1 . (\ket{i}_{p} \otimes \cdots \otimes \bra{j}_{q})

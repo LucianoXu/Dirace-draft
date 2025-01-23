@@ -1,0 +1,54 @@
+
+\section{\texttt{Diracoq} language}
+
+\begin{align*}
+    cmd ::=&\ \texttt{Def}(\texttt{ID}\ term) \\
+        &|\ \texttt{Def}(\texttt{ID}\ term\ type) \\
+        &|\ \texttt{Var}(\texttt{ID}\ term) \\
+        &|\ \texttt{Check}(term) \\
+        &|\ \texttt{Show}(\texttt{ID}) \\
+        &|\ \texttt{ShowAll} \\
+        &|\ \texttt{Normalize}(term) \mid \texttt{Normalize}(term\ \textsf{Trace}) \\
+        &|\ \texttt{CheckEq}(term\ term) \\
+    type ::=&\ \texttt{Type} \mid \texttt{Arrow}(type\ type) \\
+            &|\ \texttt{Base} \\
+    term ::=&\ \texttt{Type} \mid \texttt{fun}(\texttt{ID}\ type\ term) \mid \texttt{apply}(term\ term) \mid \texttt{ID} \\
+\end{align*}
+
+Comment \texttt{(* ... *)} can be inserted between commands.
+
+These are tye parsing rules for different expressions:
+\begin{itemize}
+    \item \texttt{Def ID := term.} --- \texttt{Def(ID term)}
+    \item \texttt{Def ID := term : type.} --- \texttt{Def(ID term type)}
+    \item \texttt{Var ID : type.} --- \texttt{Var(ID type)}
+    \item \texttt{Check ID.} --- \texttt{Check(term)}
+    \item \texttt{Show ID.} --- \texttt{Show(ID)}
+    \item \texttt{ShowAll.} --- \texttt{ShowAll}
+    \item \texttt{Normalize term.} --- \texttt{Normalize(term)}
+    \item \texttt{Normalize term with trace.} --- \texttt{Normalize(term Trace)}
+    \item \texttt{Check term = term.} --- \texttt{CheckEq(term term)}
+    \item \texttt{T1 -> T2} --- \texttt{Arrow(T1 T2)}.
+    \item \texttt{forall x. T} --- \texttt{Forall(x T)}
+    \item \texttt{(e1, e2)} --- \texttt{PAIR(e1 e2)}
+    \item \texttt{fun x : T => e} --- \texttt{fun(x T e)}
+    \item \texttt{idx x => e} --- \texttt{idx(x e)}
+    \item \texttt{e1 @ e2} --- \texttt{COMPO(e1 e2)}
+    \item \texttt{e1 + ... + en} --- \texttt{ADDG(e1 ... en)}
+    \item \texttt{e1 * ... * en} --- \texttt{STAR(e1 ... en)}
+    \item \texttt{e1\^{}*} --- \texttt{CONJ(e1)}
+    \item \texttt{delta(e1, e2)} --- \texttt{DELTA(e1 e2)}
+    \item \texttt{|e>} --- \texttt{KET(e)}
+    \item \texttt{<e|} --- \texttt{BRA(e)}
+    \item \texttt{e1\^{}D} --- \texttt{ADJ(e1)}
+    \item \texttt{e1.e2} --- \texttt{SCR(e1 e2)}
+    \item \texttt{Sum(i in s, e)} --- \texttt{SSUM(i s e)}
+\end{itemize}
+
+These symbols will be transformed into internal language:
+\begin{itemize}
+    \item $A \circ B$ : $S \circ S$, $S \circ K$, $S \circ B$, $S \circ O$, $K \circ S$, $K \circ K$, $K \circ B$, $B \circ S$, $B \circ K$, $B \circ B$, $B \circ O$, $O \circ S$, $O \circ K$, $O \circ O$, $f\circ a$ (arrow), $f\circ a$ (index).
+    \item \texttt{STAR(a ... b)} :  $\sigma_1 \times \sigma_2$, $\MULS(a \cdots b)$, $O_1 \otimes O_2$, $ M_1 \star M_2$
+    \item \texttt{ADDG(e1 ... en)} : $\ADDS(e1 \cdots en)$, $\ADD(e1 \cdots en)$
+    \item \texttt{SSUM(i S e)} : \texttt{SUM(s FUN(i T e))}
+\end{itemize}
