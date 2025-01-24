@@ -18,17 +18,16 @@
 
 
 \section{Labelled Dirac Notation}
-
-Labelled Dirac notation uses register names to indicate the quantum system of vectors and operators. This allows us to talk aboud the states and operations locally, without referring to the whole system. For instance, assume $Q$ and $R$ are two registers, we have
+\label{sec: labelled}
+Labelled Dirac notation uses register names to indicate the quantum system of vectors and operators. This allows us to express and reason aboud the states and operations locally, without referring to the whole system. For instance, assume $Q$ and $R$ are two registers, we have
 \[
-    M_Q \cdot \ket{\Phi}_{(Q, R)} = ((M \otimes I) \ket{\Phi})_{(Q, R)}.
+    M_Q \cdot \ket{\Phi}_{(Q, R)} = ((M \otimes I) \cdot \ket{\Phi})_{(Q, R)}.
 \]
 On the left hand side, the state of two subsystems is $\ket{\Phi}$, and we apply quantum operation $M$ on the system $Q$. It is equivalent to extend the operation using identity operators on other subsystems (i.e. the cylinder extension), and consider the application in the whole system.
 
 
-In this section, we introduce the language and typing of registers and labelled Dirac notations, and demonstrate how to transform the equivalence problem into the Dirac notations studied above.
-
-We assume the set of register symbols is $\cR$. The syntax of quantum registers is defined as follows.
+In this section, we introduce the language and typing of registers and labelled Dirac notations, and demonstrate how to transform the equivalence problem into that for the Dirac notations studied above.
+The first new notion is quantum registers, and we assume they are constructed from a set $\cR$.
 \begin{definition}[quantum registers]
   \begin{align*}
     R ::= r\in\cR \mid (R, R).
@@ -51,39 +50,36 @@ The variable set of a register is defined inductively by:
 % $ S_1 \cap S_2 \equiv S_1 \cup S_2 \setminus (S_1 \setminus S_2) \setminus (S_2 \setminus S_1) $.
 % \end{itemize}
 
+% The labelled Dirac notation is an extension on the existing type and syntax.
 \begin{definition}[labelled Dirac notation]
   The \textbf{labelled Dirac notation} includes all Dirac notation symbols and the generators defined below.
   Here, $s\subseteq \cR$ is a register variable set.
   \begin{align*}
     T & ::= \DType(s,s) \mid \mathsf{Reg}(\sigma) \\
     e & ::= R \mid |i\>_r \mid {}_r\<i| \mid e_R \mid e_{R;R} \mid
-    e \otimes e \otimes \cdots \otimes e \mid e \cdot e \\
+    e \otimes e \otimes \cdots \otimes e \mid e \cdot e
   \end{align*}
 \end{definition}
-
 $\DType(s_1, s_2)$ is the unified type for all labelled Dirac notations, where $s_1$ indicates the codomain systems and $s_2$ indicates the domain systems. For instance, labelled ket has type $\DType(s_1, \emptyset)$, and labelled bra has type $\DType(\emptyset, s_2)$.
 $\reg(\sigma)$ are types for registers $R$, and the index $\sigma$ indicates the type of Hilbert space represented by the register.
-Terms also include the labelled notation $e_R$ for bra, ket and $e_{R;R}$ for operators. We introduce new dot and tensor product symbols for labelled Dirac notations. In labelled Dirac notation, the structure of tensor product does not matter. Therefore $\otimes$ is an AC symbol.
+Terms also include the labelled notation $e_R$ for bra, ket and $e_{R;R}$ for operators. We introduce new dot and tensor product symbols for labelled Dirac notations. In labelled Dirac notation, the structure of tensor product does not matter, therefore $\otimes$ is an AC symbol.
 Following the unified type $\DType(s,s)$, all kinds of multiplications are represented by the same dot product $e \cdot e$.
 Finally, $\ket{i}_r$ and ${}_r\bra{i}$ are labelled basis for the normal form of labelled Dirac notations, where $r$ are registers symbols in $\mathcal{R}$. 
 
-\subsubsection*{Typing rules}
+\subsubsection{Typing rules}
 Some typing rules are introduced here.
 The rule for $\DType(s_1, s_2)$ requires that all registers in variable set $s_1$ and $s_2$ are well-typed.
 The rule for $K_R$ demonstrates how a register label is added to the Dirac notation, and the rule for $D^\dagger$ shows that labelled Dirac notation also have symbols for calculation, such as the adjoint.
-
 \[
     \frac{E[\Gamma] \vdash  \sigma : \Index}{E[\Gamma] \vdash \reg(\sigma) : \Type}
     \qquad
     \frac{E[\Gamma] \vdash r : \reg(\sigma_r) \text{ for all $r$ in $s_1$ and $s_2$} }{E[\Gamma] \vdash \DType(s_1, s_2) : \textsf{Type}} 
 \]
-
 \[
     \frac{E[\Gamma] \vdash R : \reg(\sigma)\qquad E[\Gamma] \vdash K : \KType(\sigma)}{E[\Gamma] \vdash K_R : \DType(\var R, \emptyset)}
     \qquad
     \frac{E[\Gamma] \vdash D : \DType(s_1,s_2)}{E[\Gamma] \vdash D^\dagger : \DType(s_2,s_1)}
 \]
-
 The dot and the tensor product symbols are different from those in unlabelled Dirac notation. Since the goal of labels is to replace the order and structure of tensor products by the reference to registers, the tensor product becomes an AC symbol. The typing still checks whether the component subsystems are disjoint with each other.
 \[
     \frac{
@@ -110,30 +106,23 @@ As for the dot product, the disjointness is considered except registers contract
     {E[\Gamma] \vdash D_1\cdot D_2 : \DType(s_1 \cup (s_2\backslash s_1'), s_2' \cup (s_1'\backslash s_2))}.
 \]
 
-\subsection{Normalization}
-The main idea of normalizing labelled Dirac notations is \textit{label elimination}. It expands $e_R$ and $e_{R;R}$ by tensor products of labelled basis, which are formalized as rules below.
-
+\subsubsection{Normalization}
+The normalization procedure of Dirac notation is extended to check equivalence with labels.
+We add rules to the term rewriting system, which in general try to represent labelled Dirac notations with labelled basis and scalar coefficients. The first step is the label elimination. Take operator as an example:
 \begin{align*}
-    & K_R \ \reduce\ \sum_{i_{r_1}\in\bU(\sigma_{r_1})}\cdots \sum_{i_{r_n}\in\bU(\sigma_{r_n})} (\<i_R|\cdot K). (|i_{r_1}\>_{r_i}\otimes\cdots\otimes|i_{r_n}\>_{r_n}) \\
-    %
-    & B_R \ \reduce\ \sum_{i_{r_1}\in\bU(\sigma_{r_1})}\cdots \sum_{i_{r_n}\in\bU(\sigma_{r_n})} (B\cdot |i_R\>). ({}_{r_1}\<i_{r_1}|\otimes\cdots\otimes{}_{r_n}\<i_{r_n}|) \\
-    %
     & O_{R,R'} \ \reduce\ \sum_{i_{r_1}\in\bU(\sigma_{r_1})}\cdots \sum_{i_{r_n}\in\bU(\sigma_{r_n})}
     \sum_{i_{r'_1}\in\bU(\sigma_{r'_1})}\cdots \sum_{i_{r'_{n'}}\in\bU(\sigma_{r'_{n'}})} \\
-    & \qquad (\<i_R|\cdot O\cdot |i_{R'}\>).(|i_{r_1}\>_{r_i}\otimes\cdots\otimes|i_{r_n}\>_{r_n} \otimes {}_{r'_1}\<i_{r'_1}|\otimes\cdots\otimes{}_{r'_{n'}}\<i_{r'_{n'}}|)
+    & \qquad (\<i_R|\cdot O\cdot |i_{R'}\>).(|i_{r_1}\>_{r_i}\otimes\cdots\otimes|i_{r_n}\>_{r_n} \otimes {}_{r'_1}\<i_{r'_1}|\otimes\cdots\otimes{}_{r'_{n'}}\<i_{r'_{n'}}|).
 \end{align*}
-
-This step reduces all terms in the form of $K_R$ or $O_{R;R}$.
+The rules for $e_R$ (ket and bra) are similar. This step reduces all labelled terms $e_R$ or $e_{R;R}$.
 Other symbols on labelled Dirac notations are also reduced by rules like $(D_1 \cdot D_2)^\dagger \ \reduce\ D_2^\dagger \cdot D_1^\dagger$.
-
-The final part of rules operates on sum and dot product. They will lift summation to the outside, and eliminate the bra-ket pairs whenever possible.
-
+The final step operates on sum and dot product. They will lift summation to the outside, and eliminate the bra-ket pairs whenever possible.
 \begin{align*}
     & \textrm{(R-SUM-PUSHD0)}
     && X_1 \otimes \cdots (\sum_{i \in M} D) \cdots \otimes X_2\ \reduce\ \sum_{i \in M} (X_1 \otimes \cdots D \cdots \otimes X_n) \\
-    %
-    & \textrm{(R-SUM-PUSHD1)}
-    && (\sum_{i \in M} D_1) \cdot D_2 \ \reduce\ \sum_{i \in M} (D_1 \cdot D_2) \\
+    % %
+    % & \textrm{(R-SUM-PUSHD1)}
+    % && (\sum_{i \in M} D_1) \cdot D_2 \ \reduce\ \sum_{i \in M} (D_1 \cdot D_2) \\
     %
     & \textrm{(R-L-SORT0)}
     && A : \DType(s_1, s_2), B : \DType(s_1', s_2'), s_2 \cap s_1'=\emptyset \Rightarrow A \cdot B \ \reduce\ A \otimes B \\
@@ -142,22 +131,30 @@ The final part of rules operates on sum and dot product. They will lift summatio
     && {}_r\bra{i}\cdot\ket{j}_r \ \reduce\ \delta_{i, j} \\
     %
     & \textrm{(R-L-SORT2)}
-    && {}_r\bra{i}\cdot(Y_1 \otimes \cdots \otimes \ket{j}_r \otimes \cdots \otimes Y_m) \ \reduce\ \delta_{i, j}.(Y_1  \otimes \cdots \otimes Y_m) \\
+    && {}_r\bra{i}\cdot(Y_1 \otimes \cdots \otimes \ket{j}_r \otimes \cdots \otimes Y_m) \ \reduce\ \delta_{i, j}.(Y_1  \otimes \cdots \otimes Y_m)
     %
 \end{align*}
-
-These rules are added to the rewriting system in~\Cref{sec: decide} and executed together.
-In the end, if there are no variables of $\DType(s_1, s_2)$, the expression will be reduced to the addition of big operator sum, and each sum body is Dirac notation scalar with labelled basis.
-
-\begin{lemma}[normal form]
-    \label{lem: labelled normal form}
-    For a well-typed term $e$ in $E[\Gamma]$, if $e$ does not contain variables of $\DType(s_1, s_2)$ type, the normal form of $e$ will be
-    \[
+% These rules are added to the rewriting system in~\Cref{sec: decide} and executed together.
+In the end, if there are no variables of $\DType(s_1, s_2)$, the expression will be reduced to the addition of big operator sum, and each sum body is labelled basis with Dirac notation scalar coefficients:
+\[
     \sum_{i}\cdots\sum_{j} a_1 . (\ket{i}_{p} \otimes \cdots \otimes \bra{j}_{q})
     + \cdots +
     \sum_{k}\cdots\sum_{l} a_m . (\ket{k}_{r} \otimes \cdots \otimes \bra{l}_{s})
-    \]
-    Where $a_i$ are scalar typed Dirac notations.
-\end{lemma}
+\]
+In this way, we only need to check the scalars to decide the equivalence of labelled Dirac notations.
+
+% \begin{lemma}[normal form]
+%     \label{lem: labelled normal form}
+%     For a well-typed term $e$ in $E[\Gamma]$, if $e$ does not contain variables of $\DType(s_1, s_2)$ type, the normal form of $e$ will be
+%     \[
+%     \sum_{i}\cdots\sum_{j} a_1 . (\ket{i}_{p} \otimes \cdots \otimes \bra{j}_{q})
+%     + \cdots +
+%     \sum_{k}\cdots\sum_{l} a_m . (\ket{k}_{r} \otimes \cdots \otimes \bra{l}_{s})
+%     \]
+%     Where $a_i$ are scalar typed Dirac notations.
+% \end{lemma}
+% \begin{proof}
+%     Labelled Dirac notations of $e_R$, $e_R;R$, 
+% \end{proof}
 
 

@@ -2,14 +2,17 @@
 \tikzstyle{rewriting} = [rectangle, rounded corners, minimum width=3cm, minimum height=0.8cm,text centered, draw=black, fill=red!30]
 \tikzstyle{process} = [rectangle, minimum width=3cm, minimum height=0.8cm, text centered, draw=black, fill=blue!30]
 \tikzstyle{decision} = [diamond, minimum width=3cm, minimum height=0.8cm, text centered, draw=black, fill=green!30]
+\tikzstyle{textstyle} = [text centered]
 \tikzstyle{arrow} = [thick,->,>=stealth]
 
 \begin{figure}
     \center
-    \begin{tikzpicture}[node distance=1.2cm]
+    \begin{tikzpicture}[node distance=1.1cm]
 
     % \node (rename) [process] {rename unique bound variable names};
     \node (rewrite1) [rewriting] {first rewritings};
+    \node (rewrite1caption) [textstyle, right of=rewrite1] {expand definitions and simplification};
+        
     \node (expansion) [process, below of=rewrite1] {variable expansion};
     \node (rewrite2) [rewriting, below of=expansion] {second rewritings};
     \node (sort) [process, below of=rewrite2] {sorting without bound variables};
