@@ -26,7 +26,7 @@ Labelled Dirac notation uses register names to indicate the quantum system of ve
 On the left hand side, the state of two subsystems is $\ket{\Phi}$, and we apply quantum operation $M$ on the system $Q$. It is equivalent to extend the operation using identity operators on other subsystems (i.e. the cylinder extension), and consider the application in the whole system.
 
 
-In this section, we introduce the language and typing of registers and labelled Dirac notations, and demonstrate how to transform the equivalence problem into that for the Dirac notations studied above.
+In this section, we introduce the language and typing of registers and labelled Dirac notation, and demonstrate how to transform the equivalence problem into that for the Dirac notation studied above.
 The first new notion is quantum registers, and we assume they are constructed from a set $\cR$.
 \begin{definition}[quantum registers]
   \begin{align*}
@@ -34,7 +34,7 @@ The first new notion is quantum registers, and we assume they are constructed fr
   \end{align*}
 \end{definition}
 
-Registers can be composed by pairs of $(R, R)$, and this structure corresponds to the structure of tensor product spaces in Dirac notations.
+Registers can be composed by pairs of $(R, R)$, and this structure corresponds to the structure of tensor product spaces in Dirac notation.
 To reason about the registers, we define their variable set as the enumeration of all register symbols involved.
 
 \begin{definition}[register variable set]
@@ -60,11 +60,11 @@ The variable set of a register is defined inductively by:
     e \otimes e \otimes \cdots \otimes e \mid e \cdot e
   \end{align*}
 \end{definition}
-$\DType(s_1, s_2)$ is the unified type for all labelled Dirac notations, where $s_1$ indicates the codomain systems and $s_2$ indicates the domain systems. For instance, labelled ket has type $\DType(s_1, \emptyset)$, and labelled bra has type $\DType(\emptyset, s_2)$.
+$\DType(s_1, s_2)$ is the unified type for all labelled Dirac notation, where $s_1$ indicates the codomain systems and $s_2$ indicates the domain systems. For instance, labelled ket has type $\DType(s_1, \emptyset)$, and labelled bra has type $\DType(\emptyset, s_2)$.
 $\reg(\sigma)$ are types for registers $R$, and the index $\sigma$ indicates the type of Hilbert space represented by the register.
-Terms also include the labelled notation $e_R$ for bra, ket and $e_{R;R}$ for operators. We introduce new dot and tensor product symbols for labelled Dirac notations. In labelled Dirac notation, the structure of tensor product does not matter, therefore $\otimes$ is an AC symbol.
+Terms also include the labelled notation $e_R$ for bra, ket and $e_{R;R}$ for operators. We introduce new dot and tensor product symbols for labelled Dirac notation. In labelled Dirac notation, the structure of tensor product does not matter, therefore $\otimes$ is an AC symbol.
 Following the unified type $\DType(s,s)$, all kinds of multiplications are represented by the same dot product $e \cdot e$.
-Finally, $\ket{i}_r$ and ${}_r\bra{i}$ are labelled basis for the normal form of labelled Dirac notations, where $r$ are registers symbols in $\mathcal{R}$. 
+Finally, $\ket{i}_r$ and ${}_r\bra{i}$ are labelled basis for the normal form of labelled Dirac notation, where $r$ are registers symbols in $\mathcal{R}$. 
 
 \subsubsection{Typing rules}
 Some typing rules are introduced here.
@@ -108,14 +108,14 @@ As for the dot product, the disjointness is considered except registers contract
 
 \subsubsection{Normalization}
 The normalization procedure of Dirac notation is extended to check equivalence with labels.
-We add rules to the term rewriting system, which in general try to represent labelled Dirac notations with labelled basis and scalar coefficients. The first step is the label elimination. Take operator as an example:
+We add rules to the term rewriting system, which in general try to represent labelled Dirac notation with labelled basis and scalar coefficients. The first step is the label elimination. Take operator as an example:
 \begin{align*}
     & O_{R,R'} \ \reduce\ \sum_{i_{r_1}\in\bU(\sigma_{r_1})}\cdots \sum_{i_{r_n}\in\bU(\sigma_{r_n})}
     \sum_{i_{r'_1}\in\bU(\sigma_{r'_1})}\cdots \sum_{i_{r'_{n'}}\in\bU(\sigma_{r'_{n'}})} \\
     & \qquad (\<i_R|\cdot O\cdot |i_{R'}\>).(|i_{r_1}\>_{r_i}\otimes\cdots\otimes|i_{r_n}\>_{r_n} \otimes {}_{r'_1}\<i_{r'_1}|\otimes\cdots\otimes{}_{r'_{n'}}\<i_{r'_{n'}}|).
 \end{align*}
 The rules for $e_R$ (ket and bra) are similar. This step reduces all labelled terms $e_R$ or $e_{R;R}$.
-Other symbols on labelled Dirac notations are also reduced by rules like $(D_1 \cdot D_2)^\dagger \ \reduce\ D_2^\dagger \cdot D_1^\dagger$.
+Other symbols on labelled Dirac notation are also reduced by rules like $(D_1 \cdot D_2)^\dagger \ \reduce\ D_2^\dagger \cdot D_1^\dagger$.
 The final step operates on sum and dot product. They will lift summation to the outside, and eliminate the bra-ket pairs whenever possible.
 \begin{align*}
     & \textrm{(R-SUM-PUSHD0)}
@@ -141,7 +141,7 @@ In the end, if there are no variables of $\DType(s_1, s_2)$, the expression will
     + \cdots +
     \sum_{k}\cdots\sum_{l} a_m . (\ket{k}_{r} \otimes \cdots \otimes \bra{l}_{s})
 \]
-In this way, we only need to check the scalars to decide the equivalence of labelled Dirac notations.
+In this stage, we only need to check the scalars to decide the equivalence of labelled Dirac notation.
 
 % \begin{lemma}[normal form]
 %     \label{lem: labelled normal form}
@@ -151,10 +151,10 @@ In this way, we only need to check the scalars to decide the equivalence of labe
 %     + \cdots +
 %     \sum_{k}\cdots\sum_{l} a_m . (\ket{k}_{r} \otimes \cdots \otimes \bra{l}_{s})
 %     \]
-%     Where $a_i$ are scalar typed Dirac notations.
+%     Where $a_i$ are scalar typed Dirac notation.
 % \end{lemma}
 % \begin{proof}
-%     Labelled Dirac notations of $e_R$, $e_R;R$, 
+%     Labelled Dirac notation of $e_R$, $e_R;R$, 
 % \end{proof}
 
 

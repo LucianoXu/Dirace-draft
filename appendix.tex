@@ -358,7 +358,7 @@ This section includes the full list of typing rules.
         }{E[\Gamma] \vdash (R,Q) : \reg(\sigma \times \tau)}
     \]
 
-    \item Typing rules for labelled Dirac notations.
+    \item Typing rules for labelled Dirac notation.
     \[
         \textbf{L-Basis-Ket}\qquad 
         \frac{r : \reg(\sigma) \in E\qquad E[\Gamma] \vdash i : \Basis(\sigma)}{E[\Gamma] \vdash |i\>_r : \DType(\{r\}, \emptyset)}
@@ -430,9 +430,108 @@ This section includes the full list of typing rules.
 
 \end{itemize}
 
+\section{Denotational Semantics}
+\label{sec: full denotational sem}
+
+\begin{definition}[Interpretation of indices]
+The interpretation $\sem{\sigma}$ of a index is defined inductively as follows:
+    \begin{align*}
+        & \textrm{(Basis types)} &&
+        \sem{\sigma_1 \times \sigma_2} \equiv \sem{\sigma_1} \times \sem{\sigma_2}.
+     \end{align*}
+\end{definition}
+
+\begin{definition}[Interpretation of types]
+The interpretation $\sem{T}$ of a type is defined inductively as follows:
+\begin{align*}
+    & \text{(Basis types)} && \begin{aligned}
+      & \sem{\Basis(\sigma)} \equiv \sem{\sigma},
+ \end{aligned} \\
+    & \text{(Dirac types)} &&
+ \sem{\SType} \equiv \mathbb{C},
+ \qquad
+ \sem{\KType(\sigma)} \equiv \mathcal{H}_{\sem{\sigma}}, 
+ \qquad
+ \sem{\BType(\sigma)} \equiv \mathcal{H}^*_{\sem{\sigma}},
+      \\ & &&
+ \sem{\OType(\sigma, \tau)} \equiv \mathcal{L}(\mathcal{H}_\sem{\tau}, \mathcal{H}_\sem{\sigma})
+    \\
+    % & \text{(Function types)} &&
+    % \sem{T_1 \to T_2} \equiv \sem{T_2}^\sem{T_1}
+    % \qquad
+    % \sem{\forall x.T} \equiv \sem{T}^I \\
+    & \text{(Set types)} &&
+    \sem{\SET(\sigma)} = \mathcal{P}(\sem{\sigma})
+\end{align*}
+\end{definition}
+% \gb{did we already explain the notations?}\lz{not ready. the paragraph explains this has been removed.}\gb{please add it back somewhere if space}
+
+We now turn to the interpretation of expressions. As usual, the interpretation is parametrized by a valuation \(v\), which maps all variables $x$ to their value $v(x)$. 
+
+
+\begin{definition}[Semantics of expressions]
+The interpretation of $e$ under valuation $v$, written as $\sem{e}_v$, is defined by the clauses of 
+ \begin{align*}
+    & \text{(Scalars)} && 
+ \sem{0} \equiv 0, 
+ \qquad 
+ \sem{1} \equiv 1,
+ \qquad
+ \sem{a + b} \equiv \sem{a} + \sem{b},
+ \qquad
+ \sem{a \times b} \equiv \sem{a} \times \sem{b}, 
+    \\ & &&
+ \sem{a^*} \equiv \sem{a}^*,
+ \qquad
+ \sem{\delta_{s, t}} \equiv \left\{
+ \begin{array}{ll}
+        1, & \text{where } \sem{s} = \sem{t}, \\
+        0, & \text{where } \sem{s} \neq \sem{t}, 
+ \end{array}
+ \right.
+ \qquad
+ \sem{B \cdot K} \equiv \sem{B} \cdot \sem{K},
+  \\[0.2cm]
+    & \text{(Constants)} &&
+ \sem{\mathbf{0}_\mathcal{K}(\sigma)} \equiv \mathbf{0}, 
+ \qquad
+ \sem{\mathbf{0}_\mathcal{B}(\sigma)} \equiv \mathbf{0},
+ \qquad
+ \sem{\mathbf{0}_\mathcal{O}(\sigma, \tau)} \equiv \mathbf{0}, 
+ \qquad
+ \sem{\mathbf{1}_\mathcal{O}(\sigma)} \equiv \mathbf{I},
+  \\[0.2cm]
+    & \text{(Basis)} &&
+ \sem{\ket{t}} \equiv \ket{\sem{t}},
+ \qquad
+ \sem{\bra{t}} \equiv \bra{\sem{t}},
+  \\[0.2cm]
+    & \text{(Shared symbols)} &&
+ \sem{D^\dagger} \equiv \sem{D}^\dagger,
+ \qquad
+ \sem{a.D} \equiv \sem{a} \sem{D},
+ \qquad
+ \sem{D_1 + D_2} \equiv \sem{D_1}+\sem{D_2}, \\
+    & &&
+ \sem{D_1 \cdot D_2} \equiv \sem{D_1} \cdot \sem{D_2},
+ \qquad
+ \sem{D_1 \otimes D_2} \equiv \sem{D_1} \otimes \sem{D_2}. \\
+       & \text{(set terms)} && \begin{aligned}
+    \sem{\mathbf{U}(\sigma)} \equiv \sem{\sigma},
+    \qquad
+    \sem{M_1 \times M_2} \equiv \sem{M_1} \times \sem{M_2},
+    \end{aligned} \\
+       \\
+       & \text{(sum)} &&
+    \llbracket \sum_{i \in M} X \rrbracket_v \equiv \sum_{m \in \sem{M}} \sem{X}_{v[i\mapsto m]}.   
+\end{align*}
+\end{definition}
+Denotational semantics of expressions. Symbol $D$ represents appropriate terms from the ket, bra, or operator sorts. States in $\mathcal{H}$ are represented by column vector, co-states in $\mathcal{H}^*$ by row vector, then all $\cdot$ above are interpreted as matrix multiplications, while $\otimes$ as Kronecker products.
+We omit the semantics of functions.
+
 
 \section{Axiomatic Semantics}
-
+\label{sec: full axioms}
 The full list of equational axioms are provided below.
     \begin{align*}
         & \textsc{(Ax-Scalar)} &&
@@ -538,9 +637,43 @@ The full list of equational axioms are provided below.
         \ket{t}^\dagger = \bra{t}
         \qquad
         \ket{s} \otimes \ket{t} =\ket{(s, t)} 
+        \\
+        & \textsc{(Sum)}
+        && \sum_{i \in s} \mathbf{0} = \mathbf{0}
+        \qquad 
+        \sum_{i \in \mathbf{U}(\sigma)} \ket{i} \cdot \bra{i} = \mathbf{1}_\mathcal{O}(\sigma) \\
+        & && i \text{ free in } t \Rightarrow \sum_{i \in \mathbf{U}(\sigma)} \delta_{i, t} = 1 \\
+        & && i \text{ free in } t \Rightarrow \sum_{i \in \mathbf{U}(\sigma)} \delta_{i, t}.A = A\{i/t\} \\
+        & && \sum_{i \in M} \sum_{j \in M} \delta_{i, j} = \sum_{j \in M} 1 \\
+        & && \sum_{i \in M} \sum_{j \in M} \delta_{i, j}.A = \sum_{j \in M} A\{i/j\}
     \end{align*}
-\yx{to be continued}
-
+    \begin{align*}
+        & &&  b_1 \times \cdots \times (\sum_{i \in M} a) \times \cdots \times b_n 
+        \reduce\ \sum_{i \in M} (b_1 \times \cdots \times a \times \cdots \times b_n) \\
+        & && (\sum_{i \in M}a)^* = \sum_{i \in M} a^*
+        \qquad
+        (\sum_{i \in M} A)^\dagger = \sum_{i \in M} A^\dagger \\
+        & &&
+        a.(\sum_{i \in M} A) = \sum_{i \in M} a.A
+        \qquad
+        (\sum_{i \in M} a).A = \sum_{i \in M} a.A \\
+        & &&
+        X \cdot (\sum_{i \in M} Y) = \sum_{i \in M} X \cdot Y
+        \qquad
+        (\sum_{i \in M} X) \cdot Y = \sum_{i \in M} X \cdot Y \\
+        & &&
+        X \otimes (\sum_{i \in M} Y) = \sum_{i \in M} X \otimes Y
+        \qquad
+        (\sum_{i \in M} X) \otimes Y = \sum_{i \in M} X \otimes Y \\
+        & && \sum_{i \in M}(a_1 + \cdots + a_n) = (\sum_{i \in M} a_1) + \cdots + (\sum_{i \in M} a_n) \\
+        & && \sum_{i \in M}(X_1 + \cdots + X_n) =(\sum_{i \in M} X_1) + \cdots + (\sum_{i \in M} X_n) \\
+        & && \sum_{i \in \mathbf{U}(\sigma \times \tau)} A =\sum_{j \in \mathbf{U}(\sigma)} \sum_{k \in \mathbf{U}(\tau)} A\{i/(j, k)\} \\
+        & && \sum_{i \in M_1 \star M_2} A =\sum_{j \in M_1} \sum_{k \in M_2} A\{i/(j, k)\} \\
+        & \textrm{($\alpha$-equivalence)}
+        && \lambda x . A = \lambda y . A\{x/y\} \\
+        & \textsc{(Sum-Swap)}
+        && \sum_{i \in s_1} \sum_{j \in s_2} A = \sum_{j \in s_2} \sum_{i \in s_1} A
+    \end{align*}
 
 
 
@@ -1110,7 +1243,7 @@ This section includes all the rewriting rules used in the system. Related rules 
     & $X_1 + \cdots + (\sum_{k_1 \in s_1}\cdots\sum_{k_n \in s_n}(a+b).A) + \cdots +X_n$ \\
 \end{ruletable}
 
-\begin{ruletable}{Rules to eliminate labels in Dirac notations.}
+\begin{ruletable}{Rules to eliminate labels in Dirac notation.}
     %
     R-L-EXPAND
     & $K_R \ \reduce\ \sum_{i_{r_1}\in\bU(\sigma_{r_1})}\cdots \sum_{i_{r_n}\in\bU(\sigma_{r_n})} (\<i_R|\cdot K). (|i_{r_1}\>_{r_i}\otimes\cdots\otimes|i_{r_n}\>_{r_n})$ \\
@@ -1126,7 +1259,7 @@ This section includes all the rewriting rules used in the system. Related rules 
 
 
 
-\begin{ruletable}{Rules for labelled Dirac notations.}
+\begin{ruletable}{Rules for labelled Dirac notation.}
     %
     R-ADJDK
     & $ ({}_r\<i|)^\dagger \ \reduce\ |i\>_r$ \\
@@ -1168,7 +1301,7 @@ This section includes all the rewriting rules used in the system. Related rules 
     & $ D_1 \cdot (\sum_{i \in M} D_2) \ \reduce\ \sum_{i \in M} (D_1 \cdot D_2) $
 \end{ruletable}
 
-\begin{ruletable} {Rules to simplify dot product in labelled Dirac notations.}
+\begin{ruletable} {Rules to simplify dot product in labelled Dirac notation.}
     %
     R-L-SORT0
     & $ A : \DType(s_1, s_2), B : \DType(s_1', s_2'), s_2 \cap s_1'=\emptyset \Rightarrow A \cdot B \ \reduce\ A \otimes B $ \\

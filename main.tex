@@ -133,7 +133,7 @@
 %
 \begin{abstract}
 
-    Dirac notations is the fundamental language in quantum computation and quantum information. Recently, the term rewriting system DiracDec~\cite{diracdec} was introduced to automate the equational reasoning with Dirac notations, a critical yet time-intensive task. This work bases upon and extends DiracDec, aiming to develop a solver optimized for practical applications. Enhancements include an improved typing system, a simplified language and rewriting system, more efficient algorithms, and added support for labelled Dirac notations. Our solver Dirace is implemented in \CC\ with a Mathematica backend, and demonstrates advantages in decision-making power and time efficiency.
+    Dirac notation is the fundamental language in quantum computation and quantum information. Recently, the term rewriting system DiracDec~\cite{diracdec} was introduced to automate the equational reasoning with Dirac notation, a critical yet time-intensive task. This work bases upon and extends DiracDec, aiming to develop a solver optimized for practical applications. Enhancements include an improved typing system, a simplified language and rewriting system, more efficient algorithms, and added support for labelled Dirac notation. Our solver Dirace is implemented in \CC\ with a Mathematica backend, and demonstrates advantages in decision-making power and time efficiency.
 
 
 % \keywords{First keyword  \and Second keyword \and Another keyword.}
@@ -201,8 +201,8 @@ For example, formalization works of quantum algorithms and quantum programming l
 Dirac notation are also used in quantum programming languages to define the program states, operations and assertions. In order to automate the verification procedure, we need to simplify and check the equivalence of pre-conditions. 
 However, unlike the existence of SAT and SMT solver, we are still in need of a working Dirac notation solver, and this absence has become an obstacle of many areas.
 
-Recently, Xu et al.~\cite{diracdec} proposed a theory to decide the equivalence of Dirac notations, as well as a prototype implementation in Mathematica called DiracDec.
-They proved that the equivalence of basic Dirac notations are decidable.
+Recently, Xu et al.~\cite{diracdec} proposed a theory to decide the equivalence of Dirac notation, as well as a prototype implementation in Mathematica called DiracDec.
+They proved that the equivalence of basic Dirac notation are decidable.
 Their algorithm sticks with a pure term rewriting system, and is proved to be confluent and terminating.
 Even though, there is still a gap between DiracDec and a practical solver for Dirac notation equivalence.
 
@@ -211,19 +211,19 @@ This is witnessed in their evaluation: DiracDec is not good at dealing with ``co
 
 Usability is another problem.
 DiracDec does not support labelled Dirac notation, which use registers to denote the subsystem, and express the state locally.
-The typing of DiracDec only deals with Dirac notations, which is not sufficient for a working scenario, where we want to have defined symbols and a context for the typing assumptions of variables.
+The typing of DiracDec only deals with Dirac notation, which is not sufficient for a working scenario, where we want to have defined symbols and a context for the typing assumptions of variables.
 Moreover, to avoid type checking during term rewriting, DiracDec separate the same symbol (e.g. multiplication) for different types to disambiguate, which makes the system bloated.
 Also, it is hard to integrate the Mathematica implementation as a solvers into other projects.
 
-There is a trade-off between simplicity and efficiency for the system design. The simplicity of term rewriting in DiracDec allows them to reach satisfying theoretical results, but it is also a constraint for optimization.
-Based on DiracDec, this work aims at building a practical solver. It transforms the term rewriting system into a hybrid algorithm, and overcomes the problems mentioned above. Our main contributions and techniques are:
+The system design involves a trade-off between simplicity and efficiency. The simplicity of term rewriting in DiracDec allows them to reach satisfying theoretical results, but it is also a constraint for optimization.
+Based on DiracDec, this work aims at building a practical solver. It transforms the term rewriting system into a hybrid algorithm, and overcomes the problems mentioned above. Our main technical contributions are:
 \begin{itemize}
-    \item An efficient algorithm to decide the equational theories in $E$. The basic idea is to carry through equivalence checking by normalization, and the normal form for $E$ are obtained by sorting. % This algorithm reduces the complexity from the factorial level to the polynomial level.
-    \item The support for constant register labels. The equivalence decision of labelled Dirac notations is reduced to the unlabelled situation.
+    \item An efficient algorithm to decide the equational theories in $E$. The core idea is to perform equivalence checking through normalization, with the normal form for $E$ being obtained by sorting.
+    \item The support for constant register labels. The equivalence decision of labelled Dirac notation is reduced to the unlabelled situation.
     \item A more usable \CC\ solver Dirace with abstract language and typing. We also support to define symbols (e.g., transpose and trace) using the functions syntax.
 \end{itemize}
 
-As an evaluation, we tested Dirace on the benchmark of DiracDec and new examples for labelled Dirac notations. 
+As an evaluation, we tested Dirace on the benchmark of DiracDec and new examples for labelled Dirac notation. 
 The result shows significant improvement in decidability and efficiency over DiracDec.
 % Dirace successfully decides all the examples that are expressable in its language, including those failed by DiracDec because of complexity or insufficient decision power.
 
@@ -234,7 +234,7 @@ The result shows significant improvement in decidability and efficiency over Dir
 
 
 \section{Motivation and Preliminary}
-One interesting fact about the quantum world is that for two maximally entangled states, applying one operator $M$ on one subsystem is equivalent to applying $M^T$, the transpose of $M$, on the other. This property holds no matter how far the two systems are separated, and is expressed as an equation of Dirac notations.
+One interesting fact about the quantum world is that for two maximally entangled states, applying one operator $M$ on one subsystem is equivalent to applying $M^T$, the transpose of $M$, on the other. This property holds no matter how far the two systems are separated, and is expressed as an equation of Dirac notation.
 \begin{example}
     \label{ex: motivating}
     Let $q$ and $r$ be two quantum systems on $\mathcal{H}_T$ space. Let $M$ be a quantum operation on $\mathcal{H}_T$,
@@ -243,8 +243,8 @@ One interesting fact about the quantum world is that for two maximally entangled
     M_q \ket{\Phi}_{q; r} = M_r^T \ket{\Phi}_{q; r}.
     \]
 \end{example}
-Here $q$ and $r$ are called labels, denoting the system for Dirac notations.
-To reason about such equations using computers, we need to formalize the language and work in a proof system.
+Here $q$ and $r$ are called labels, denoting the system for Dirac notation.
+To automate reasoning about such equations, we need to formalize the language and develop a proof system.
 % The following paragraphs briefly introduce the Dirac notation and the universal algebra framework we use.
 
 \subsubsection{Dirac notation}
@@ -258,14 +258,14 @@ Dirac notation further enjoys the property that the interpretation is independen
 \]
 and they are equivalent for all variables.
 
-% With the concrete basis, Dirac notations can be interpreted as matrices. For example, the ket of two basis of qubit states are column vectors $\ket{0} = \begin{bmatrix} 1 \\ 0 \end{bmatrix}$ and $\ket{1} = \begin{bmatrix} 0 \\ 1 \end{bmatrix}$, and the corresponding bras are row vectors in the dual space $\bra{0} = \begin{bmatrix} 1 & 0 \end{bmatrix}$ and $\bra{1} = \begin{bmatrix} 0 & 1 \end{bmatrix}$.
-% The calculation between Dirac notations then corresponds to matrix operatoins. For example, inner product $\braket{0| 1} = \begin{bmatrix} 0 & 1 \end{bmatrix} \begin{bmatrix} 1 \\ 0 \end{bmatrix} = 0$, and tensor product $\ket{0} \otimes \ket{1} = \ket{(0, 1)} = \begin{bmatrix} 1 \\ 0 \end{bmatrix} \otimes \begin{bmatrix} 0 \\ 1 \end{bmatrix} = \begin{bmatrix} 0 \\ 1 \\ 0 \\ 0 \end{bmatrix}$.
+% With the concrete basis, Dirac notation can be interpreted as matrices. For example, the ket of two basis of qubit states are column vectors $\ket{0} = \begin{bmatrix} 1 \\ 0 \end{bmatrix}$ and $\ket{1} = \begin{bmatrix} 0 \\ 1 \end{bmatrix}$, and the corresponding bras are row vectors in the dual space $\bra{0} = \begin{bmatrix} 1 & 0 \end{bmatrix}$ and $\bra{1} = \begin{bmatrix} 0 & 1 \end{bmatrix}$.
+% The calculation between Dirac notation then corresponds to matrix operatoins. For example, inner product $\braket{0| 1} = \begin{bmatrix} 0 & 1 \end{bmatrix} \begin{bmatrix} 1 \\ 0 \end{bmatrix} = 0$, and tensor product $\ket{0} \otimes \ket{1} = \ket{(0, 1)} = \begin{bmatrix} 1 \\ 0 \end{bmatrix} \otimes \begin{bmatrix} 0 \\ 1 \end{bmatrix} = \begin{bmatrix} 0 \\ 1 \\ 0 \\ 0 \end{bmatrix}$.
 
-In practice, Dirac notations are combined with other syntax, such as the big operator sum $\sum_{i \in S} A$, for better expressiveness. We also use labelled Dirac notations like $\ket{i}_q \otimes \ket{i}_r$ to denote the quantum system in consideration, where Dirac notations are subscripted with registers.
+In practice, Dirac notation are combined with other syntax, such as the big operator sum $\sum_{i \in S} A$, for better expressiveness. We also use labelled Dirac notation like $\ket{i}_q \otimes \ket{i}_r$ to denote the quantum system in consideration, where Dirac notation are subscripted with registers.
 
 
 \subsubsection{Universal algebra}
-We use universal algebra and equational logic to formally represent Dirac notations and the reasoning procedure.
+We use universal algebra and equational logic to formally represent Dirac notation and the reasoning procedure.
 A universal algebra defines a signature of function symbols.
 Terms in the algebra are constructed by constants, variables or function application on terms. 
 Other basic concepts like substitution of variables or pattern matching are also defined.
@@ -315,7 +315,7 @@ Index functions are necessary for defining transformations that are polymorphic 
 The generators are explained in order.
 $\lambda x : T.e$ is the abstraction for normal functions, and $\mu x.e$ is the abstraction for index functions.
 $e_1\ e_2$ is function application. 
-% $e_1 \circ e_2$ is the composition operator of Dirac notations.
+% $e_1 \circ e_2$ is the composition operator of Dirac notation.
 % $\hat{0}$ and $\hat{1}$ are constant basis of $\Basis(\mathsf{bool})$ type.
 $(e_1, e_2)$ is the basis pair for product types. $0$, $1$, $\ADDS$, $e_1 \times \cdots \times e_n$ and $e^*$ are symbols for scalars. 
 The next line includes constant symbols for ket, bra and operator.
@@ -341,8 +341,8 @@ $E$ and $\Gamma$ are sequences of assumptions $x : T$ or definitions $x := t : T
         \Gamma ::=\ & [] \mid \Gamma; x : \Index \mid \Gamma; x : T.
     \end{align*}
 \end{definition}
-Definitions refer to the symbols that can be unfolded. Definition symbols usually have abstract meanings, and here we use them to encode more operations in Dirac notations, such as transpose and trace.
-Assumptions are the declarations of the type for variables. In the scenario of equational proofs, variable assumptions implicitly have the universal quantifier.
+Definitions refer to the symbols that can be unfolded. Definition symbols usually have abstract meanings, and here we use them to encode more operations in Dirac notation, such as transpose and trace.
+Assumptions are the declarations of the type for variables. In the scenario of equational proofs, variable assumptions are universally quantified implicitly.
 
 The type checking of our language involves maintaining a well-formed environment and context $E[\Gamma]$.
 We say an expression $t$ has type $X$ in context $E[\Gamma]$, if the typing judgement $E[\Gamma] \vdash t : X$ can be proved through the typing rules in~\Cref{sec: full typing rules}. Here we present and explain the rules selectively. Firstly, well-formed contexts $\WF(E)[\Gamma]$ are built in the incremental way, e.g.:
@@ -360,7 +360,7 @@ Starting from an empty context, we can assume new index symbols, and assume or d
     \frac{E[\Gamma] \vdash \sigma : \Index}{E[\Gamma] \vdash \KType(\sigma) : \Type}
 \end{gather*}
 
-The Dirac notations will then be typed accordingly. For example, the ket syntax $\ket{t}$ has type $\KType(\sigma)$, if $t$ is typed as a basis term of index $\sigma$. Also, the inner product of a bra and a ket with the same type index $\sigma$ is typed as the scalar. This corresponds to the constraint of inner products that vectors should be in the same Hilbert space.
+The Dirac notation will then be typed accordingly. For example, the ket syntax $\ket{t}$ has type $\KType(\sigma)$, if $t$ is typed as a basis term of index $\sigma$. Also, the inner product of a bra and a ket with the same type index $\sigma$ is typed as the scalar. This corresponds to the constraint of inner products that vectors should be in the same Hilbert space.
 \begin{gather*}
     \frac{E[\Gamma]\vdash t : \Basis(\sigma)}{E[\Gamma] \vdash \ket{t} : \KType(\sigma)}
     \qquad
@@ -385,7 +385,7 @@ Lastly, the big operator sum is modelled by folding a function on a set, therefo
     \frac{E[\Gamma] \vdash s : \SET(\sigma) \qquad E[\Gamma] \vdash f : \Basis(\sigma) \to \KType(\tau)}{E[\Gamma] \vdash \sum_{s} f : \KType(\tau)}.
 \]
 
-% And lastly we have the typing rules for composition $x \circ y$. Similar to casual Dirac notations, the typing of composition depends on the types of operands.
+% And lastly we have the typing rules for composition $x \circ y$. Similar to casual Dirac notation, the typing of composition depends on the types of operands.
 % \begin{gather*}
 %     \frac{E[\Gamma] \vdash x : \SType \qquad E[\Gamma] \vdash y : \KType(\sigma)}{E[\Gamma] \vdash x \circ y : \KType(\sigma)}
 %     \qquad
@@ -413,7 +413,7 @@ To give meanings to the syntax, we assign the semantics in the denotational way,
 The denotational semantics interpret every expression as an object in linear algebra, according to a valuation mapping $v$ from variables to their values. 
 The semantics of $e$ with valuation $v$ is written as $\sem{e}_v$, and two expressions $e_1$ and $e_2$ are equivalence if they have equal semantics in the mathematical sense for all valuations, written as $\sem{e_1} = \sem{e_2}$.
 
-The complete interpretation is listed in \yx{We need to write this}.
+The complete interpretation is listed in~\Cref{sec: full denotational sem}.
 Variables typed with $\Index$ are interpreted as finite sets, and index product $\sem{\sigma_1 \times \sigma_2} = \sem{\sigma_1} \times \sem{\sigma_2}$ are defined as Cartesian product of sets. Following on, every type is interpreted as a set. For example, the scalar type $\sem{\SType} = \mathbb{C}$ is interpreted as complex number set, the the ket and bra type $\sem{\KType(\sigma)} = \mathcal{H}_{\sem{\sigma}}$, $\sem{\KType(\sigma)} = \mathcal{H}_{\sem{\sigma}}^*$ are interpreted as the Hilbert space and dual space depending on $\sigma$. One special case is the delta symbol 
 $\sem{\delta_{s, t}} = 
 \left \{  
@@ -432,13 +432,13 @@ The idea behind the interpretation of types and terms is to characterize the typ
     Directly check all the cases.
 \end{proof}
 
-This explanation formalizes the common explanation of Dirac notations, and best describes the target of the algorithm.
+This explanation formalizes the common explanation of Dirac notation, and best describes the target of the algorithm.
 However, computers cannot reason about equivalence through mathematical interpretations. We move on define the proof system as an abstraction.
 
 
 \subsubsection{Axiomatic semantics} 
-The proof system for equivalence consists of equational logic as the framework and axioms describing the properties of Dirac notations.
-The full list is in \yx{TODO}.
+The proof system for equivalence consists of equational logic as the framework and axioms describing the properties of Dirac notation.
+The full list is in~\Cref{sec: full axioms}.
 There are axioms for linear space, and other structures like tensor product and inner product.
 % From the operational view, each equation declares a valid rewriting operation, and two expressions are equiavlent if and only if they can be rewritten into the same form using the axioms.
 For example, we have the absorption law of zero symbols $X \cdot \mathbf{0} = \mathbf{0}$, and the bilinearity of dot product
@@ -508,7 +508,7 @@ As is mentioned in the sematnics, the axioms in $E$ cannot be decided by term re
 DiracDec decides $E$ by examining all possible permutations in the rewriting result.
 In this work, the general idea is to carry through the normalization procedure using sorting algorithms. 
 The procedure of the normalization is displayed below. 
-The first three steps use term rewriting to work on the structure of Dirac notations, while the last three steps deals with the equational theory $E$.
+The first three steps use term rewriting to work on the structure of Dirac notation, while the last three steps deals with the equational theory $E$.
 \begin{enumerate}
     \item \textbf{first rewritings}: expand definitions and simplify,
     \item \textbf{variable expansion}: consider scalars expressions for completeness,
@@ -711,7 +711,7 @@ The project structure is illustrated in~\Cref{fig: dirace structure}.
     \item \texttt{syntax\_theory.cpp}: syntax related algorithms, such as de Bruijn normalization and freeness of variables;
     \item \texttt{calculus.cpp}: type checker and intergration with Mathematica;
     \item \texttt{reduction.cpp}: all the rewriting rules and transformations;
-    \item \texttt{dirac\_parser.cpp}: parser for Dirac notations and Dirace commands;
+    \item \texttt{dirac\_parser.cpp}: parser for Dirac notation and Dirace commands;
     \item \texttt{prover.cpp}: the prover that maintains the context and process commands like definition or equivalence checking.
 \end{itemize}
 
@@ -723,7 +723,7 @@ The internal data structure for terms is a pointer-based syntax tree following t
         term ::= ID | ID [term (, term)*].
     }
 \]
-The syntax tree can be an identifier, or an application with an identifier as the function head, and several syntax trees as arguments. There are several Dirac notations terms and their corresponding syntax trees.
+The syntax tree can be an identifier, or an application with an identifier as the function head, and several syntax trees as arguments. There are several Dirac notation terms and their corresponding syntax trees.
 \footnotesize{
 \begin{align*}
     & X_1 + X_2 + X_3 && \texttt{ADD[X1, X2, X3]} 
@@ -745,7 +745,7 @@ Here are some examples for the parsing syntax.
     \hline
     \texttt{|e>} & \texttt{KET[e]} & the ket basis\\
     \texttt{e1 + ... + en} & \texttt{ADD[e1, ..., en]} & the addition\\
-    \texttt{e1\ e2} & \texttt{COMPO[e1, e2]} & composition in Dirac notations \\
+    \texttt{e1\ e2} & \texttt{COMPO[e1, e2]} & composition in Dirac notation \\
     \texttt{e1\^{}*} & \texttt{CONJ[e1]} & scalar conjugation \\
     \texttt{fun i : T => X} & \texttt{FUN[i, T, X]} & lambda abstraction \\
     \hline
@@ -782,7 +782,7 @@ In the left hand side of \texttt{\textcolor{NavyBlue}{CheckEq}} command, \texttt
 Def TPO := idx sigma => idx tau => fun O : OTYPE[sigma, tau] => Sum i in USET[sigma], Sum j in USET[tau], (<i| O |j>).(|j> <i|).
 \end{lstlisting}
 
-The \texttt{TPO} symbol represents the transpose of operators, and encodes the formalization in~\Cref{ex: formalizing motivating}. Thanks to the design of environment and functions, many other commonly used symbols in Dirac notations are encoded and provided as defined symbols in Dirace.
+The \texttt{TPO} symbol represents the transpose of operators, and encodes the formalization in~\Cref{ex: formalizing motivating}. Thanks to the design of environment and functions, many other commonly used symbols in Dirac notation are encoded and provided as defined symbols in Dirace.
 
 Within one second, the prover reports the result of equivalence with their common normal form:
     \begin{lstlisting}[style=dirace]
@@ -808,14 +808,14 @@ The experiments are carried out using a MacBook Pro with M3 Max chip.
     \center
     \begin{tabular}{c|c c c|c c c}
         \hline
-        \multirow{2}{*}{type} & \multicolumn{3}{c|}{DiracDec} & \multicolumn{3}{c}{Dirace} \\
+        \multirow{2}{*}{source} & \multicolumn{3}{c|}{DiracDec} & \multicolumn{3}{c}{Dirace} \\
         \cline{2-7}
                                  & expressable & success & time(s)           & expressable & success & time(s)                 \\
         \hline
         textbook(QCQI)          & 18          & 18        &    1.02        &    18      & 18          &   0.82      \\
         CoqQ                    & 162          & 156       &    48.69       &   158     &  158   &     9.74     \\
-        Circuits                 & 2          & 2       &    17.67       &   3     &  2   &     1.4     \\
-        Jens2024                & 4          & 4         &  59.53       &   4    & 4       &  0.73     \\
+        circuits                 & 2          & 2       &    17.67       &   3     &  2   &     1.4     \\
+        research paper                & 4          & 4         &  59.53       &   4    & 4       &  0.73     \\
         \hline
     \end{tabular}        
     \caption{For DiracDec, examples that cannot be decided within 60 seconds are not included.}
@@ -840,17 +840,20 @@ including prominent tools like Z3. These solvers have become essential in variou
 Equational reasoning is another crucial area of research within automated theorem proving, which focuses on solving problems that involve equations between terms in an algebraic structure. 
 Equational provers, such as Vampire and E, have played a pivotal role in addressing the challenge of proving equations in first-order logic, employing sophisticated algorithms like superposition and term rewriting.
 
-Term rewriting.
+Formal verification of quantum computation is receiving increasing attentions during these years. See~\cite{Lewis2023} for a comprehensive review. 
+Verification frameworks in Coq include the foundational formalization CoqQ and quantum circuit language QWIRE. 
+Verifications of quantum programs are also considered, such as the Hoare logic based methods [] and model checking based methods [].
+The equational reasoning of Dirac notation is crucial for establishing property proofs in these works.
+Verification theoreis and tools based on other languages are also proposed, such as PyZX for reasoning and simplification of ZX-calculus.
 
-Other theories and tools are proposed for the formal verification of quantum computations.
-From the theoretical part, we have ... to verify zx calclus. Other tools for circuits, compilation, program.
 
 
 
+\section{Conclusion and Future Work}
+Based on the first equational reasoning tool for Dirac notation called DiracDec, this work improves and extends the theory for practical applications, and provides the solver Dirace. Experiments show that the tool demonstrates advantages in decidability, efficiency and usability. 
 
-\section{Conclusion}
-Based on the first Dirac notation equational reasoning tool DiracDec, this work refines and extends the theory for practical application, and provides the solver Dirace. Experimental results shows that the tool can correctly identify all encoded equivalent expressions efficiently. 
-We expect Dirace will have applications in areas like quantum program verification or proofs of post-quantum cryptography protocols.
+We expect Dirace to have applications in areas like quantum program verification or proofs of post-quantum cryptography protocols in the future.
+One promising following up is to connect Dirace with theorem provers like Coq. It involves transforming theorem prover expressions into Dirace, and verify the proof trace of Dirace in theorem provers. Besids, most quantum program verifiers nowadays depend on matrix calculations. Dirace can serve as the replacement for matrix methods to enable symbolic deductions.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
