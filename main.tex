@@ -132,8 +132,7 @@
 \maketitle              % typeset the header of the contribution
 %
 \begin{abstract}
-
-    Dirac notation is the fundamental language in quantum computation and quantum information. Recently, the term rewriting system DiracDec~\cite{diracdec} was introduced to automate the equational reasoning with Dirac notation, a critical yet time-intensive task. This work bases upon and extends DiracDec, aiming to develop a solver optimized for practical applications. Enhancements include an improved typing system, a simplified language and rewriting system, more efficient algorithms, and added support for labelled Dirac notation. Our solver Dirace is implemented in \CC\ with a Mathematica backend, and demonstrates advantages in decision-making power and time efficiency.
+Dirac notation is a fundamental language in quantum computation and quantum information. Recently, the term rewriting system DiracDec~\cite{diracdec} was introduced to automate equational reasoning with Dirac notation, a critical yet time-intensive task. Building upon DiracDec, this work aims to develop a solver optimized for practical applications. Enhancements include an improved typing system, a simplified language and rewriting system, more efficient algorithms, and added support for labeled Dirac notation. Our solver, Dirace, is implemented in \CC\ with a Mathematica backend, demonstrating significant improvements in decision-making power and time efficiency.
 
 
 % \keywords{First keyword  \and Second keyword \and Another keyword.}
@@ -194,302 +193,266 @@
 
 \section{Introduction}
 
-In 1939, Dirac proposed his notation~\cite{dirac1939new} for quantum mechanics, which is designed to represent linear algebra formulae in a compact and convenient way.
-For instance, $a\ket{\psi} + b\ket{\phi}$ indicates the addition of two vectors, i.e., the superposition of two states $\ket{\psi}$ and $\ket{\phi}$.
-Dirac notation is now widely accepted as the working language in quantum computation and quantum information. The reasonings of Dirac notation play a fundamental role in research and application, just like boolean and integer logic to classical computer science. 
-For example, formalization works of quantum algorithms and quantum programming languages involves plenty of equational proofs of Dirac notation, which are critical, repeating but time-intensive jobs.
-Dirac notation are also used in quantum programming languages to define the program states, operations and assertions. In order to automate the verification procedure, we need to simplify and check the equivalence of pre-conditions. 
-However, unlike the existence of SAT and SMT solver, we are still in need of a working Dirac notation solver, and this absence has become an obstacle of many areas.
+In 1939, Dirac introduced his notation for quantum mechanics~\cite{dirac1939new}, designed to represent linear algebraic formulas in a compact and convenient form. For example, the expression \( a\ket{\psi} + b\ket{\phi} \) represents the superposition of two quantum states, \( \ket{\psi} \) and \( \ket{\phi} \). Today, Dirac notation is widely accepted as the standard language in quantum computation and quantum information. Its reasoning forms the foundation of research and applications, much like boolean and integer logic do in classical computer science.
 
-Recently, Xu et al.~\cite{diracdec} proposed a theory to decide the equivalence of Dirac notation, as well as a prototype implementation in Mathematica called DiracDec.
-They proved that the equivalence of basic Dirac notation are decidable.
-Their algorithm sticks with a pure term rewriting system, and is proved to be confluent and terminating.
-Even though, there is still a gap between DiracDec and a practical solver for Dirac notation equivalence.
+In quantum algorithm formalizations and quantum programming languages, Dirac notation is frequently used in equational proofs, which are critical, repetitive, and often time-intensive. These notations also play a key role in defining program states, operations, and assertions in quantum programming languages. To automate the verification of these programs, we need tools that can simplify and check the equivalence of preconditions. However, unlike the well-established SAT and SMT solvers for classical logic, a practical solver for Dirac notation equivalence remains an unmet need, creating a barrier for progress in several fields.
 
-One problem is the algorithm efficiency for equivalence out of the scope of rewritings. DiracDec decides the whole equational theory by rewriting modulo $E$, where $E$ is a set of equational axioms that cannot be decided by normalization in rewritings, e.g. the associativity and commutativity (AC) of some function symbols. DiracDec uses a direct by inefficient algorithm to decide $E$, which search through all possible permutations and has factorial complexity.
-This is witnessed in their evaluation: DiracDec is not good at dealing with ``computational examples'', which has many AC symbols and are therefore time consuming.
+Recently, Xu et al.~\cite{diracdec} proposed a theory for deciding the equivalence of Dirac notation, alongside a prototype implementation in Mathematica called DiracDec. They demonstrated that the equivalence of basic Dirac notation is decidable. Their algorithm, based on a pure term rewriting system, has been proven to be confluent and terminating. Despite this, there remains a gap between DiracDec and a practical solver for Dirac notation equivalence.
 
-Usability is another problem.
-DiracDec does not support labelled Dirac notation, which use registers to denote the subsystem, and express the state locally.
-The typing of DiracDec only deals with Dirac notation, which is not sufficient for a working scenario, where we want to have defined symbols and a context for the typing assumptions of variables.
-Moreover, to avoid type checking during term rewriting, DiracDec separate the same symbol (e.g. multiplication) for different types to disambiguate, which makes the system bloated.
-Also, it is hard to integrate the Mathematica implementation as a solvers into other projects.
+One challenge is the efficiency of the algorithm when dealing with equivalences beyond the scope of term rewriting. DiracDec decides the entire equational theory by rewriting modulo \( E \), where \( E \) represents a set of axioms that cannot be decided by normalization alone, such as the associativity and commutativity (AC) of certain function symbols. DiracDec uses a direct but inefficient algorithm to decide these axioms, which searches through all possible permutations and exhibits factorial complexity. This inefficiency becomes particularly evident in "computational examples" containing many AC symbols, which are time-consuming to process.
 
-The system design involves a trade-off between simplicity and efficiency. The simplicity of term rewriting in DiracDec allows them to reach satisfying theoretical results, but it is also a constraint for optimization.
-Based on DiracDec, this work aims at building a practical solver. It transforms the term rewriting system into a hybrid algorithm, and overcomes the problems mentioned above. Our main technical contributions are:
+Usability is another area where DiracDec falls short. It does not support labelled Dirac notation, which uses registers to denote subsystems and express states locally. Additionally, DiracDec's typing system only does not provide context for variable typing assumptions or the definition of symbols, which are required in practical scenarios. To avoid type checking during term rewriting, DiracDec separates symbols (e.g., multiplication) for different types, leading to unnecessary complexity. Moreover, integrating the Mathematica implementation into other projects as a solver is challenging.
+
+The system design of DiracDec reflects a trade-off between simplicity and efficiency. While the simplicity of term rewriting allows for strong theoretical results, it limits optimization opportunities. Building on DiracDec, this work aims to develop a practical solver. We transform the term rewriting system into a hybrid algorithm, overcoming the challenges mentioned above. Our main technical contributions are:
 \begin{itemize}
-    \item An efficient algorithm to decide the equational theories in $E$. The core idea is to perform equivalence checking through normalization, with the normal form for $E$ being obtained by sorting.
-    \item The support for constant register labels. The equivalence decision of labelled Dirac notation is reduced to the unlabelled situation.
-    \item A more usable \CC\ solver Dirace with abstract language and typing. We also support to define symbols (e.g., transpose and trace) using the functions syntax.
+    \item An efficient algorithm for deciding the equational theories in \( E \), based on equivalence checking through normalization, with the normal form for \( E \) being obtained via sorting.
+    \item Support for constant register labels, and reducing the equivalence decision of labelled Dirac notation to the unlabelled case.
+    \item A more user-friendly \CC\ solver, Dirace, featuring an abstract language and typing system. We also support the definition of symbols (e.g., transpose and trace) using function syntax.
 \end{itemize}
 
-As an evaluation, we tested Dirace on the benchmark of DiracDec and new examples for labelled Dirac notation. 
-The result shows significant improvement in decidability and efficiency over DiracDec.
+We evaluated Dirace against the DiracDec benchmark and new examples involving labelled Dirac notation. The results show significant improvements in both decidability and efficiency compared to DiracDec.
+
 % Dirace successfully decides all the examples that are expressable in its language, including those failed by DiracDec because of complexity or insufficient decision power.
-
-% \yx{mention the dilemma of simplicity and efficiency}
-
-
-
 
 
 \section{Motivation and Preliminary}
-One interesting fact about the quantum world is that for two maximally entangled states, applying one operator $M$ on one subsystem is equivalent to applying $M^T$, the transpose of $M$, on the other. This property holds no matter how far the two systems are separated, and is expressed as an equation of Dirac notation.
+
+An interesting property of quantum mechanics is that for two maximally entangled states, applying a quantum operator \( M \) to one subsystem is equivalent to applying \( M^T \) (the transpose of \( M \)) to the other subsystem. This relationship holds regardless of the spatial separation between the two systems, and it can be expressed as an equation in Dirac notation.
 \begin{example}
     \label{ex: motivating}
-    Let $q$ and $r$ be two quantum systems on $\mathcal{H}_T$ space. Let $M$ be a quantum operation on $\mathcal{H}_T$,
-    and $\ket{\Phi} = \sum_{i \in T} \ket{i}\otimes \ket{i}$ be the maximally entangled state, then we have
+    Let \( q \) and \( r \) represent two quantum systems in the Hilbert space \( \mathcal{H}_T \). Let \( M \) be a quantum operation acting on \( \mathcal{H}_T \), and let \( \ket{\Phi} = \sum_{i \in T} \ket{i} \otimes \ket{i} \) be the maximally entangled state. Then, we have the following equation:
     \[
     M_q \ket{\Phi}_{q; r} = M_r^T \ket{\Phi}_{q; r}.
     \]
 \end{example}
-Here $q$ and $r$ are called labels, denoting the system for Dirac notation.
-To automate reasoning about such equations, we need to formalize the language and develop a proof system.
-% The following paragraphs briefly introduce the Dirac notation and the universal algebra framework we use.
 
-\subsubsection{Dirac notation}
-Quantum states live in complex Hilbert spaces. We use vectors in the space to descirbe pure quantum states, and operations are described by linear transformations. 
-It uses the ket $\ket{i}$ and the bra $\bra{i}$ to indicate bases of the space and the dual space. Together with other variable symbols, they are composed with each other in sequence, and the composition will be interpreted into different operations, depending on the type of operands. For example, $\braket{i|j}$ represents the inner product of $\bra{i}$ and $\ket{j}$, which is a scalar, while $\ket{i}\bra{j}$ represents the outer product, resulting in an operator. 
-Dirac notation also use $\otimes$ to indicate the vectors and operators in the tensor product space.
+In this equation, \( q \) and \( r \) are labels denoting the respective subsystems in the Dirac notation. To automate reasoning about such equations, we must formalize the language and develop a proof system to handle it.
 
-Dirac notation further enjoys the property that the interpretation is independent on the order of composition, thus parentheses can be omitted. For example, the formula \(\bra{i}\ket{\phi}\bra{\psi}\ket{j}\) can be understood as
+\subsubsection{Dirac Notation}
+
+Quantum states are represented as vectors in complex Hilbert spaces, and operations on these states are described by linear transformations. Dirac notation uses the ket \( \ket{i} \) and the bra \( \bra{i} \) to denote basis vectors in a Hilbert space and its dual space, respectively. These symbols can be composed together in various ways to form more complex expressions. The meaning of these compositions depends on the types of the operands involved.
+For example, the inner product \( \braket{i|j} \) represents the scalar result of the dot product between \( \bra{i} \) and \( \ket{j} \), while the outer product \( \ket{i}\bra{j} \) represents an operator. Additionally, Dirac notation uses the tensor product symbol \( \otimes \) to describe the combined space of multiple quantum systems.
+
+One of the key features of Dirac notation is its order-independent interpretation. This means that the composition of terms can be written without parentheses, as the interpretation is unaffected by the order of multiplication. For instance, the formula \( \bra{i}\ket{\phi}\bra{\psi}\ket{j} \) can be understood as:
 \[
     \braket{i|\phi}\braket{\psi|j} = \bra{i} (\ket{\phi}\bra{\psi}) \ket{j},
 \]
-and they are equivalent for all variables.
+and these expressions are equivalent for all variables involved.
 
-% With the concrete basis, Dirac notation can be interpreted as matrices. For example, the ket of two basis of qubit states are column vectors $\ket{0} = \begin{bmatrix} 1 \\ 0 \end{bmatrix}$ and $\ket{1} = \begin{bmatrix} 0 \\ 1 \end{bmatrix}$, and the corresponding bras are row vectors in the dual space $\bra{0} = \begin{bmatrix} 1 & 0 \end{bmatrix}$ and $\bra{1} = \begin{bmatrix} 0 & 1 \end{bmatrix}$.
-% The calculation between Dirac notation then corresponds to matrix operatoins. For example, inner product $\braket{0| 1} = \begin{bmatrix} 0 & 1 \end{bmatrix} \begin{bmatrix} 1 \\ 0 \end{bmatrix} = 0$, and tensor product $\ket{0} \otimes \ket{1} = \ket{(0, 1)} = \begin{bmatrix} 1 \\ 0 \end{bmatrix} \otimes \begin{bmatrix} 0 \\ 1 \end{bmatrix} = \begin{bmatrix} 0 \\ 1 \\ 0 \\ 0 \end{bmatrix}$.
+In practice, Dirac notation is often combined with other syntactic elements, such as the summation symbol \( \sum_{i \in S} A \), to enhance expressiveness. Furthermore, labelled Dirac notation, such as \( \ket{i}_q \otimes \ket{i}_r \), is used to denote quantum systems in consideration, where subscripts (registers) are added to distinguish different subsystems.
 
-In practice, Dirac notation are combined with other syntax, such as the big operator sum $\sum_{i \in S} A$, for better expressiveness. We also use labelled Dirac notation like $\ket{i}_q \otimes \ket{i}_r$ to denote the quantum system in consideration, where Dirac notation are subscripted with registers.
-
-
-\subsubsection{Universal algebra}
-We use universal algebra and equational logic to formally represent Dirac notation and the reasoning procedure.
-A universal algebra defines a signature of function symbols.
-Terms in the algebra are constructed by constants, variables or function application on terms. 
+\subsubsection{Universal Algebra}
+We use universal algebra and equational logic to formally represent Dirac notation and the reasoning procedure. A universal algebra defines a signature of function symbols, with terms constructed from constants, variables, and function applications. 
 Other basic concepts like substitution of variables or pattern matching are also defined.
 In our case of Dirac notation, the signature consists of constructors and operations like $\ket{i}$ or $A \otimes B$.
-Reasonings of Dirac notation terms follow the equational logic. It defines an equaitonal relation compatible with substitution and term construction, which essentially formalizes the common sense of equivalence in algebra.
+The reasoning process is guided by equational logic, which defines an equivalence relation that is compatible with substitution and term construction. This relation formalizes the intuitive concept of equivalence in algebra.
 
 
 
 \section{Language, Typing and Semantics}
-The first step is to formally pin down the language for Dirac notation.
-As a reference, the language in DiracDec has a concrete design, meaning that the same syntax for different types corresponds to different symbols.
-Our intention is to move from the concrete design to a more abstract one. This is closer to the casual Dirac notation we use, and simplifies the term rewriting system.
+The first step is to formalize the language for Dirac notation. In DiracDec, the language has a concrete design, where the same syntax for different types corresponds to distinct symbols. Our goal is to transition from this concrete design to a more abstract one, which aligns more closely with the conventional Dirac notation we use and simplifies the term rewriting system.
 
-For this purpose, our language involves three layers: the index, the type and the term.
-Terms describe the concrete instances like ket, bra and operator, which will be checked and typed.
-Index represents classical datatypes, and they appear in type expressions to distinguish between different Hilbert spaces and sets.
-\begin{definition}[index syntax]
-    The syntax for type indices is
+To achieve this, we organize our language into three layers: the index, the type, and the term. Terms represent concrete instances such as kets, bras, and operators, which will be typed and checked. The index represents classical data types and appears in type expressions to differentiate between various Hilbert spaces and sets.
+
+\begin{definition}[Index Syntax]
+    The syntax for type indices is:
     \begin{align*}
         \sigma ::=\ & x \mid \sigma_1 \times \sigma_2.
     \end{align*}
 \end{definition}
-Here $x$ is a variable. $\sigma_1 \times \sigma_2$ is the product type for tensor product space or Cartesian product sets.
+Here, \( x \) is a variable, and \( \sigma_1 \times \sigma_2 \) represents the product type for tensor product spaces or Cartesian product sets.
 
-\begin{definition}[type syntax]
-    The syntax for Dirac notation types is
+\begin{definition}[Type Syntax]
+    The syntax for Dirac notation types is:
     \begin{align*}
-        T ::=\ & \Basis(\sigma) \mid \SType \mid \KType(\sigma) \mid \BType(\sigma) \mid \OType(\sigma_1, \sigma_2) \mid T_1 \to T_2 \mid \forall x.T \mid \SET(\sigma). \\
+        T ::=\ & \Basis(\sigma) \mid \SType \mid \KType(\sigma) \mid \BType(\sigma) \mid \OType(\sigma_1, \sigma_2) \mid T_1 \to T_2 \mid \forall x.T \mid \SET(\sigma).
     \end{align*}
 \end{definition}
-$\Basis(\sigma)$ is the type for basis in index $\sigma$. $\SType$ indicates scalars, $\KType(\sigma)$ and $\BType(\sigma)$ indicates ket and bra terms in Hilbert space $\sigma$, and $\OType(\sigma_1, \sigma_2)$ indicates linear operators with Hilbert space $\sigma_2$ as domain and $\sigma_1$ as codomain.
-$\mathsf{Set}(\sigma)$ is the type of subsets in $\sigma$ index, and is used to denote the values of bound variables in summation.
-The remaining two generators are types for functions. $T_1 \to T_2$ denotes normal functions, which accepts a $T_1$ type argument and results in a $T_2$ type term. $\forall x. T$ denotes index functions, which accepts an index argument $x$ and results in a $T$ type term, where $T$ can depend on $x$.
-Index functions are necessary for defining transformations that are polymorphic on Hilbert spaces.
+\( \Basis(\sigma) \) denotes the type for basis elements in the index \( \sigma \).
+\( \SType \) represents scalars, while \( \KType(\sigma) \) and \( \BType(\sigma) \) refer to ket and bra types in the Hilbert space \( \sigma \), respectively.
+\( \OType(\sigma_1, \sigma_2) \) represents linear operators with \( \sigma_2 \) as the domain and \( \sigma_1 \) as the codomain.
+\( \SET(\sigma) \) refers to the type of subsets of \( \sigma \), used to denote the values of bound variables in summations.
+The remaining two constructs define function types: \( T_1 \to T_2 \) represents normal functions that take a \( T_1 \)-type argument and return a \( T_2 \)-type term, while \( \forall x. T \) represents index functions that take an index argument \( x \) and produce a \( T \)-type term, which may depend on \( x \).
+Index functions are essential for defining polymorphic transformations across Hilbert spaces.
 
-\begin{definition}[term syntax]
-    The syntax for Dirac notation terms is
+
+\begin{definition}[Term Syntax]
+    The syntax for Dirac notation terms is:
     \begin{align*}
         e ::=\ & x \mid \lambda x : T.e \mid \mu x.e \mid e_1\ e_2 \mid (e_1, e_2) \\
-        & |\ 0 \mid 1 \mid \ADDS(e_1, \cdots, e_n)  \mid e_1 \times \cdots \times e_n \mid e^*  \mid \delta_{e_1, e_2} \mid \DOT(e_1, e_2) \\
+        & |\ 0 \mid 1 \mid \ADDS(e_1, \cdots, e_n) \mid e_1 \times \cdots \times e_n \mid e^* \mid \delta_{e_1, e_2} \mid \DOT(e_1, e_2) \\
         & |\ \ZEROK(\sigma) \mid \ZEROB(\sigma) \mid \ZEROO(\sigma_1, \sigma_2) \mid \ONEO(\sigma) \\
         & |\ \ket{e} \mid \bra{t} \mid e^\dagger \mid e_1.e_2 \mid \ADD(e_1, \cdots, e_n) \mid e_1 \otimes e_2 \\
         & |\ \MULK(e_1, e_2) \mid \MULB(e_1, e_2) \mid \OUTER(e_1, e_2) \mid \MULO(e_1, e_2) \\
         & |\ \mathbf{U}(e) \mid e_1 \star e_2 \mid \sum_{e_1} e_2.
     \end{align*}
 \end{definition}
-The generators are explained in order.
-$\lambda x : T.e$ is the abstraction for normal functions, and $\mu x.e$ is the abstraction for index functions.
-$e_1\ e_2$ is function application. 
-% $e_1 \circ e_2$ is the composition operator of Dirac notation.
-% $\hat{0}$ and $\hat{1}$ are constant basis of $\Basis(\mathsf{bool})$ type.
-$(e_1, e_2)$ is the basis pair for product types. $0$, $1$, $\ADDS$, $e_1 \times \cdots \times e_n$ and $e^*$ are symbols for scalars. 
-The next line includes constant symbols for ket, bra and operator.
-$e^\dagger$ denotes the conjugate transpose of $e$. $e_1.e_2$ denotes scaling the term $e_2$ with scalar $e_1$.
-$\mathbf{U}(e)$ is the universal set with index $e$. $e_1 \star e_2$ is the Cartesian product. $\sum_{e_1} e_2$ is the big operator sum, which is modelled by folding the function $e_2$ over value sets $e_1$. Usually, the sum body is specified by an abstraction. Therefore we use the notation $\sum_{x \in s} X$ to denote $\sum_{s} \lambda x : T . X$ as well.
-Here $\ADDS$ and $\ADD$ are two different AC symbols representing the scalar addition and the linear algebra addition respectively. 
-% They will be denoted as $a_1 + \cdots + a_n$ and $X_1 + \cdots + X_n$.
-There are five kinds of linear algebra multiplications among ket, bra and operator. We encode the typing information by using five different symbols, namely $\DOT$, $\MULK$, $\MULB$, $\OUTER$ and $\MULO$. 
+The terms above are explained in order:
+\( \lambda x : T.e \) represents the abstraction for normal functions, and \( \mu x.e \) represents the abstraction for index functions.
+\( e_1\ e_2 \) denotes function application.
+\( (e_1, e_2) \) is the basis pair for product types.
+The constants \( 0 \), \( 1 \), \( \ADDS \), \( e_1 \times \cdots \times e_n \), and \( e^* \) are symbols for scalars.
+The next line includes constant symbols for kets, bras, and operators.
+\( \ket{e} \) is a ket, \( \bra{t} \) is a bra, and \( e^\dagger \) denotes the conjugate transpose of \( e \).
+\( e_1.e_2 \) represents scaling the term \( e_2 \) by scalar \( e_1 \).
+\( \mathbf{U}(e) \) denotes the universal set with index \( e \).
+\( e_1 \star e_2 \) represents the Cartesian product of \( e_1 \) and \( e_2 \).
+\( \sum_{e_1} e_2 \) is the big operator sum, modeled by folding the function \( e_2 \) over the value set \( e_1 \). Typically, the sum's body is given by an abstraction. For convenience, we also use the notation \( \sum_{x \in s} X \) to represent \( \sum_{s} \lambda x : T . X \).
+Additionally, \( \ADDS \) and \( \ADD \) are distinct AC symbols: \( \ADDS \) is used for scalar addition and \( \ADD \) for linear algebra addition.
+There are five kinds of linear algebraic multiplications among kets, bras, and operators. These are encoded using five different symbols: \( \DOT \), \( \MULK \), \( \MULB \), \( \OUTER \), and \( \MULO \).
 
-Compared to DiracDec, the addition, adjoint, scaling and tensor product symbols are merged together.
-They are denoted as $B\cdot K$, $K_1 \cdot K_2$, $B_1 \cdot B_2$, $K \cdot B$ and $O_1 \cdot O_2$, respectively.
-The multiplications are still separated because their properties do not have to much overlap.
+Compared to DiracDec, the symbols for addition, adjoint, scaling, and tensor products have been consolidated.
+The multiplications are still kept separate due to their differing properties.
+These operations are denoted as \( B \cdot K \), \( K_1 \cdot K_2 \), \( B_1 \cdot B_2 \), \( K \cdot B \), and \( O_1 \cdot O_2 \), respectively.
+
+
 
 
 \subsection{Typing System}
 
-Typing is the procedure to classify the term through a proof system in a typing context. 
-Our context consists of the environment $E$ for definitions and assumptions, and the context $\Gamma$ for bound variables. 
-$E$ and $\Gamma$ are sequences of assumptions $x : T$ or definitions $x := t : T$.
-\begin{definition}[environment and context]
+
+The typing system is responsible for classifying terms within a proof system, using a context that specifies the types of variables and definitions. The context is divided into two components: the environment \( E \), which includes definitions and assumptions, and the context \( \Gamma \), which tracks bound variables. Both \( E \) and \( \Gamma \) consist of sequences of assumptions \( x : T \) or definitions \( x := t : T \).
+\begin{definition}[Environment and Context]
+    The syntax for \( E \) and \( \Gamma \) is:
     \begin{align*}
-        E ::=\ & [] \mid E; x : \Index \mid E; x : T \mid E; x := t : T. \\
-        \Gamma ::=\ & [] \mid \Gamma; x : \Index \mid \Gamma; x : T.
+        E ::= &\ [] \mid E; x : \Index \mid E; x : T \mid E; x := t : T. \\
+        \Gamma ::= &\ [] \mid \Gamma; x : \Index \mid \Gamma; x : T.
     \end{align*}
 \end{definition}
-Definitions refer to the symbols that can be unfolded. Definition symbols usually have abstract meanings, and here we use them to encode more operations in Dirac notation, such as transpose and trace.
-Assumptions are the declarations of the type for variables. In the scenario of equational proofs, variable assumptions are universally quantified implicitly.
+Definitions refer to symbols that can be expanded or unfolded, and typically represent abstract concepts, such as transpose or trace in Dirac notation. Assumptions, on the other hand, define the types of variables, and variable assumptions are implicitly universally quantified in the case of equational proofs.
 
-The type checking of our language involves maintaining a well-formed environment and context $E[\Gamma]$.
-We say an expression $t$ has type $X$ in context $E[\Gamma]$, if the typing judgement $E[\Gamma] \vdash t : X$ can be proved through the typing rules in~\Cref{sec: full typing rules}. Here we present and explain the rules selectively. Firstly, well-formed contexts $\WF(E)[\Gamma]$ are built in the incremental way, e.g.:
+Type checking in our language involves maintaining a well-formed environment and context \( E[\Gamma] \). We say an expression \( t \) has type \( X \) in context \( E[\Gamma] \) if the typing judgment \( E[\Gamma] \vdash t : X \) can be proven through the rules in~\Cref{sec: full typing rules}. The well-formedness of the context \( \WF(E)[\Gamma] \) is built incrementally:
 \[
     \frac{}{\WF([])[]}
     \qquad
     \frac{\WF(E)[] \qquad x \notin E}{\WF(E; x : \Index)[]}
     \qquad
-    \frac{E[]\vdash t:T \qquad x \notin E}{\WF(E; x:=t:T)[]}.
+    \frac{E[]\vdash t:T \qquad x \notin E}{\WF(E; x := t:T)[]}.
 \]
-Starting from an empty context, we can assume new index symbols, and assume or define symbols with checked types. Based on the well-formed context, typing judgements can be proved by information from $E[\Gamma]$, or built inductively. In the following rules, for example, the condition $x : \Index \in E[\Gamma]$ is true if $E$ or $\Gamma$ has the assumption in their sequences. $\KType(\sigma)$ will be a valid type for kets, if the argument $\sigma$ is typed as the index.
+Starting with an empty context, new index symbols can be introduced, and symbols with checked types can be defined. Typing judgments are then made inductively using the information from \( E[\Gamma] \). For instance, the rule \( x : \Index \in E[\Gamma] \) holds if \( E \) or \( \Gamma \) contains an assumption for \( x \).
+And \(\KType(\sigma)\) is a valid type for kets, if the argument $\sigma$ is typed as an index.
 \begin{gather*}
     \frac{\WF(E)[\Gamma] \qquad x : \Index \in E[\Gamma]}{E[\Gamma] \vdash x : \Index}
     \qquad
     \frac{E[\Gamma] \vdash \sigma : \Index}{E[\Gamma] \vdash \KType(\sigma) : \Type}
 \end{gather*}
 
-The Dirac notation will then be typed accordingly. For example, the ket syntax $\ket{t}$ has type $\KType(\sigma)$, if $t$ is typed as a basis term of index $\sigma$. Also, the inner product of a bra and a ket with the same type index $\sigma$ is typed as the scalar. This corresponds to the constraint of inner products that vectors should be in the same Hilbert space.
+Terms are then typed accordingly.
+For example, the ket \( \ket{t} \) will have the type \( \KType(\sigma) \) if \( t \) is a basis term of index \( \sigma \). Similarly, the inner product between a bra and a ket of the same index \( \sigma \) is typed as a scalar. It corresponds to the constraint of inner product that vectors should be from the same Hilbert space.
 \begin{gather*}
     \frac{E[\Gamma]\vdash t : \Basis(\sigma)}{E[\Gamma] \vdash \ket{t} : \KType(\sigma)}
     \qquad
     \frac{E[\Gamma]\vdash B : \BType(\sigma) \qquad E[\Gamma]\vdash K : \KType(\sigma)}{E[\Gamma] \vdash B \cdot K : \SType}
 \end{gather*}
 
-The typing for functions and applications follow the common practice. 
-Take the index function $\mu x. t$ as an example: here $x$ is a bound variable typed as $\Index$, and the type $U\{x/u\}$ of application $(t\ u)$ is obtained by replacing $x$ with the index instance $u$.
+The typing for functions and applications follows the standard practice. For example, the index function \( \mu x. t \) is typed with \( x \) as a bound variable of type \( \Index \), and the application \( (t\ u) \) has the type \( U\{x/u\} \), obtained by replacing \( x \) with the index instance \( u \).
 \begin{gather*}
     \frac{E[\Gamma; x : T] \vdash t : U}{E[\Gamma] \vdash (\lambda x : T . t) : T \to U}
     \qquad
-    \frac{E[\Gamma] \vdash t:U \to T \qquad E[\Gamma] \vdash u:U}{E[\Gamma] \vdash (t\ u):T} \\
-    \\
+    \frac{E[\Gamma] \vdash t:U \to T \qquad E[\Gamma] \vdash u:U}{E[\Gamma] \vdash (t\ u):T} 
+    \\[1em]
     \frac{E[\Gamma; x : \Index] \vdash t : U}{E[\Gamma] \vdash (\mu x.t) : \forall x.U}
     \qquad
     \frac{E[\Gamma] \vdash t:\forall x.U \qquad E[\Gamma] \vdash u : \Index}{E[\Gamma] \vdash (t\ u):U\{x/u\}}
 \end{gather*}
 
-
-Lastly, the big operator sum is modelled by folding a function on a set, therefore the typing rule is as follows:
+Finally, the big operator sum is modeled by folding a function over a set, with the typing rule as follows:
 \[
     \frac{E[\Gamma] \vdash s : \SET(\sigma) \qquad E[\Gamma] \vdash f : \Basis(\sigma) \to \KType(\tau)}{E[\Gamma] \vdash \sum_{s} f : \KType(\tau)}.
 \]
 
-% And lastly we have the typing rules for composition $x \circ y$. Similar to casual Dirac notation, the typing of composition depends on the types of operands.
-% \begin{gather*}
-%     \frac{E[\Gamma] \vdash x : \SType \qquad E[\Gamma] \vdash y : \KType(\sigma)}{E[\Gamma] \vdash x \circ y : \KType(\sigma)}
-%     \qquad
-%     \frac{E[\Gamma] \vdash x : \OType(\sigma, \tau) \qquad E[\Gamma] \vdash y : \KType(\tau)}{E[\Gamma] \vdash x \circ y : \KType(\sigma)}
-% \end{gather*}
-
-
-
 \begin{lemma}
-    The typing of expressions are decidable and unique.
+    The typing of expressions is both decidable and unique.
 \end{lemma}
+
 \begin{proof}
-    The type can be calculated in the recursive manner. There is at most one typing rule for the same function symbol and argument types, which leads to the uniqueness of typing.
+    The type of an expression can be determined recursively. For any given function symbol and argument types, there is at most one typing rule, ensuring the uniqueness of typing.
 \end{proof}
+
+
+
+
+
 
 \subsection{Semantics}
 
+The semantics of a language define the meaning of its expressions. In this context, the objective of our algorithm is to determine whether two expressions are semantically equivalent. We define the semantics in a denotational manner, mapping syntax to set-theoretic objects.
 
-% Semantics define the meanings of expressions, and the goal of the desirable algorithm is to decide whether
-% two expressions have the equivalent semantics. We can give the semantics by axiomatic equations and the denotational interpretations.
+\subsubsection{Denotational Semantics}
+The denotational semantics interpret every expression as an object in linear algebra, according to a valuation mapping \( v \), which assigns values to the variables in the expression. The semantics of an expression \( e \) with a given valuation \( v \) is denoted as \( \sem{e}_v \). Two expressions \( e_1 \) and \( e_2 \) are considered equivalent if their semantics are equal for all valuations, i.e., \( \sem{e_1}_v = \sem{e_2}_v \) for all \( v \).
 
-To give meanings to the syntax, we assign the semantics in the denotational way, which is a mapping from syntax to set-theoretical objects.
+The complete interpretation of terms and types is provided in~\Cref{sec: full denotational sem}. Variables typed with \( \Index \) are interpreted as finite sets, and the product of two indices \( \sem{\sigma_1 \times \sigma_2} \) is defined as the Cartesian product of the sets \( \sem{\sigma_1} \) and \( \sem{\sigma_2} \). More generally, each type is interpreted as a set. For example, the scalar type \( \sem{\SType} \) is interpreted as the set of complex numbers \( \mathbb{C} \), and the ket and bra types \( \sem{\KType(\sigma)} \) and \( \sem{\BType(\sigma)} \) are interpreted as the Hilbert space \( \mathcal{H}_{\sem{\sigma}} \) and its dual \( \mathcal{H}_{\sem{\sigma}}^* \), respectively. Terms are explained as the set elements. For example, the semantics of ket tensor product $\sem{K_1 \otimes K_2} \equiv \sem{K_1} \otimes \sem{K_2}$, is obtained by first calculating the semantics $\sem{K_1}$ and $\sem{K_2}$ as vectors, and then take the vector tensor product as result.
 
-\subsubsection{Denotational semantics} 
-The denotational semantics interpret every expression as an object in linear algebra, according to a valuation mapping $v$ from variables to their values. 
-The semantics of $e$ with valuation $v$ is written as $\sem{e}_v$, and two expressions $e_1$ and $e_2$ are equivalence if they have equal semantics in the mathematical sense for all valuations, written as $\sem{e_1} = \sem{e_2}$.
+% One special case is the delta function \( \delta_{s,t} \), which is interpreted as:
+% \[
+%     \sem{\delta_{s,t}} =
+%     \begin{cases}
+%         1, & \text{if } \sem{s} = \sem{t}, \\
+%         0, & \text{if } \sem{s} \neq \sem{t}.
+%     \end{cases}
+% \]d
 
-The complete interpretation is listed in~\Cref{sec: full denotational sem}.
-Variables typed with $\Index$ are interpreted as finite sets, and index product $\sem{\sigma_1 \times \sigma_2} = \sem{\sigma_1} \times \sem{\sigma_2}$ are defined as Cartesian product of sets. Following on, every type is interpreted as a set. For example, the scalar type $\sem{\SType} = \mathbb{C}$ is interpreted as complex number set, the the ket and bra type $\sem{\KType(\sigma)} = \mathcal{H}_{\sem{\sigma}}$, $\sem{\KType(\sigma)} = \mathcal{H}_{\sem{\sigma}}^*$ are interpreted as the Hilbert space and dual space depending on $\sigma$. One special case is the delta symbol 
-$\sem{\delta_{s, t}} = 
-\left \{  
-    \begin{array}{ll}
-        1, & \text{where } \sem{s} = \sem{t}, \\
-        0, & \text{where } \sem{s} \neq \sem{t}.
-    \end{array} 
-\right .
-$.
+The idea behind the interpretation of types and terms is to formalize the typing relation using set-theoretic inclusion. Specifically, for a well-formed context \( E[\Gamma] \), term \( t \), and type \( T \), if \( E[\Gamma] \vdash t : T \), then for any valuation \( v \), the semantics of \( t \) must lie within the semantics of \( T \).
 
-The idea behind the interpretation of types and terms is to characterize the typing relation with set theory inclusion. Therefore we have the following lemma.
 \begin{lemma}
-    For all well-formed context $E[\Gamma]$, term $t$ and type $T$, if $E[\Gamma]\vdash t : T$, then for all valuations $v$, $\sem{t}_v \in \sem{T}_v$.
+    For any well-formed context \( E[\Gamma] \), term \( t \), and type \( T \), if \( E[\Gamma] \vdash t : T \), then for all valuations \( v \), \( \sem{t}_v \in \sem{T}_v \).
 \end{lemma}
+
 \begin{proof}
-    Directly check all the cases.
+    The proof follows directly by checking each case.
 \end{proof}
 
-This explanation formalizes the common explanation of Dirac notation, and best describes the target of the algorithm.
-However, computers cannot reason about equivalence through mathematical interpretations. We move on define the proof system as an abstraction.
+This interpretation formalizes the standard understanding of Dirac notation and provides the foundation for the algorithm. However, computers cannot directly reason about equivalence through mathematical interpretations. Therefore, we proceed by defining a proof system that abstracts these concepts.
+
 
 
 \subsubsection{Axiomatic semantics} 
-The proof system for equivalence consists of equational logic as the framework and axioms describing the properties of Dirac notation.
-The full list is in~\Cref{sec: full axioms}.
-There are axioms for linear space, and other structures like tensor product and inner product.
-% From the operational view, each equation declares a valid rewriting operation, and two expressions are equiavlent if and only if they can be rewritten into the same form using the axioms.
-For example, we have the absorption law of zero symbols $X \cdot \mathbf{0} = \mathbf{0}$, and the bilinearity of dot product
-\begin{align*}
-    (a.X) \cdot Y = a.(X \cdot Y) \qquad X \cdot (Y_1 + Y_2) = X \cdot Y_1 + X \cdot Y_2 \\
-    X \cdot (a.Y) = a.(X \cdot Y) \qquad (X_1 + X_2) \cdot Y = X_1 \cdot Y + X_2 \cdot Y
-\end{align*}
 
-As is mentioned in the introduction, a subset $E$ of the axioms is not decided by term rewriting. The set consists of:
-\begin{align*}
-    & \textrm{AC-equivalence} 
-    && \textrm{e.g.} \qquad X + Y = Y + X \qquad (X + Y) + Z = X + (Y + Z) \\
-    & \textrm{$\alpha$-equivalence}
-    && \lambda x . A = \lambda y . A\{x/y\} \\
-    & \textrm{SUM-SWAP}
-    && \sum_{i \in s_1} \sum_{j \in s_2} A = \sum_{j \in s_2} \sum_{i \in s_1} A \\
-    & \textrm{scalar theories} 
-    && \textrm{e.g.} \qquad a + 0 = a \qquad a \times (b + c) = a \times b + a \times c
-\end{align*}
-The equational theories for scalars are treated as a moduloe, and are not considered here. In the implementation, we use the Mathematica kernel to decide scalar equivalences.
+The proof system for equivalence is based on equational logic, together with axioms that describe the properties of Dirac notation. A full list of these axioms can be found in~\Cref{sec: full axioms}. The axioms cover fundamental aspects of linear spaces, as well as other structures like the tensor and inner products. For example, we have the absorption law for zero symbols:
+\(X \cdot \mathbf{0} = \mathbf{0},\)
+and the bilinearity of the dot product:
+\[
+(a.X) \cdot Y = a \cdot (X \cdot Y), \quad X \cdot (Y_1 + Y_2) = X \cdot Y_1 + X \cdot Y_2, 
+\]
+\[
+X \cdot (a.Y) = a \cdot (X \cdot Y), \quad (X_1 + X_2) \cdot Y = X_1 \cdot Y + X_2 \cdot Y.
+\]
 
-The equational axioms provide an operable theory for the proof automation algorithm,
-and the denotational semantics can be considered as one model for the theory.
-In this sense, the equivalence derived by axioms always imply the equivalence in interpretations.
+As mentioned in the introduction, a subset \( E \) of these axioms cannot be decided by term rewriting alone. The axioms in \( E \) include:
+\[
+\begin{aligned}
+    \text{AC-equivalence} &\quad \text{e.g.,} \quad X + Y = Y + X, \quad (X + Y) + Z = X + (Y + Z), \\
+    \alpha\text{-equivalence} &\quad \lambda x . A = \lambda y . A\{x/y\}, \\
+    \text{SUM-SWAP} &\quad \sum_{i \in s_1} \sum_{j \in s_2} A = \sum_{j \in s_2} \sum_{i \in s_1} A, \\
+    \text{scalar theories} &\quad \text{e.g.,} \quad a + 0 = a, \quad a \times (b + c) = a \times b + a \times c.
+\end{aligned}
+\]
+The scalar theories are treated separately as a module and are not considered in this work. In the implementation, we use the Mathematica kernel to decide scalar equivalences.
+These equational axioms provide an operable theory for the proof automation algorithm. Denotational semantics can be seen as one model for this theory, meaning that equivalences derived from the axioms always imply equivalence in the interpretations.
 \begin{lemma}
-    For all well-formed context $E[\Gamma]$ and terms $e_1$, $e_2$, if $AX \vdash e_1 = e_2$, then $\sem{e_1} = \sem{e_2}$.
+    For all well-formed contexts \( E[\Gamma] \) and terms \( e_1, e_2 \), if \( \vdash e_1 = e_2 \), then \( \sem{e_1} = \sem{e_2} \).
 \end{lemma}
 \begin{proof}
-    Direct check all cases.
+    This follows directly from checking all cases.
 \end{proof}
 
-Therefore, the axioms are sound with respect to denotational semantics. 
-Unfortunately, the inverse does not hold: there are equivalences in denotational semantics that cannot be captured by these axioms. 
-However, our work focuses on solving the practical examples, which are covered by our axioms in the experiments.
+Thus, the axioms are sound with respect to denotational semantics. However, the reverse does not hold: there exist equivalences in denotational semantics that cannot be captured by these axioms. Nevertheless, our work focuses on solving practical examples, which are fully covered by the axioms in the experiments.
 
-To conclude the design introduction, we demonstrate the formalization of symbols used in the motivating example.
-\begin{example}[formalizing the motivating example]
+To conclude this section, we demonstrate the formalization of the symbols used in the motivating example.
+\begin{example}[Formalizing the Motivating Example]
     \label{ex: formalizing motivating}
-    Definitions and assumptions in the environment $E$:
+    Definitions and assumptions in the environment \( E \) are formalized as follows:
     \begin{align*}
-        & \textrm{TPO} && := \mu T_1. \mu T_2. \lambda O : \OType(T_1, T_2). \sum_{i \in \mathbf{U}(T_1)} \sum_{j \in \mathbf{U}(T_2)} \bra{i} O \ket{j} . \ket{j}\bra{i} \\
-        & && : \forall T_1. \forall T_2. \OType(T_1, T_2) \to \OType(T_2, T_1); \\
-        & \textrm{phi} && := \mu T. \sum_{i \in \mathbf{U}(T)} \sum_{j \in \mathbf{U}(T)} \ket{(i, j)} : \forall T.\KType(T \times T); \\
-        & \textrm{T} && : \Index; \\
-        & \textrm{M} && : \OType(T, T).
+        & \text{TPO} && := \mu T_1. \mu T_2. \lambda O : \OType(T_1, T_2). \sum_{i \in \mathbf{U}(T_1)} \sum_{j \in \mathbf{U}(T_2)} \bra{i} O \ket{j} . \ket{j}\bra{i} \\
+        & &&\quad : \forall T_1. \forall T_2. \OType(T_1, T_2) \to \OType(T_2, T_1); \\
+        &\text{phi} &&:= \mu T. \sum_{i \in \mathbf{U}(T)} \sum_{j \in \mathbf{U}(T)} \ket{(i, j)} : \forall T.\KType(T \times T); \\
+        & T && : \Index; \\
+        & M && : \OType(T, T).
     \end{align*}
-    The symbol TPO is the encoding of operator transpose, which is polymorphic on the Hilbert spaces by $T_1$ and $T_2$.
-    phi takes the index $T$ and defines the maximally entangled states. It sums over all basis in $T$, indicated by the universal set $\mathbf{U}(T)$.
-    With the assumption of index T and operator M, we can write the equivalence in the non-label version, formally as 
+    The symbol \( \text{TPO} \) represents the transpose of an operator, polymorphic on the Hilbert spaces \( T_1 \) and \( T_2 \). The symbol \( \text{phi} \) takes the index \( T \) and defines the maximally entangled states, summing over all basis elements in \( T \), as indicated by the universal set \( \mathbf{U}(T) \).
+    With the assumption of the index \( T \) and operator \( M \), we can express the equivalence in the non-labelled version as:
     \[
-        (\textrm{M} \otimes \mathbf{1}_\mathcal{O}(\textrm{T})) \cdot (\textrm{phi T}) = (\mathbf{1}_\mathcal{O}(\textrm{T}) \otimes (\textrm{TPO T T M})) \cdot (\textrm{phi T}).
+    (\textrm{M} \otimes \mathbf{1}_\mathcal{O}(\textrm{T})) \cdot (\textrm{phi T}) = (\mathbf{1}_\mathcal{O}(\textrm{T}) \otimes (\textrm{TPO T T M})) \cdot (\textrm{phi T}).
     \]
 \end{example}
 
@@ -497,162 +460,117 @@ To conclude the design introduction, we demonstrate the formalization of symbols
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
-\section{Algorithm for Deciding Dirac notation equations}
+\section{Algorithm for Deciding Dirac Notation Equations}
 \label{sec: decide}
 
-We use the term rewriting technique to decide the equivalence of Dirac notation implied by its axiomatic semantics.
-Term rewriting decides equivalence by normalizing the two terms, and checking whether they have the same syntax.
-The normalization is powered by matching and substitution in universal algebra, using a set of rewriting rules.
-As is mentioned in the sematnics, the axioms in $E$ cannot be decided by term rewriting.
-DiracDec decides $E$ by examining all possible permutations in the rewriting result.
-In this work, the general idea is to carry through the normalization procedure using sorting algorithms. 
-The procedure of the normalization is displayed below. 
-The first three steps use term rewriting to work on the structure of Dirac notation, while the last three steps deals with the equational theory $E$.
+We utilize the term rewriting technique to decide the equivalence of Dirac notation, based on its axiomatic semantics. The process involves normalizing two terms and checking whether they have identical syntax. This normalization is achieved through matching and substitution in universal algebra, using a set of predefined rewriting rules.
+
+As mentioned in the semantics section, the axioms in \( E \) cannot be fully decided through term rewriting. DiracDec decides \( E \) by examining all possible permutations in the rewriting result. In this work, we introduce a more efficient approach by incorporating sorting algorithms into the normalization procedure. 
+
+The normalization procedure consists of the following steps.
 \begin{enumerate}
-    \item \textbf{first rewritings}: expand definitions and simplify,
-    \item \textbf{variable expansion}: consider scalars expressions for completeness,
-    \item \textbf{second rewritings}: normalize modulo $E$,
-    \item \textbf{sorting without bound variables}: normalize AC-equivalence,
-    \item \textbf{swap successive summation}: normalize SUM-SWAP,
-    \item \textbf{de Bruijn normalization}: normalize $\alpha$-equivalence.
+    \item \textbf{First Rewritings}: Expand definitions and simplify expressions.
+    \item \textbf{Variable Expansion}: Consider scalar expressions to ensure completeness.
+    \item \textbf{Second Rewritings}: Normalize terms modulo \( E \).
+    \item \textbf{Sorting Without Bound Variables}: Normalize AC-equivalence.
+    \item \textbf{Swap Successive Summations}: Normalize SUM-SWAP equivalences.
+    \item \textbf{De Bruijn Normalization}: Normalize \( \alpha \)-equivalence.
 \end{enumerate}
 
-% \input{flowchart.tex}
+\subsection{Normalization Modulo \( E \) by Term Rewriting}
 
+Term rewriting rules, represented as \( l \ \reduce\ r \), are applied recursively to normalize terms. In each step, subterms matching the left-hand side \( l \) of a rule are replaced with the corresponding right-hand side \( r \). The procedure terminates when no further rewritings can be made.
+A comprehensive list of rewriting rules can be found in~\Cref{sec: rewriting rules}. Below are some key examples to illustrate the design:
 
-\subsection{Normalization modulo $E$ by Term Rewriting}
-Term rewriting rules, written as $l \to r$, are used to normalize terms by recursively matching the subterms of the term with the left hand side $l$, and replace them with the corresponding right hand side $r$. The procedure terminates when no more rewritings can be made.
-The full list of rewriting rules are in~\Cref{sec: rewriting rules}, and we present some of them to illustrate the design idea.
-
-Firstly, we use the following flattening rule to decide the associative with AC symbols, because we allow functions with indefinite arities.
+One of our optimizations is using functions with indefinite arities. 
+Therefore, we use a flattening rule to handle associativity with AC symbols:
 \[
-a_1 + \cdots + (b_1 + \cdots + b_m) + \cdots + a_n
-\ \reduce\ a_1 + \cdots + b_1 + \cdots + b_m + \cdots + a_n
+a_1 + \cdots + (b_1 + \cdots + b_m) + \cdots + a_n \ \reduce\ a_1 + \cdots + b_1 + \cdots + b_m + \cdots + a_n.
 \]
-Commutativity is left for the sorting algorithm later on. 
-Many rewriting rules are obtained by assigning directions to the equational axioms, for example:
+Commutativity is handled later in the sorting step. Many of the rewriting rules are directly derived from the equational axioms, such as:
 \begin{align*}
-    &\textrm{(R-DOT6)} && \bra{s} \cdot \ket{t} \ \reduce \delta_{s, t} \\
-    &\textrm{(R-DELTA0)} && \delta_{s, s} \ \reduce\ 1 \\
-    &\textrm{(R-MULK1)} && O : \OType(\sigma, \tau) \Rightarrow O \cdot \mathbf{0}_{\KType(\tau)} \ \reduce \mathbf{0}_{\KType(\sigma)} \\
-    &\textrm{(R-MULK11)} && (O_1 \otimes O_2) \cdot (K_1 \otimes K_2)\ \reduce\ (O_1 \cdot K_1) \otimes (O_2 \cdot K_2)
+    & \textrm{(R-DOT6)} && \bra{s} \cdot \ket{t} \ \reduce\  \delta_{s, t}, \\
+    & \textrm{(R-DELTA0)} && \delta_{s, s} \ \reduce\  1, \\
+    & \textrm{(R-MULK1)} && O : \OType(\sigma, \tau) \Rightarrow O \cdot \mathbf{0}_{\KType(\tau)} \ \reduce\  \mathbf{0}_{\KType(\sigma)}, \\
+    & \textrm{(R-MULK11)} && (O_1 \otimes O_2) \cdot (K_1 \otimes K_2) \ \reduce\  (O_1 \cdot K_1) \otimes (O_2 \cdot K_2).
 \end{align*}
-Some of them are obvious. The (R-DOT6) says that inner product of two basis will be evaluated to a delta expression,
-and (R-DELTA0) further transforms delta on identical basis to scalar $1$.
-(R-MULK1) corresponds to the axiom that multiplication on zero vectors results in zero. It has a condition on typing, which is calculated during rewriting.
-Some rules require the intuition. For example, (R-MULK11) shows that we prefer tensor product than multiplication.
+Some of these directions are obvious. For example, (R-DOT6) states that the inner product of two basis vectors is reduced to a delta expression, and (R-DELTA0) transforms a delta function on identical basis to a scalar \( 1 \). The rule (R-MULK1) reflects the axiom that multiplying a zero vector results in zero. This rule is conditional on typing, which is checked during rewriting. Some rules, like (R-MULK11), require a deeper understanding, such as the preference for tensor products over multiplication.
 
-As a reference, the term rewriting system for DiracDec is proved complete for the axioms, except the sum symbol. The result is obtained by checking confluence and termination of the system. Our rewriting rules are translations from DiracDec into the typed and abstract language, therefore completeness for corresponding symbols is also expected to hold.
+As a reference, the term rewriting system in DiracDec has been proven complete for all axioms, except for the sum symbol. The completeness result is derived from checking the confluence and termination of the system. Our rewriting rules are translations from DiracDec into the typed and abstract language, ensuring that the corresponding symbols in our system are also complete.
 
-
-%%%%%%%%%%% It's better to avoid mentioning completion rules.
-% Other part of rules assign the rewriting diraction to equations according to the property of symbols and intuitive observations of their relations.
-% When different rules rewrites the same term to different forms, rules for confluence purpose are added.
-% \begin{align*}
-%     %
-%     & \text{(R-SCR1)} 
-%     && a.(b.X) \ \reduce\ (a \times b).X \\
-%     %
-%     & \text{(R-DOT10)}
-%     && (B \cdot O) \cdot K \ \reduce\ B \cdot (O \cdot K), \\
-%     %
-%     & \text{(R-DOT11)}
-%     && \bra{(s, t)} \cdot ((O_1 \otimes O_2) \cdot K) \ \reduce\ ((\bra{s} \cdot O_1) \otimes (\bra{t} \cdot O_2)) \cdot K, \\
-%     %
-%     & \text{(R-MULB10)}
-%     && \bra{(s, t)} \cdot (O_1 \otimes O_2)\ \reduce\ (\bra{s} \cdot O_1) \otimes (\bra{t} \cdot O_2),
-% \end{align*}
-% The (R-SCR1) rule follows the idea to reduce linear algebra scaling into scalar multiplications,
-% and (R-MULB10) transform inner product into tensor product. 
-% As an example of the completetion rule, here the normalization of term $(\bra{(s, t)} \cdot (O_1 \otimes O_2)) \cdot K$ have two rewriting paths: (a). apply (R-MULB10) and get $((\bra{s} \cdot O_1) \otimes (\bra{t} \cdot O_2)) \cdot K$, or
-% (b). first apply (R-DOT10) and sort the term into $\bra{(s, t)} \cdot ((O_1 \otimes O_2) \cdot K)$, and then apply (R-DOT11) to get the same result. Here (R-DOT11) is for completeness of cases similar to this example.
-
-We have other rules dealing with big operator sum. For example, 
+We also have additional rules that handle summations. For example:
 \begin{align*}
-    & \textrm{(R-SUM-ELIM2)}
-    && i \text{ free in } t \Rightarrow \sum_{i \in \mathbf{U}(\sigma)} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (\delta_{i, t}.A) \\
-    & && \reduce\ \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} A\{i/t\} \\
-    & \textrm{(R-SUM-PUSH5)}
-    && (\sum_{i \in M} B)\cdot K \ \reduce\ \sum_{i \in M}(B \cdot K)
+    & \quad i \text{ free in } t \Rightarrow \sum_{i \in \mathbf{U}(\sigma)} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (\delta_{i, t}.A) \ \reduce\  \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} A\{i/t\}, \\
+    & \quad \left( \sum_{i \in M} B \right) \cdot K \ \reduce\  \sum_{i \in M} (B \cdot K).
 \end{align*}
-The (R-SUM-ELIM2) rule will try to eliminate the delta expression in summations.
-And the (R-SUM-PUSH5) rule will lift sum to the outside of inner product.
-There are no completeness guarantee, but the rules work well in practice.
+The first rule eliminates delta expressions in summations, while the second rule pushes summations outside of inner products. While there is no guarantee of completeness for these rules, they work effectively in practice.
 
-
-
-One technique revealed in the DiracDec work is the expansion of variables, critical for proofs with sum:
-\begin{gather*}
-    \frac{E[\Gamma] \vdash K : \KType(\sigma)}{E[\Gamma] \vdash K \ \reduce\ \sum_{i \in \mathbf{U}(\sigma)}(\bra{i}\cdot K).\ket{i}}
-    \qquad \qquad
-    \frac{E[\Gamma] \vdash B : \BType(\sigma)}{E[\Gamma] \vdash B \ \reduce\ \sum_{i \in \mathbf{U}(\sigma)}(B \cdot \ket{i}).\bra{i}} \\
-    \\
-    \frac{E[\Gamma] \vdash O : \OType(\sigma, \tau)}{E[\Gamma] \vdash O \ \reduce\ \sum_{i \in \mathbf{U}(\sigma)} \sum_{j \in \mathbf{U}(\tau)}(\bra{i} \cdot O \cdot \ket{j}).(\ket{i} \cdot \bra{j})}
-\end{gather*}
-These rules transform variables to the symbolic summation of their decomposition on the basis.
-The rules are not terminating, therefore is applied recrusively once in the second step called \textit{variable expansion}. On the other hand, we discovered that doing the expansion on all variables only once is already sufficient.
+\subsubsection{Variable Expansion}
+One important technique, revealed in the DiracDec work, is the expansion of variables, which is critical for proofs involving summation. For example:
+\[
+\frac{E[\Gamma] \vdash K : \KType(\sigma)}{E[\Gamma] \vdash K \ \reduce\ \sum_{i \in \mathbf{U}(\sigma)}(\bra{i} \cdot K).\ket{i}} \quad \quad
+\frac{E[\Gamma] \vdash B : \BType(\sigma)}{E[\Gamma] \vdash B \ \reduce\ \sum_{i \in \mathbf{U}(\sigma)}(B \cdot \ket{i}).\bra{i}},
+\]
+\[
+\frac{E[\Gamma] \vdash O : \OType(\sigma, \tau)}{E[\Gamma] \vdash O \ \reduce\ \sum_{i \in \mathbf{U}(\sigma)} \sum_{j \in \mathbf{U}(\tau)}(\bra{i} \cdot O \cdot \ket{j}).(\ket{i} \cdot \bra{j})}.
+\]
+These rules transform variables into their symbolic summations based on their decomposition over the basis. 
+The rules are not terminating, therefore is applied recrusively once in the second step called \textit{variable expansion}.
+Nevertheless, we have found that applying the expansion only once for all variables is sufficient for normalization.
 \begin{lemma}
-    Let $\textrm{expand}(e)$ indicate the result of expanding all variables in $e$ once.
-    For all well-typed term $e$ in $E[\Gamma]$, $\textrm{expand}(\textrm{expand}(e))$ and $\textrm{expand}(e)$ have the same normal form.
+    Let \( \textrm{expand}(e) \) denote the result of expanding all variables in \( e \) once. For all well-typed terms \( e \) in \( E[\Gamma] \), \( \textrm{expand}(\textrm{expand}(e)) \) and \( \textrm{expand}(e) \) have the same normal form.
 \end{lemma}
 \begin{proof}
-    If we expand a ket variable twice, the structure will be reduced to
+    Expanding a ket variable twice, for example, results in the following transformation:
     \[
-        \sum_{i \in \mathbf{U}(\sigma)}(\bra{i}\cdot \sum_{j \in \mathbf{U}(\sigma)}(\bra{j}\cdot K).\ket{j}).\ket{i}
-        \ \reduce\ 
-        \sum_{i \in \mathbf{U}(\sigma)}\sum_{j \in \mathbf{U}(\sigma)}(\bra{j}\cdot K \times \braket{i|j}).\ket{i},
+    \sum_{i \in \mathbf{U}(\sigma)} (\bra{i} \cdot \sum_{j \in \mathbf{U}(\sigma)} (\bra{j} \cdot K) \cdot \ket{j}) \cdot \ket{i} \ \reduce\  \sum_{i \in \mathbf{U}(\sigma)} \sum_{j \in \mathbf{U}(\sigma)} (\bra{j} \cdot K \cdot \braket{i|j}) \cdot \ket{i},
     \]
-    the elimination rule of delta symbol returns the term to the one-expansion result. Similar for bra and operator.
+    where the delta symbol elimination rule returns the term to its original form. The same holds for bra and operator terms.
 \end{proof}
 
 
 
-\section{Deciding Equational Theory $E$}
+\subsection{Deciding Equational Theory \( E \)}
 
-In the Mathematica implementation of DiracDec, the equational theory $E$ is decided by a unification, which tries to find a substitution of summation bound variables that makes the two expressions syntactically equivalent. The unification iterates through all permutations of AC symbol arguments, and the complexity is factorial in the maximum number of AC symbol arguments.
+In the Mathematica implementation of DiracDec, the equational theory \( E \) is decided using unification, which attempts to find a substitution for the summation bound variables that makes two expressions syntactically equivalent. This unification process iterates through all permutations of AC symbol arguments, and its complexity is factorial in the maximum number of AC symbol arguments.
 
-As the first improvement, we check the $\alpha$-equivalence by de Bruijn index~\cite{deBruijn1972lambda}, where references to bound variable names are replaced by the distance of the lambda abstraction to the variable. For example, the nominal lambda abstraction $\lambda x. x$ is transformed into $\lambda . 0$, while $\lambda x. \lambda y. (x\ (y\ x))$ will is transformed into $\lambda.\lambda. (1\ (0\ 1))$. 
-Transformation into de Bruijn index is at the last step of the normalization to check the equivalence of terms with different bound variable names.
+As the first improvement, we check \( \alpha \)-equivalence using the de Bruijn index~\cite{deBruijn1972lambda}, which replaces references to bound variable names with the distance from the lambda abstraction to the variable. For instance, the nominal lambda abstraction \( \lambda x. x \) is transformed into \( \lambda . 0 \), while \( \lambda x. \lambda y. (x\ (y\ x)) \) is transformed into \( \lambda.\lambda. (1\ (0\ 1)) \). This transformation into the de Bruijn index is performed as the final step in the normalization process to check equivalence between terms with different bound variable names.
 
-The remaining axioms of AC-equivalence and SUM-SWAP claims equivalence under permutations.
-A standard approach to decide is normalization by sorting in a given order. For example, given the dictionary order $a < b < c$, the term $b + c + a$ (and any other AC equivalent ones) will be normalized into $a + b + c$. For our setting, there are two difficulties intertwined together: how to assign such an order to all terms in our language, and how to sort for the two axioms simultaneously.
-As a typical example, the two terms 
+The remaining axioms, such as AC-equivalence and SUM-SWAP, assert equivalence under permutations. A standard approach for deciding such equivalences is to normalize terms by sorting in a predefined order. For example, given the dictionary order \( a < b < c \), the term \( b + c + a \) (and any other AC-equivalent term) is normalized into \( a + b + c \). However, in our setting, two intertwined difficulties arise: how to assign an order to all terms in the language, and how to simultaneously sort for both axioms.
+
+Consider the following two equivalent terms:
 \[
-    \sum_{i \in s_1} \sum_{j \in s_2} \bra{i}A\ket{j} \times \bra{j}B\ket{i}
-    = 
-    \sum_{i \in s_2} \sum_{j \in s_1} \bra{i}B\ket{j} \times \bra{j}A\ket{i}
+\sum_{i \in s_1} \sum_{j \in s_2} \bra{i} A \ket{j} \times \bra{j} B \ket{i}
+= 
+\sum_{i \in s_2} \sum_{j \in s_1} \bra{i} B \ket{j} \times \bra{j} A \ket{i}
 \]
-are equivalent. However, directly sorting elemnts of scalar multiplication in the lexical order will not lead to the same form.
+While these two terms are equivalent, directly sorting the elements of scalar multiplication using lexical order does not yield the same form.
 
-We propose an algorithm to solve the problem by sorting without bound variables. The observation is that in a successive sum expression $\sum_{i \in s_1}\cdots\sum_{j \in s_n}A$, the name and order of bound variables $i, \cdots, j$ can be permuted freely. Therefore, all bound variables should be treated uniformly during sorting, and the order of sum can then be decided according to the position of their bound variables.
+To address this issue, we propose an algorithm that sorts terms without considering bound variables. The key observation is that in a successive sum expression \( \sum_{i \in s_1} \cdots \sum_{j \in s_n} A \), the names and order of the bound variables \( i, \dots, j \) can be freely permuted. Therefore, all bound variables should be treated uniformly during sorting, and the order of summation can then be determined based on the position of the bound variables.
 
-In the above example, we ignore the bound variables first, and sort the sum body into $\bra{\bullet}A\ket{\bullet} \times \bra{\bullet}B\ket{\bullet}$. Then we swap the sum, so that the bound variable at first $\bullet$ position appears at the outmost position. The results will have the same de Bruijn normal form, namely $\sum_{s_1} \sum_{s_2} \bra{\$1} A \ket{\$0} \times \bra{\$0} B \ket{\$1}$.
+In the example above, we first ignore the bound variables and sort the sum body into \( \bra{\bullet} A \ket{\bullet} \times \bra{\bullet} B \ket{\bullet} \). Then, we swap the summations such that the bound variable at the first \( \bullet \) position appears at the outermost position. The results will have the same de Bruijn normal form, namely \( \sum_{s_1} \sum_{s_2} \bra{\$1} A \ket{\$0} \times \bra{\$0} B \ket{\$1} \).
 
-To describe the algorithm in the following, we introduce two notations: for a term $e = f(a_1, a_2, \cdots, a_n)$, $\textrm{head}(e)$ indicates the function symbol $f$,
-and $\textrm{arg}(e, i)$ indicates the $i$-th argument $a_i$. 
-% Variables and constants are considered as functions with zero arguments.
-\begin{definition}[order without bound variables]
-    Assume we have a total order of all symbols.
-    Let $\mathcal{B}$ be the set of bound variables.
-    For simplicity, we assume all bound variables are unique.
-    The relation $e_1 =_\mathcal{B} e_2$ holds when
-    \begin{itemize}
-        \item $head(e_1) = head(e_2)$ and $arg(e_1, i) =_\mathcal{B} arg(e_2, i)$ for all $i$, or
-        \item $e_1 \in \mathcal{B}$ and $e_2 \in \mathcal{B}$.
-    \end{itemize} 
 
-    The relation $e_1 <_\mathcal{B} e_2$ between the two terms holds when:
-    \begin{itemize}
-        \item $e_1 \notin \mathcal{B}$ and $e_2 \in \mathcal{B}$, or
-        \item $head(e_1) < head(e_2)$, or
-        \item $head(e_1) = head(e_2)$, and there exists $n$ with $arg(e_1, n) <_\mathcal{B} arg(e_2, n)$, where $arg(e_1, i) =_\mathcal{B} arg(e_2, i)$ for all $i < n$.
-    \end{itemize}
+To describe the algorithm in the following, we introduce two key notations. For a term \( e = f(a_1, a_2, \dots, a_n) \), \( \textrm{head}(e) \) denotes the function symbol \( f \), while \( \textrm{arg}(e, i) \) refers to the \( i \)-th argument \( a_i \) of the term. In this context, variables and constants are treated as functions with zero arguments.
+
+
+
+\begin{definition}[Order Without Bound Variables]
+Let \( \mathcal{B} \) represent the set of bound variables, with the assumption that all bound variables are unique. We also assume that a total order exists over all symbols. The relation \( e_1 =_\mathcal{B} e_2 \) holds if:
+\begin{itemize}
+    \item \( \textrm{head}(e_1) = \textrm{head}(e_2) \), and for all \( i \), \( \textrm{arg}(e_1, i) =_\mathcal{B} \textrm{arg}(e_2, i) \), or
+    \item \( e_1 \in \mathcal{B} \) and \(e_2 \in \mathcal{B}\).
+\end{itemize}
+
+The relation \( e_1 <_\mathcal{B} e_2 \) holds between two terms if:
+\begin{itemize}
+    \item $e_1 \notin \mathcal{B}$ and $e_2 \in \mathcal{B}$, or
+    \item $head(e_1) < head(e_2)$, or
+    \item $head(e_1) = head(e_2)$, and there exists $n$ with $arg(e_1, n) <_\mathcal{B} arg(e_2, n)$, where $arg(e_1, i) =_\mathcal{B} arg(e_2, i)$ for all $i < n$.
+\end{itemize}
 \end{definition}
-It can be checked that $e_1 =_\mathcal{B} e_2$ if and only if neither $e_1 <_\mathcal{B} e_2$ or $e_2 <_\mathcal{B} e_1$ holds.
-The idea is to compare the function symbols in the top down order, and omit bound variable occurance. 
-With the order, the sort function normalize the term with respect to AC equivalence.
-\begin{definition}[sort transformation]
+It can be shown that \( e_1 =_\mathcal{B} e_2 \) if and only if neither \( e_1 <_\mathcal{B} e_2 \) nor \( e_2 <_\mathcal{B} e_1 \) holds. The purpose of this ordering is to compare function symbols in a top-down manner while ignoring bound variables. The sorted order enables normalization of terms in terms of AC equivalence.
+\begin{definition}[Sort Transformation]
     For a term $e$ with bound variable set $\mathcal{B}$,
     The sort transformation sort(e) is defined as
     \begin{itemize}
@@ -663,16 +581,17 @@ With the order, the sort function normalize the term with respect to AC equivale
     \end{itemize}
 \end{definition}
 
-The order of bound variables can be decided according to the result of the sort transformation, and then successive summations can be normalized using the order.
-\begin{definition}[swap transformation]
-    For a term $e$ with sorting result sort$(e)$, we can obtain a total order of all bound variables appearing in the term $e$. Specifically, they are ordered by their first appearances, except in function definitions $\lambda x$ and $\mu x$.
-    The swap transformation then arrange successive summation according to this order.
+After sorting, the next step is the \textit{swap transformation}, which arranges successive summations based on the order of bound variables.
+\begin{definition}[Swap Transformation]
+For a term \( e \) with a sorting result \( \textrm{sort}(e) \), the swap transformation proceeds by ordering all bound variables according to their first appearances, except in function definitions \( \lambda x \) and \( \mu x \). The swap transformation then reorders the successive summations accordingly.
 \end{definition}
 
-The algorithm succeeds in all equivalences of our benchmark, and we formalize its completeness as a conjecture.
-\begin{conjecture}[completeness of transformation]
-    For any two terms $e_1$ and $e_2$ that is equivalent under AC equivalence, SUM-SWAP and $\alpha$-equivalence, they will have the same form after sort, swap and de Bruijn transformations.
+The algorithm that applies the sort and swap transformations, followed by de Bruijn normalization, successfully handles all equivalences in our benchmark. We formalize the completeness of this transformation in the following conjecture:
+
+\begin{conjecture}[Completeness of Transformation]
+    For any two terms \( e_1 \) and \( e_2 \) that are equivalent under AC equivalence, SUM-SWAP, and \( \alpha \)-equivalence, they will have the same form after sort, swap, and de Bruijn transformations.
 \end{conjecture}
+
 
 
 % The order depends on there occurances in the last sorting result. If no occurance, then the order will depend on the set (for sum) and the type (for lambda abstraction only).
@@ -682,12 +601,14 @@ The algorithm succeeds in all equivalences of our benchmark, and we formalize it
 
 % The idea is to assign an order to terms, which is independent on the bound variables. Because we can have terms with nested AC symbols.
 
-Lastly, we can prove that equivalence by this normalization procedure is sound with respect to the semantics. 
-\begin{theorem}[soundness]
-    For any well-formed context $E[\Gamma]$ and well-typed expressions $e_1$ and $e_2$, if $e_1\downarrow = e_2\downarrow$, then $\sem{e_1} = \sem{e_2}$.
+Lastly, we can prove that the equivalence established by this normalization procedure is sound with respect to the semantics.
+
+\begin{theorem}[Soundness]
+    For any well-formed context \( E[\Gamma] \) and well-typed expressions \( e_1 \) and \( e_2 \), if  $e_1$ and $e_2$ have the same normal form, then \( \sem{e_1} = \sem{e_2} \).
 \end{theorem}
+
 \begin{proof}
-    The soundness of term rewriting holds because each rewriting rule preserves the equivalence. The operations in sort and swap transformation follows AC-equivalence and SUM-SWAP axioms. The de Bruijn normal form is sound for $\alpha$-equivalence.
+    The soundness of the term rewriting procedure follows from the fact that each rewriting rule preserves equivalence. Furthermore, the operations in the sort and swap transformations respect the AC-equivalence and SUM-SWAP axioms. Finally, the de Bruijn normalization ensures soundness for \( \alpha \)-equivalence.
 \end{proof}
 
 
