@@ -1,0 +1,207 @@
+
+\section{Language, Typing and Semantics}
+The first step is to formalize the language for Dirac notation. In DiracDec, the language has a concrete design, where the same syntax for different types corresponds to distinct symbols. Our goal is to transition from this concrete design to a more abstract one, which aligns more closely with the conventional Dirac notation we use and simplifies the term rewriting system.
+
+To achieve this, we organize our language into three layers: the index, the type, and the term. Terms represent concrete instances such as kets, bras, and operators, which will be typed and checked. The index represents classical data types and appears in type expressions to differentiate between various Hilbert spaces and sets.
+
+\begin{definition}[Index Syntax]
+    The syntax for type indices is:
+    \begin{align*}
+        \sigma ::=\ & x \mid \sigma_1 \times \sigma_2.
+    \end{align*}
+\end{definition}
+Here, \( x \) is a variable, and \( \sigma_1 \times \sigma_2 \) represents the product type for tensor product spaces or Cartesian product sets.
+
+\begin{definition}[Type Syntax]
+    The syntax for Dirac notation types is:
+    \begin{align*}
+        T ::=\ & \Basis(\sigma) \mid \SType \mid \KType(\sigma) \mid \BType(\sigma) \mid \OType(\sigma_1, \sigma_2) \mid T_1 \to T_2 \mid \forall x.T \mid \SET(\sigma).
+    \end{align*}
+\end{definition}
+\( \Basis(\sigma) \) denotes the type for basis elements in the index \( \sigma \).
+\( \SType \) represents scalars, while \( \KType(\sigma) \) and \( \BType(\sigma) \) refer to ket and bra types in the Hilbert space \( \sigma \), respectively.
+\( \OType(\sigma_1, \sigma_2) \) represents linear operators with \( \sigma_2 \) as the domain and \( \sigma_1 \) as the codomain.
+\( \SET(\sigma) \) refers to the type of subsets of \( \sigma \), used to denote the values of bound variables in summations.
+The remaining two constructs define function types: \( T_1 \to T_2 \) represents normal functions that take a \( T_1 \)-type argument and return a \( T_2 \)-type term, while \( \forall x. T \) represents index functions that take an index argument \( x \) and produce a \( T \)-type term, which may depend on \( x \).
+Index functions are essential for defining polymorphic transformations across Hilbert spaces.
+
+
+\begin{definition}[Term Syntax]
+    The syntax for Dirac notation terms is:
+    \begin{align*}
+        e ::=\ & x \mid \lambda x : T.e \mid \mu x.e \mid e_1\ e_2 \mid (e_1, e_2) \\
+        & |\ 0 \mid 1 \mid \ADDS(e_1, \cdots, e_n) \mid e_1 \times \cdots \times e_n \mid e^* \mid \delta_{e_1, e_2} \mid \DOT(e_1, e_2) \\
+        & |\ \ZEROK(\sigma) \mid \ZEROB(\sigma) \mid \ZEROO(\sigma_1, \sigma_2) \mid \ONEO(\sigma) \\
+        & |\ \ket{e} \mid \bra{t} \mid e^\dagger \mid e_1.e_2 \mid \ADD(e_1, \cdots, e_n) \mid e_1 \otimes e_2 \\
+        & |\ \MULK(e_1, e_2) \mid \MULB(e_1, e_2) \mid \OUTER(e_1, e_2) \mid \MULO(e_1, e_2) \\
+        & |\ \mathbf{U}(\sigma) \mid e_1 \star e_2 \mid \sum_{e_1} e_2.
+    \end{align*}
+\end{definition}
+The terms above are explained in order:
+\( \lambda x : T.e \) represents the abstraction for normal functions, and \( \mu x.e \) represents the abstraction for index functions.
+\( e_1\ e_2 \) denotes function application.
+\( (e_1, e_2) \) is the basis pair for product types.
+The constants \( 0 \), \( 1 \), \( \ADDS \), \( e_1 \times \cdots \times e_n \), and \( e^* \) are symbols for scalars.
+The next line includes constant symbols for kets, bras, and operators.
+\( \ket{e} \) is a ket, \( \bra{t} \) is a bra, and \( e^\dagger \) denotes the conjugate transpose of \( e \).
+\( e_1.e_2 \) represents scaling the term \( e_2 \) by scalar \( e_1 \).
+\( \mathbf{U}(\sigma) \) denotes the universal set with index \( \sigma \).
+\( e_1 \star e_2 \) represents the Cartesian product of \( e_1 \) and \( e_2 \).
+\( \sum_{e_1} e_2 \) is the big operator sum, modeled by folding the function \( e_2 \) over the value set \( e_1 \). Typically, the sum's body is given by an abstraction. For convenience, we also use the notation \( \sum_{x \in s} X \) to represent \( \sum_{s} \lambda x : T . X \).
+Additionally, \( \ADDS \) and \( \ADD \) are distinct AC symbols: \( \ADDS \) is used for scalar addition and \( \ADD \) for linear algebra addition.
+There are five kinds of linear algebraic multiplications among kets, bras, and operators. These are encoded using five different symbols: \( \DOT \), \( \MULK \), \( \MULB \), \( \OUTER \), and \( \MULO \).
+
+Compared to DiracDec, the symbols for addition, adjoint, scaling, and tensor products have been consolidated.
+The multiplications are still kept separate due to their differing properties.
+These operations are denoted as \( B \cdot K \), \( K_1 \cdot K_2 \), \( B_1 \cdot B_2 \), \( K \cdot B \), and \( O_1 \cdot O_2 \), respectively.
+
+
+
+
+\subsection{Typing System}
+
+
+The typing system is responsible for classifying terms within a proof system, using a context that specifies the types of variables and definitions. The context is divided into two components: the environment \( E \), which includes definitions and assumptions, and the context \( \Gamma \), which tracks bound variables. Both \( E \) and \( \Gamma \) consist of sequences of assumptions \( x : T \) or definitions \( x := t : T \).
+\begin{definition}[Environment and Context]
+    The syntax for \( E \) and \( \Gamma \) is:
+    \begin{align*}
+        E ::= &\ [] \mid E; x : \Index \mid E; x : T \mid E; x := t : T. \\
+        \Gamma ::= &\ [] \mid \Gamma; x : \Index \mid \Gamma; x : T.
+    \end{align*}
+\end{definition}
+Definitions refer to symbols that can be expanded or unfolded, and typically represent abstract concepts, such as transpose or trace in Dirac notation. Assumptions, on the other hand, define the types of variables, and variable assumptions are implicitly universally quantified in the case of equational proofs.
+
+Type checking in our language involves maintaining a well-formed environment and context \( E[\Gamma] \). We say an expression \( t \) has type \( X \) in context \( E[\Gamma] \) if the typing judgment \( E[\Gamma] \vdash t : X \) can be proven through the rules in~\Cref{sec: full typing rules}. The well-formedness of the context \( \WF(E)[\Gamma] \) is built incrementally:
+\[
+    \frac{}{\WF([])[]}
+    \qquad
+    \frac{\WF(E)[] \qquad x \notin E}{\WF(E; x : \Index)[]}
+    \qquad
+    \frac{E[]\vdash t:T \qquad x \notin E}{\WF(E; x := t:T)[]}.
+\]
+Starting with an empty context, new index symbols can be introduced, and symbols with checked types can be defined. Typing judgments are then made inductively using the information from \( E[\Gamma] \). For instance, the rule \( x : \Index \in E[\Gamma] \) holds if \( E \) or \( \Gamma \) contains an assumption for \( x \).
+And \(\KType(\sigma)\) is a valid type for kets, if the argument $\sigma$ is typed as an index.
+\begin{gather*}
+    \frac{\WF(E)[\Gamma] \qquad x : \Index \in E[\Gamma]}{E[\Gamma] \vdash x : \Index}
+    \qquad
+    \frac{E[\Gamma] \vdash \sigma : \Index}{E[\Gamma] \vdash \KType(\sigma) : \Type}
+\end{gather*}
+
+Terms are then typed accordingly.
+For example, the ket \( \ket{t} \) will have the type \( \KType(\sigma) \) if \( t \) is a basis term of index \( \sigma \). Similarly, the inner product between a bra and a ket of the same index \( \sigma \) is typed as a scalar. It corresponds to the constraint of inner product that vectors should be from the same Hilbert space.
+\begin{gather*}
+    \frac{E[\Gamma]\vdash t : \Basis(\sigma)}{E[\Gamma] \vdash \ket{t} : \KType(\sigma)}
+    \qquad
+    \frac{E[\Gamma]\vdash B : \BType(\sigma) \qquad E[\Gamma]\vdash K : \KType(\sigma)}{E[\Gamma] \vdash B \cdot K : \SType}
+\end{gather*}
+
+The typing for functions and applications follows the standard practice. For example, the index function \( \mu x. t \) is typed with \( x \) as a bound variable of type \( \Index \), and the application \( (t\ u) \) has the type \( U\{x/u\} \), obtained by replacing \( x \) with the index instance \( u \).
+\begin{gather*}
+    \frac{E[\Gamma; x : T] \vdash t : U}{E[\Gamma] \vdash (\lambda x : T . t) : T \to U}
+    \qquad
+    \frac{E[\Gamma] \vdash t:U \to T \qquad E[\Gamma] \vdash u:U}{E[\Gamma] \vdash (t\ u):T} 
+    \\[1em]
+    \frac{E[\Gamma; x : \Index] \vdash t : U}{E[\Gamma] \vdash (\mu x.t) : \forall x.U}
+    \qquad
+    \frac{E[\Gamma] \vdash t:\forall x.U \qquad E[\Gamma] \vdash u : \Index}{E[\Gamma] \vdash (t\ u):U\{x/u\}}
+\end{gather*}
+
+Finally, the big operator sum is modeled by folding a function over a set, with the typing rule as follows:
+\[
+    \frac{E[\Gamma] \vdash s : \SET(\sigma) \qquad E[\Gamma] \vdash f : \Basis(\sigma) \to \KType(\tau)}{E[\Gamma] \vdash \sum_{s} f : \KType(\tau)}.
+\]
+
+\begin{lemma}
+    The typing of expressions is both decidable and unique.
+\end{lemma}
+
+\begin{proof}
+    The type of an expression can be determined recursively. For any given function symbol and argument types, there is at most one typing rule, ensuring the uniqueness of typing.
+\end{proof}
+
+
+
+
+
+
+\subsection{Semantics}
+
+The semantics of a language define the meaning of its expressions. In this context, the objective of our algorithm is to determine whether two expressions are semantically equivalent. We define the semantics in a denotational manner, mapping syntax to set-theoretic objects.
+
+\subsubsection{Denotational Semantics}
+The denotational semantics interpret every expression as an object in linear algebra, according to a valuation mapping \( v \), which assigns values to the variables in the expression. The semantics of an expression \( e \) with a given valuation \( v \) is denoted as \( \sem{e}_v \). Two expressions \( e_1 \) and \( e_2 \) are considered equivalent if their semantics are equal for all valuations, i.e., \( \sem{e_1}_v = \sem{e_2}_v \) for all \( v \).
+
+The complete interpretation of terms and types is provided in~\Cref{sec: full denotational sem}. Variables typed with \( \Index \) are interpreted as finite sets, and the product of two indices \( \sem{\sigma_1 \times \sigma_2} \) is defined as the Cartesian product of the sets \( \sem{\sigma_1} \) and \( \sem{\sigma_2} \). More generally, each type is interpreted as a set. For example, the scalar type \( \sem{\SType} \) is interpreted as the set of complex numbers \( \mathbb{C} \), and the ket and bra types \( \sem{\KType(\sigma)} \) and \( \sem{\BType(\sigma)} \) are interpreted as the Hilbert space \( \mathcal{H}_{\sem{\sigma}} \) and its dual \( \mathcal{H}_{\sem{\sigma}}^* \), respectively. Terms are explained as the set elements. For example, the semantics of ket tensor product $\sem{K_1 \otimes K_2} \equiv \sem{K_1} \otimes \sem{K_2}$, is obtained by first calculating the semantics $\sem{K_1}$ and $\sem{K_2}$ as vectors, and then take the vector tensor product as result.
+
+% One special case is the delta function \( \delta_{s,t} \), which is interpreted as:
+% \[
+%     \sem{\delta_{s,t}} =
+%     \begin{cases}
+%         1, & \text{if } \sem{s} = \sem{t}, \\
+%         0, & \text{if } \sem{s} \neq \sem{t}.
+%     \end{cases}
+% \]d
+
+The idea behind the interpretation of types and terms is to formalize the typing relation using set-theoretic inclusion. Specifically, for a well-formed context \( E[\Gamma] \), term \( t \), and type \( T \), if \( E[\Gamma] \vdash t : T \), then for any valuation \( v \), the semantics of \( t \) must lie within the semantics of \( T \).
+
+\begin{lemma}
+    For any well-formed context \( E[\Gamma] \), term \( t \), and type \( T \), if \( E[\Gamma] \vdash t : T \), then for all valuations \( v \), \( \sem{t}_v \in \sem{T}_v \).
+\end{lemma}
+
+\begin{proof}
+    The proof follows directly by checking each case.
+\end{proof}
+
+This interpretation formalizes the standard understanding of Dirac notation and provides the foundation for the algorithm. However, computers cannot directly reason about equivalence through mathematical interpretations. Therefore, we proceed by defining a proof system that abstracts these concepts.
+
+
+
+\subsubsection{Axiomatic semantics} 
+
+The proof system for equivalence is based on equational logic, together with axioms that describe the properties of Dirac notation. A full list of these axioms can be found in~\Cref{sec: full axioms}. The axioms cover fundamental aspects of linear spaces, as well as other structures like the tensor and inner products. For example, we have the absorption law for zero symbols:
+\(X \cdot \mathbf{0} = \mathbf{0},\)
+and the bilinearity of the dot product:
+\[
+(a.X) \cdot Y = a \cdot (X \cdot Y), \quad X \cdot (Y_1 + Y_2) = X \cdot Y_1 + X \cdot Y_2, 
+\]
+\[
+X \cdot (a.Y) = a \cdot (X \cdot Y), \quad (X_1 + X_2) \cdot Y = X_1 \cdot Y + X_2 \cdot Y.
+\]
+
+As mentioned in the introduction, a subset \( E \) of these axioms cannot be decided by term rewriting alone. The axioms in \( E \) include:
+\[
+\begin{aligned}
+    \text{AC-equivalence} &\quad \text{e.g.,} \quad X + Y = Y + X, \quad (X + Y) + Z = X + (Y + Z), \\
+    \alpha\text{-equivalence} &\quad \lambda x . A = \lambda y . A\{x/y\}, \\
+    \text{SUM-SWAP} &\quad \sum_{i \in s_1} \sum_{j \in s_2} A = \sum_{j \in s_2} \sum_{i \in s_1} A, \\
+    \text{scalar theories} &\quad \text{e.g.,} \quad a + 0 = a, \quad a \times (b + c) = a \times b + a \times c.
+\end{aligned}
+\]
+The scalar theories are treated separately as a module and are not considered in this work. In the implementation, we use the Mathematica kernel to decide scalar equivalences.
+These equational axioms provide an operable theory for the proof automation algorithm. Denotational semantics can be seen as one model for this theory, meaning that equivalences derived from the axioms always imply equivalence in the interpretations.
+\begin{lemma}
+    For all well-formed contexts \( E[\Gamma] \) and terms \( e_1, e_2 \), if \( \vdash e_1 = e_2 \), then \( \sem{e_1} = \sem{e_2} \).
+\end{lemma}
+\begin{proof}
+    This follows directly from checking all cases.
+\end{proof}
+
+Thus, the axioms are sound with respect to denotational semantics. However, the reverse does not hold: there exist equivalences in denotational semantics that cannot be captured by these axioms. Nevertheless, our work focuses on solving practical examples, which are fully covered by the axioms in the experiments.
+
+To conclude this section, we demonstrate the formalization of the symbols used in the motivating example.
+\begin{example}[Formalizing the Motivating Example]
+    \label{ex: formalizing motivating}
+    Definitions and assumptions in the environment \( E \) are formalized as follows:
+    \begin{align*}
+        & \text{TPO} && := \mu T_1. \mu T_2. \lambda O : \OType(T_1, T_2). \sum_{i \in \mathbf{U}(T_1)} \sum_{j \in \mathbf{U}(T_2)} \bra{i} O \ket{j} . \ket{j}\bra{i} \\
+        & &&\quad : \forall T_1. \forall T_2. \OType(T_1, T_2) \to \OType(T_2, T_1); \\
+        &\text{phi} &&:= \mu T. \sum_{i \in \mathbf{U}(T)} \sum_{j \in \mathbf{U}(T)} \ket{(i, j)} : \forall T.\KType(T \times T); \\
+        & T && : \Index; \\
+        & M && : \OType(T, T).
+    \end{align*}
+    The symbol \( \text{TPO} \) represents the transpose of an operator, polymorphic on the Hilbert spaces \( T_1 \) and \( T_2 \). The symbol \( \text{phi} \) takes the index \( T \) and defines the maximally entangled states, summing over all basis elements in \( T \), as indicated by the universal set \( \mathbf{U}(T) \).
+    With the assumption of the index \( T \) and operator \( M \), we can express the equivalence in the non-labelled version as:
+    \[
+    (\textrm{M} \otimes \mathbf{1}_\mathcal{O}(\textrm{T})) \cdot (\textrm{phi T}) = (\mathbf{1}_\mathcal{O}(\textrm{T}) \otimes (\textrm{TPO T T M})) \cdot (\textrm{phi T}).
+    \]
+\end{example}

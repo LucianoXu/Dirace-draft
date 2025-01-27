@@ -1,0 +1,160 @@
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Efficient Algorithm for Equivalence Checking}
+\label{sec: decide}
+
+We utilize the term rewriting technique to decide the equivalence of Dirac notation, based on its axiomatic semantics. The process involves normalizing two terms and checking whether they have identical syntax. This normalization is achieved through matching and substitution in universal algebra, using a set of predefined rewriting rules.
+
+As mentioned in the semantics section, the axioms in \( E \) cannot be fully decided through term rewriting. DiracDec decides \( E \) by examining all possible permutations in the rewriting result. In this work, we introduce a more efficient approach by incorporating sorting algorithms into the normalization procedure. 
+
+The normalization procedure consists of the following steps.
+\begin{enumerate}
+    \item \textbf{First Rewritings}: Expand definitions and simplify expressions.
+    \item \textbf{Variable Expansion}: Consider scalar expressions to ensure completeness.
+    \item \textbf{Second Rewritings}: Normalize terms modulo \( E \).
+    \item \textbf{Sorting Without Bound Variables}: Normalize AC-equivalence.
+    \item \textbf{Swap Successive Summations}: Normalize SUM-SWAP equivalences.
+    \item \textbf{De Bruijn Normalization}: Normalize \( \alpha \)-equivalence.
+\end{enumerate}
+
+% \subsection{Normalization Modulo \( E \) by Term Rewriting}
+
+% Term rewriting rules, represented as \( l \ \reduce\ r \), are applied recursively to normalize terms. In each step, subterms matching the left-hand side \( l \) of a rule are replaced with the corresponding right-hand side \( r \). The procedure terminates when no further rewritings can be made.
+% A comprehensive list of rewriting rules can be found in~\Cref{sec: rewriting rules}. Below are some key examples to illustrate the design:
+
+% One of our optimizations is using functions with indefinite arities. 
+% Therefore, we use a flattening rule to handle associativity with AC symbols:
+% \[
+% a_1 + \cdots + (b_1 + \cdots + b_m) + \cdots + a_n \ \reduce\ a_1 + \cdots + b_1 + \cdots + b_m + \cdots + a_n.
+% \]
+% Commutativity is handled later in the sorting step. Many of the rewriting rules are directly derived from the equational axioms, such as:
+% \begin{align*}
+%     & \textrm{(R-DOT6)} && \bra{s} \cdot \ket{t} \ \reduce\  \delta_{s, t}, \\
+%     & \textrm{(R-DELTA0)} && \delta_{s, s} \ \reduce\  1, \\
+%     & \textrm{(R-MULK1)} && O : \OType(\sigma, \tau) \Rightarrow O \cdot \mathbf{0}_{\KType(\tau)} \ \reduce\  \mathbf{0}_{\KType(\sigma)}, \\
+%     & \textrm{(R-MULK11)} && (O_1 \otimes O_2) \cdot (K_1 \otimes K_2) \ \reduce\  (O_1 \cdot K_1) \otimes (O_2 \cdot K_2).
+% \end{align*}
+% Some of these directions are obvious. For example, (R-DOT6) states that the inner product of two basis vectors is reduced to a delta expression, and (R-DELTA0) transforms a delta function on identical basis to a scalar \( 1 \). The rule (R-MULK1) reflects the axiom that multiplying a zero vector results in zero. This rule is conditional on typing, which is checked during rewriting. Some rules, like (R-MULK11), require a deeper understanding, such as the preference for tensor products over multiplication.
+
+% As a reference, the term rewriting system in DiracDec has been proven complete for all axioms, except for the sum symbol. The completeness result is derived from checking the confluence and termination of the system. Our rewriting rules are translations from DiracDec into the typed and abstract language, ensuring that the corresponding symbols in our system are also complete.
+
+% We also have additional rules that handle summations. For example:
+% \begin{align*}
+%     & \quad i \text{ free in } t \Rightarrow \sum_{i \in \mathbf{U}(\sigma)} \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} (\delta_{i, t}.A) \ \reduce\  \sum_{k_1 \in s_1} \cdots \sum_{k_n \in s_n} A\{i/t\}, \\
+%     & \quad \left( \sum_{i \in M} B \right) \cdot K \ \reduce\  \sum_{i \in M} (B \cdot K).
+% \end{align*}
+% The first rule eliminates delta expressions in summations, while the second rule pushes summations outside of inner products. While there is no guarantee of completeness for these rules, they work effectively in practice.
+
+% \subsubsection{Variable Expansion}
+% One important technique, revealed in the DiracDec work, is the expansion of variables, which is critical for proofs involving summation. For example:
+% \[
+% \frac{E[\Gamma] \vdash K : \KType(\sigma)}{E[\Gamma] \vdash K \ \reduce\ \sum_{i \in \mathbf{U}(\sigma)}(\bra{i} \cdot K).\ket{i}} \quad \quad
+% \frac{E[\Gamma] \vdash B : \BType(\sigma)}{E[\Gamma] \vdash B \ \reduce\ \sum_{i \in \mathbf{U}(\sigma)}(B \cdot \ket{i}).\bra{i}},
+% \]
+% \[
+% \frac{E[\Gamma] \vdash O : \OType(\sigma, \tau)}{E[\Gamma] \vdash O \ \reduce\ \sum_{i \in \mathbf{U}(\sigma)} \sum_{j \in \mathbf{U}(\tau)}(\bra{i} \cdot O \cdot \ket{j}).(\ket{i} \cdot \bra{j})}.
+% \]
+% These rules transform variables into their symbolic summations based on their decomposition over the basis. 
+% The rules are not terminating, therefore is applied recrusively once in the second step called \textit{variable expansion}.
+% Nevertheless, we have found that applying the expansion only once for all variables is sufficient for normalization.
+% \begin{lemma}
+%     Let \( \textrm{expand}(e) \) denote the result of expanding all variables in \( e \) once. For all well-typed terms \( e \) in \( E[\Gamma] \), \( \textrm{expand}(\textrm{expand}(e)) \) and \( \textrm{expand}(e) \) have the same normal form.
+% \end{lemma}
+% \begin{proof}
+%     Expanding a ket variable twice, for example, results in the following transformation:
+%     \[
+%     \sum_{i \in \mathbf{U}(\sigma)} (\bra{i} \cdot \sum_{j \in \mathbf{U}(\sigma)} (\bra{j} \cdot K) \cdot \ket{j}) \cdot \ket{i} \ \reduce\  \sum_{i \in \mathbf{U}(\sigma)} \sum_{j \in \mathbf{U}(\sigma)} (\bra{j} \cdot K \cdot \braket{i|j}) \cdot \ket{i},
+%     \]
+%     where the delta symbol elimination rule returns the term to its original form. The same holds for bra and operator terms.
+% \end{proof}
+
+
+
+\subsection{Deciding Equational Theory \( E \)}
+
+In the Mathematica implementation of DiracDec, the equational theory \( E \) is decided using unification, which attempts to find a substitution for the summation bound variables that makes two expressions syntactically equivalent. This unification process iterates through all permutations of AC symbol arguments, and its complexity is factorial in the maximum number of AC symbol arguments.
+
+\yx{mention de Bruijn normal form.}
+
+% As the first improvement, we check \( \alpha \)-equivalence using the de Bruijn index~\cite{deBruijn1972lambda}, which replaces references to bound variable names with the distance from the lambda abstraction to the variable. For instance, the nominal lambda abstraction \( \lambda x. x \) is transformed into \( \lambda . 0 \), while \( \lambda x. \lambda y. (x\ (y\ x)) \) is transformed into \( \lambda.\lambda. (1\ (0\ 1)) \). This transformation into the de Bruijn index is performed as the final step in the normalization process to check equivalence between terms with different bound variable names.
+
+The remaining axioms, such as AC-equivalence and SUM-SWAP, assert equivalence under permutations. A standard approach for deciding such equivalences is to normalize terms by sorting in a predefined order. For example, given the dictionary order \( a < b < c \), the term \( b + c + a \) (and any other AC-equivalent term) is normalized into \( a + b + c \). However, in our setting, two intertwined difficulties arise: how to assign an order to all terms in the language, and how to simultaneously sort for both axioms.
+
+Consider the following two equivalent terms:
+\[
+\sum_{i \in s_1} \sum_{j \in s_2} \bra{i} A \ket{j} \times \bra{j} B \ket{i}
+= 
+\sum_{i \in s_2} \sum_{j \in s_1} \bra{i} B \ket{j} \times \bra{j} A \ket{i}
+\]
+While these two terms are equivalent, directly sorting the elements of scalar multiplication using lexical order does not yield the same form.
+
+To address this issue, we propose an algorithm that sorts terms without considering bound variables. The key observation is that in a successive sum expression \( \sum_{i \in s_1} \cdots \sum_{j \in s_n} A \), the names and order of the bound variables \( i, \dots, j \) can be freely permuted. Therefore, all bound variables should be treated uniformly during sorting, and the order of summation can then be determined based on the position of the bound variables.
+
+In the example above, we first ignore the bound variables and sort the sum body into \( \bra{\bullet} A \ket{\bullet} \times \bra{\bullet} B \ket{\bullet} \). Then, we swap the summations such that the bound variable at the first \( \bullet \) position appears at the outermost position. The results will have the same de Bruijn normal form, namely \( \sum_{s_1} \sum_{s_2} \bra{\$1} A \ket{\$0} \times \bra{\$0} B \ket{\$1} \).
+
+
+To describe the algorithm in the following, we introduce two key notations. For a term \( e = f(a_1, a_2, \dots, a_n) \), \( \textrm{head}(e) \) denotes the function symbol \( f \), while \( \textrm{arg}(e, i) \) refers to the \( i \)-th argument \( a_i \) of the term. In this context, variables and constants are treated as functions with zero arguments.
+
+
+
+\begin{definition}[Order Without Bound Variables]
+Let \( \mathcal{B} \) represent the set of bound variables, with the assumption that all bound variables are unique. We also assume that a total order exists over all symbols. The relation \( e_1 =_\mathcal{B} e_2 \) holds if:
+\begin{itemize}
+    \item \( \textrm{head}(e_1) = \textrm{head}(e_2) \), and for all \( i \), \( \textrm{arg}(e_1, i) =_\mathcal{B} \textrm{arg}(e_2, i) \), or
+    \item \( e_1 \in \mathcal{B} \) and \(e_2 \in \mathcal{B}\).
+\end{itemize}
+
+The relation \( e_1 <_\mathcal{B} e_2 \) holds between two terms if:
+\begin{itemize}
+    \item $e_1 \notin \mathcal{B}$ and $e_2 \in \mathcal{B}$, or
+    \item $head(e_1) < head(e_2)$, or
+    \item $head(e_1) = head(e_2)$, and there exists $n$ with $arg(e_1, n) <_\mathcal{B} arg(e_2, n)$, where $arg(e_1, i) =_\mathcal{B} arg(e_2, i)$ for all $i < n$.
+\end{itemize}
+\end{definition}
+It can be shown that \( e_1 =_\mathcal{B} e_2 \) if and only if neither \( e_1 <_\mathcal{B} e_2 \) nor \( e_2 <_\mathcal{B} e_1 \) holds. The purpose of this ordering is to compare function symbols in a top-down manner while ignoring bound variables. The sorted order enables normalization of terms in terms of AC equivalence.
+\yx{rephrase in pseudo code}
+\begin{definition}[Sort Transformation]
+    For a term $e$ with bound variable set $\mathcal{B}$,
+    The sort transformation sort(e) is defined as
+    \begin{itemize}
+        \item $e$, if $e$ is a variable or constant;
+        \item $\lambda x:T. \textrm{sort}(e')$, if $e \equiv \lambda x : T. e'$;
+        \item $\mu x. \textrm{sort}(e')$, if $e \equiv \mu x. \textrm{sort}(e')$; or
+        \item $f(\textrm{sort}(a_1), \cdots, \textrm{sort}(a_n))$, if $e \equiv f(a_1, \cdots, a_n)$. If $f$ is an AC symbol, then the order of sort($a_i$) is sorted ascendingly according to $<_\mathcal{B}$.
+    \end{itemize}
+\end{definition}
+
+After sorting, the next step is the \textit{swap transformation}, which arranges successive summations based on the order of bound variables.
+\begin{definition}[Swap Transformation]
+For a term \( e \) with a sorting result \( \textrm{sort}(e) \), the swap transformation proceeds by ordering all bound variables according to their first appearances, except in function definitions \( \lambda x \) and \( \mu x \). The swap transformation then reorders the successive summations accordingly.
+\end{definition}
+
+The algorithm that applies the sort and swap transformations, followed by de Bruijn normalization, successfully handles all equivalences in our benchmark. We formalize the completeness of this transformation in the following conjecture:
+
+\begin{conjecture}[Completeness of Transformation]
+    For any two terms \( e_1 \) and \( e_2 \) that are equivalent under AC equivalence, SUM-SWAP, and \( \alpha \)-equivalence, they will have the same form after sort, swap, and de Bruijn transformations.
+\end{conjecture}
+
+
+
+% The order depends on there occurances in the last sorting result. If no occurance, then the order will depend on the set (for sum) and the type (for lambda abstraction only).
+
+%%%%%%%%%%%%%%%%%%%%%%%
+
+
+% The idea is to assign an order to terms, which is independent on the bound variables. Because we can have terms with nested AC symbols.
+
+Lastly, we can prove that the equivalence established by this normalization procedure is sound with respect to the semantics.
+
+\begin{theorem}[Soundness]
+    For any well-formed context \( E[\Gamma] \) and well-typed expressions \( e_1 \) and \( e_2 \), if  $e_1$ and $e_2$ have the same normal form, then \( \sem{e_1} = \sem{e_2} \).
+\end{theorem}
+
+\begin{proof}
+    The soundness of the term rewriting procedure follows from the fact that each rewriting rule preserves equivalence. Furthermore, the operations in the sort and swap transformations respect the AC-equivalence and SUM-SWAP axioms. Finally, the de Bruijn normalization ensures soundness for \( \alpha \)-equivalence.
+\end{proof}
+
+
