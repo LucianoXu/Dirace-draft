@@ -284,7 +284,7 @@ Index functions are essential for defining polymorphic transformations across Hi
         & |\ \ZEROK(\sigma) \mid \ZEROB(\sigma) \mid \ZEROO(\sigma_1, \sigma_2) \mid \ONEO(\sigma) \\
         & |\ \ket{e} \mid \bra{t} \mid e^\dagger \mid e_1.e_2 \mid \ADD(e_1, \cdots, e_n) \mid e_1 \otimes e_2 \\
         & |\ \MULK(e_1, e_2) \mid \MULB(e_1, e_2) \mid \OUTER(e_1, e_2) \mid \MULO(e_1, e_2) \\
-        & |\ \mathbf{U}(e) \mid e_1 \star e_2 \mid \sum_{e_1} e_2.
+        & |\ \mathbf{U}(\sigma) \mid e_1 \star e_2 \mid \sum_{e_1} e_2.
     \end{align*}
 \end{definition}
 The terms above are explained in order:
@@ -295,7 +295,7 @@ The constants \( 0 \), \( 1 \), \( \ADDS \), \( e_1 \times \cdots \times e_n \),
 The next line includes constant symbols for kets, bras, and operators.
 \( \ket{e} \) is a ket, \( \bra{t} \) is a bra, and \( e^\dagger \) denotes the conjugate transpose of \( e \).
 \( e_1.e_2 \) represents scaling the term \( e_2 \) by scalar \( e_1 \).
-\( \mathbf{U}(e) \) denotes the universal set with index \( e \).
+\( \mathbf{U}(\sigma) \) denotes the universal set with index \( \sigma \).
 \( e_1 \star e_2 \) represents the Cartesian product of \( e_1 \) and \( e_2 \).
 \( \sum_{e_1} e_2 \) is the big operator sum, modeled by folding the function \( e_2 \) over the value set \( e_1 \). Typically, the sum's body is given by an abstraction. For convenience, we also use the notation \( \sum_{x \in s} X \) to represent \( \sum_{s} \lambda x : T . X \).
 Additionally, \( \ADDS \) and \( \ADD \) are distinct AC symbols: \( \ADDS \) is used for scalar addition and \( \ADD \) for linear algebra addition.
@@ -749,8 +749,7 @@ One typical example comes from the paper by Jens about the equivalence of operat
 
 
 
-We also built an example benchmark for labelled Dirac notation.
-\yx{We need examples.}
+We also built an example benchmark for labelled Dirac notation, see~\Cref{sec: examples for labelled}.
 
 
 \section{Related Work}

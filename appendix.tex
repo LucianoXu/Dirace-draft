@@ -1319,3 +1319,37 @@ This section includes all the rewriting rules used in the system. Related rules 
     & $ (X_1 \otimes \cdots \otimes {}_r\bra{i} \otimes \cdots \otimes X_n) \cdot (Y_1 \otimes \cdots \otimes \ket{j}_r \otimes \cdots \otimes Y_m) $ \\
     & $\reduce\ \delta_{i,j}.(X_1 \otimes \cdots \otimes X_n) \cdot (Y_1 \otimes \cdots \otimes Y_m)$
 \end{ruletable}
+
+\newcommand{\tr}{\mathrm{tr}}
+
+\section{Examples for labelled Dirac notation}
+\label{sec: examples for labelled}
+\begin{itemize}
+    \item \( \ket{s}_Q \otimes \ket{t}_R = \ket{(s, t)}_{(Q, R)} \)
+    \item \( {O_1}_{Q} \cdot {O_2}_{(Q,R)} = ((O_1 \otimes \mathbf{1}_\mathcal{O}) \cdot O_2)_{(Q,R)} \)
+    \item \( M_{r_1} \sum_{i} \ket{(i, i)}_{(r_1, r_2)} = M^T_{r_2} \sum_{i}\ket{(i, i)}_{(r_1, r_2)} \)
+    \item \( \bra{\Phi}_{(x, y)} M_y \cdot N_x \ket{\Phi}_{(x, y)} = \mathrm{tr}(M^T N) \), where $\ket{\Phi} = \sum_{i} \ket{(i, i)}$
+    \item \( \sum_{i} {}_x\bra{i} O_x \ket{i}_x = \mathrm{tr}(O) \)
+    \item \( \sum_{j} {}_y\bra{j} (\sum_{i} {}_x\bra{i} O_{(x,y)} \ket{j}_x) \ket{j}_y = \mathrm{tr}(O) \)
+    \item \( \sum_{i} {}_{(x, y)}\bra{i} O_{(x,y)} \ket{i}_{(x, y)} = \mathrm{tr}(O) \)
+    \item \( \mathrm{tr}_x(\mathrm{tr}_y(O_{((y,z),x)})) = \mathrm{tr}_y(\mathrm{tr}_x(O_{((y,z),x)})) \)
+    \item \( \mathrm{tr}_x(\mathrm{tr}_y(O_{((y,z),x)})) = \mathrm{tr}_{(x, y)}(O_{((y,z),x)}) \)
+    \item \begin{align*}
+        & \tr_{((a',(b,b')),c')}\Big[\tr_{r}\Big(U_{(r,(a,b))} \cdot\Big(|s\>_r\<s|\otimes 
+        \Big[V_{((a',(b,b')),c')}\cdot 
+        \big(|\phi\>_{(a,a')}\<\phi|\otimes \\
+        &\qquad |\psi\>_{((b,b'),(c,c'))}\<\psi|\big)
+        \cdot V^\dagger_{((a',(b,b')),c')}\Big]
+        \Big) \cdot U^\dagger_{(r,(a,b))} \Big)\Big] \\
+        =\ &\tr_{(((r,a'),(b,b')),c')}\Big[\big(U_{(r,(a,b))}\cdot V_{((a',(b,b')),c')}\cdot(|s\>_r\otimes |\phi\>_{(a,a')}\otimes |\psi\>_{((b,b'),(c,c'))})\big)\cdot \\
+        &\qquad \big(U_{(r,(a,b))}\cdot V_{((a',(b,b')),c')}\cdot(|s\>_r\otimes |\phi\>_{(a,a')}\otimes |\psi\>_{((b,b'),(c,c'))})\big)^\dagger\Big]
+    \end{align*}
+    \item     
+        \begin{align*}
+            \mbox{set}\qquad &U \triangleq \sum_i|i\>\<i|\otimes  P_i \qquad V \triangleq \sum_i|i\>\<i|\otimes Q_i \\
+            \mbox{show}\qquad&U_{(a,b)}\cdot W_{(b,c)}\cdot V_{(a,c)} = 
+            \sum_i |i\>_a\<i|\otimes \big((P_i)_c\cdot W_{(b,c)}\cdot (Q_i)_c\big)
+        \end{align*}
+    \item \( \ket{i}_{a;b}\bra{j} \cdot C_{(b,c)} \cdot D_{(c,d)} = {}_b\bra{j} \cdot C_{(b,c)} \cdot D_{(c,d)} \cdot \ket{i}_{a}\)
+    \item \( (A_{(a,b)} \otimes B_{(c,d)} \otimes C_{(e,f)}) \cdot (D_{(b,c)} \otimes E_{(d,e)}) \cdot (F_{(a,b)} \otimes G_{(c,d)} \otimes H_{(e,f)}) = (A \otimes C) \cdot (B \cdot D) \cdot (E \cdot G) \cdot (F \otimes H)\)
+\end{itemize}
