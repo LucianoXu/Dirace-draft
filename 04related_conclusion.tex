@@ -1,0 +1,24 @@
+
+\section{Related Work}
+
+Automated theorem proving has seen significant advancements in recent years, particularly through the development of satisfiability modulo theories (SMT) solvers,
+% SMT solvers extend propositional satisfiability by integrating theories such as arithmetic, arrays, and bit-vectors, making them suitable for solving a wide range of verification problems in both hardware and software domains. 
+including prominent tools like Z3. These solvers have become essential in various fields such as formal verification, synthesis, and model checking. 
+Equational reasoning is another crucial area of research within automated theorem proving, which focuses on solving problems that involve equations between terms in an algebraic structure. 
+Equational provers, such as Vampire and E, have played a pivotal role in addressing the challenge of proving equations in first-order logic, employing sophisticated algorithms like superposition and term rewriting.
+
+Formal verification of quantum computation is receiving increasing attentions during these years. See~\cite{Lewis2023} for a comprehensive review. 
+Verification frameworks in Coq include the foundational formalization CoqQ and quantum circuit language QWIRE. 
+Verifications of quantum programs are also considered, such as the Hoare logic based methods [] and model checking based methods [].
+The equational reasoning of Dirac notation is crucial for establishing property proofs in these works.
+Verification theoreis and tools based on other languages are also proposed, such as PyZX for reasoning and simplification of ZX-calculus.
+
+
+
+
+\section{Conclusion and Future Work}
+Based on the first equational reasoning tool for Dirac notation called DiracDec, this work improves and extends the theory for practical applications, and provides the solver D-Hammer. Experiments show that the tool demonstrates advantages in decidability, efficiency and usability. 
+
+We expect D-Hammer to have applications in areas like quantum program verification or proofs of post-quantum cryptography protocols in the future.
+One promising following up is to connect D-Hammer with theorem provers like Coq. It involves transforming theorem prover expressions into D-Hammer, and verify the proof trace of D-Hammer in theorem provers. Besids, most quantum program verifiers nowadays depend on matrix calculations. D-Hammer can serve as the replacement for matrix methods to enable symbolic deductions.
+

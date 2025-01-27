@@ -13,16 +13,16 @@
             % \node (rename) [process] {rename unique bound variable names};
             \node (examples) [module] {examples};
             \node (toplevel) [file, right of=examples, xshift=1cm] {toplevel.cpp};
-            \node (dirace) [module, below right of=examples, xshift=0.3cm] {dirace};
-            \node (ualg) [module, below left of=dirace] {ualg};
+            \node (dhammer) [module, below right of=examples, xshift=0.3cm] {dhammer};
+            \node (ualg) [module, below left of=dhammer] {ualg};
             \node (ANTLR4) [thirdparty, below of =ualg] {ANTLR4};
-            \node (WSTP) [thirdparty, below right of =dirace, xshift=1cm, yshift=-0.3cm, align=center] {WSTP interface\\(Mathematica)};
+            \node (WSTP) [thirdparty, below right of =dhammer, xshift=1cm, yshift=-0.3cm, align=center] {WSTP interface\\(Mathematica)};
             
-            \draw [arrow] (examples) -- (dirace);
-            \draw [arrow] (toplevel) -- (dirace);
-            \draw [arrow] (dirace) -- (ualg);
+            \draw [arrow] (examples) -- (dhammer);
+            \draw [arrow] (toplevel) -- (dhammer);
+            \draw [arrow] (dhammer) -- (ualg);
             \draw [arrow] (ualg) -- (ANTLR4);
-            \draw [arrow] (dirace) -- (WSTP);
+            \draw [arrow] (dhammer) -- (WSTP);
         \end{tikzpicture}
     \end{minipage}
     \hfill
@@ -47,7 +47,7 @@
         \end{tikzpicture}
     \end{minipage}
     \rmfamily
-    \caption{The structure of Dirace. The left figure illustrates the whole system, and the right figure illustrates the \texttt{dirace} module. Blue nodes denote modules, red nodes denote third-party libraries, and green nodes denote files. Arrows represent dependency.}
-    \label{fig: dirace structure}
+    \caption{The structure of D-Hammer. The left figure illustrates the whole system, and the right figure illustrates the \texttt{dhammer} module. Blue nodes denote modules, red nodes denote third-party libraries, and green nodes denote files. Arrows represent dependency.}
+    \label{fig: dhammer structure}
 \end{figure}
   

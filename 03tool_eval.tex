@@ -1,0 +1,134 @@
+
+\section{Implementation and Case Study}
+
+The main purpose of this work is to build a practical tool that works well in checking Dirac notation equations. The refinements and extensions above concludes in our implementation called D-Hammer, a solver written in \CC. It has a parser built by ANTLR4, and scalar reasonings are powered by a Mathematica kernel. The user can use commands to make definitions and assumptions in the maintained context, conduct the normalization and equivalence checking, and obtain the rewriting trace output. This implementation 
+is tested on the benchmark of the DiracDec work, and succeeds in proving most of them efficiently. 
+It can be used from the command line interactively, or can be integrated into other \CC\ projects as a library.
+
+\subsubsection{Project Structure}
+The project structure is illustrated in~\Cref{fig: dhammer structure}.
+\texttt{ualg} is the module for universal algebra, defining basic concepts like terms and substitutions. It serves as the library for \texttt{dhammer}, which are then utilized in the example benchmarks and the toplevel command line application. The components of \texttt{dhammer} are as follows:
+\begin{itemize}
+    \item \texttt{symbols.cpp}: the reserved symbols and AC symbols;
+    \item \texttt{syntax\_theory.cpp}: syntax related algorithms, such as de Bruijn normalization and freeness of variables;
+    \item \texttt{calculus.cpp}: type checker and intergration with Mathematica;
+    \item \texttt{reduction.cpp}: all the rewriting rules and transformations;
+    \item \texttt{dirac\_parser.cpp}: parser for Dirac notation and D-Hammer commands;
+    \item \texttt{prover.cpp}: the prover that maintains the context and process commands like definition or equivalence checking.
+\end{itemize}
+
+\input{fig/proj_structure.tex}
+
+The internal data structure for terms is a pointer-based syntax tree following the function application style:
+\[
+    \texttt{
+        term ::= ID | ID [term (, term)*].
+    }
+\]
+The syntax tree can be an identifier, or an application with an identifier as the function head, and several syntax trees as arguments. There are several Dirac notation terms and their corresponding syntax trees.
+\footnotesize{
+\begin{align*}
+    & X_1 + X_2 + X_3 && \texttt{ADD[X1, X2, X3]} 
+    \\
+    & \lambda x: \OType(T_1,  T_2). x^\dagger && \texttt{FUN[x, OTYPE[T1, T2], ADJ[x]]}
+    \\
+    & \sum_{i \in \mathbf{U}(T)} \ket{i} \bra{i} && \texttt{SUM[USET[T], FUN[i, BASIS[T], OUTER[KET[i], BRA[i]]]]}
+\end{align*}
+}
+The syntax tree structure is also compatible with the datatype of Mathematica. This improves the interoperability between D-Hammer and the Mathematica system, enabling them to work interleavingly.
+To improve usability, D-Hammer also supports many special syntacies for terms,  and most Dirac notation terms will be encoded in the natural way.
+Here are some examples for the parsing syntax.
+
+\begin{figure}
+    \center
+\begin{tabular}{c >{\centering\arraybackslash}p{4cm} l}
+    \hline
+    syntax & parsing result & explanation \\
+    \hline
+    \texttt{|e>} & \texttt{KET[e]} & the ket basis\\
+    \texttt{e1 + ... + en} & \texttt{ADD[e1, ..., en]} & the addition\\
+    \texttt{e1\ e2} & \texttt{COMPO[e1, e2]} & composition in Dirac notation \\
+    \texttt{e1\^{}*} & \texttt{CONJ[e1]} & scalar conjugation \\
+    \texttt{fun i : T => X} & \texttt{FUN[i, T, X]} & lambda abstraction \\
+    \hline
+\end{tabular}
+\end{figure}
+
+Finally, D-Hammer uses a prover to host the computation. The prover maintains a well-formed context $E[\Gamma]$, and processes commands to modify the context and conduct calculations. The commands are listed below.
+\begin{itemize}
+    \item \texttt{\textcolor{NavyBlue}{Def} ID := term.} It defines the \texttt{ID} as the \texttt{term}, using the \textbf{W-Def} typing rule.
+    \item \texttt{\textcolor{NavyBlue}{Var} ID := term.} It make an assumption of \texttt{ID} with the \texttt{term} as type, using the \textbf{W-AssumeE} typing rules.
+    \item \texttt{\textcolor{NavyBlue}{Check} term.} Type checking the \texttt{term} and output the result.
+    \item \texttt{\textcolor{NavyBlue}{Normalize} term.} Normalize the \texttt{term} using the algorithm introduced in~\Cref{sec: decide}.
+    \item \texttt{\textcolor{NavyBlue}{CheckEq} term \textcolor{NavyBlue}{with} term.} Check the equivalence of the two terms calculating and comparing their normal forms.
+\end{itemize}
+The prover will type check the terms for each command. We can also use \texttt{\textcolor{NavyBlue}{Normalize} term \textcolor{NavyBlue}{with trace}.} to output the proof trace during normalization. The proof trace is a sequence of records, including the rule or transformation appied, the position of application, and the pre- and post-transformation terms. The record helps understand the normalization procedure better, and can be turned into verified proofs in theorem provers in the future.
+
+\subsubsection{Use Case}
+Here we encode the motivating~\Cref{ex: motivating}, examine and explain how it is checked in D-Hammer. The encoding is shown below.
+
+    \begin{lstlisting}[style=dhammer]
+Var T : INDEX. Var M : OTYPE[T, T].
+Def phi := idx T => Sum nv in USET[T], |(nv, nv)>.
+Var r1 : REG[T]. Var r2 : REG[T].
+CheckEq M_r1;r1 (phi T)_(r1, r2) with (TPO T T M)_r2;r2 (phi T)_(r1, r2).
+    \end{lstlisting}        
+
+The first three lines use the \texttt{\textcolor{NavyBlue}{Var}} and \texttt{\textcolor{NavyBlue}{Def}} commands to set up the context for the Dirac notation.
+\texttt{T} is a type index, representing arbitrary Hilbert space types. \texttt{M} is assume to be an operator in the Hilbert space with type \texttt{T}. \texttt{phi} is defined as the maximally entangled state, depending on the bound variable \texttt{T} as index.
+\texttt{r1} and \texttt{r2} are register names for the two subsystems.
+
+In the left hand side of \texttt{\textcolor{NavyBlue}{CheckEq}} command, \texttt{M\_r1;r1} denotes the labelled notation $M_{r_1; r_1}$, and \texttt{(phi T)\_(r1, r2)} denotes the entangled state $\ket{\Phi}_{(r_1, r_2)}$. They are connected by a white space, which is parsed into the composition of Dirac notation, and will be reduced into the operator-ket multiplication after typing. The right hand side is interpreted similarly, except the defined symbol \texttt{TPO} in the environment:
+
+\begin{lstlisting}[style=dhammer]
+Def TPO := idx sigma => idx tau => fun O : OTYPE[sigma, tau] => Sum i in USET[sigma], Sum j in USET[tau], (<i| O |j>).(|j> <i|).
+\end{lstlisting}
+
+The \texttt{TPO} symbol represents the transpose of operators, and encodes the formalization in~\Cref{ex: formalizing motivating}. Thanks to the design of environment and functions, many other commonly used symbols in Dirac notation are encoded and provided as defined symbols in D-Hammer.
+
+Within one second, the prover reports the result of equivalence with their common normal form:
+    \begin{lstlisting}[style=dhammer]
+The two terms are equal.
+[Normalized Term] SUM[USET[T], FUN[BASIS[T], SUM[USET[T], FUN[BASIS[T], SCR[DOT[BRA[$\texttt{\$1}$], MULK[M, KET[$\texttt{\$0}$]]], LTSR[LKET[$\texttt{\$1}$, r1], LKET[$\texttt{\$0}$, r2]]]]]]] : DTYPE[RSET[r1, r2], RSET]
+    \end{lstlisting}
+
+The normal form is in the internal syntax tree format mentioned above. A more readable interpretation is:
+\[
+\sum_{\mathbf{U}(T)} \sum_{\mathbf{U}(T)} \bra{\$1}M\ket{\$ 0} . \ket{\$1}_{r_1} \otimes \ket{\$0}_{r_2} : \DType(\{r_1, r_2\}, \emptyset).
+\]
+Here $\$0$ and $\$1$ are de Bruijn indices. The result is a ket on the $\{r_1, r_2\}$ system as expected, and follows pattern proposed in~\Cref{sec: labelled}.
+
+
+
+
+\subsubsection{Benchmark performance}
+
+To evaluate D-Hammer, we first test the examples from DiracDec benchmark and make a comparison.
+The experiments are carried out using a MacBook Pro with M3 Max chip.
+
+\begin{figure}
+    \center
+    \begin{tabular}{c|c c c|c c c}
+        \hline
+        \multirow{2}{*}{source} & \multicolumn{3}{c|}{DiracDec} & \multicolumn{3}{c}{D-Hammer} \\
+        \cline{2-7}
+                                 & expressable & success & time(s)           & expressable & success & time(s)                 \\
+        \hline
+        textbook(QCQI)          & 18          & 18        &    1.02        &    18      & 18          &   0.82      \\
+        CoqQ                    & 162          & 156       &    48.69       &   158     &  158   &     9.74     \\
+        circuits                 & 2          & 2       &    17.67       &   3     &  2   &     1.4     \\
+        research paper                & 4          & 4         &  59.53       &   4    & 4       &  0.73     \\
+        \hline
+    \end{tabular}        
+    \caption{For DiracDec, examples that cannot be decided within 60 seconds are not included.}
+\end{figure}
+
+The timing of D-Hammer does not include the initialization of Mathematica kernel link, which takes about 3 seconds in the beginning.
+As to expressibility, the language for DiracDec has the support for projectors $\texttt{fst}$ and $\texttt{snd}$ on basis pairs, satisfying $\texttt{fst} (s, t) = s$ and $\texttt{snd} (s, t) = t$. We found this feature is almost not used, so we removed the support. As a result, D-Hammer encodes 158 examples for the CoqQ part, 4 less than DiracDec. For decidability, we improved the rewriting rules about sum for D-Hammer, and proved several more examples failed by DiracDec. 
+The main difference is about their time efficiency. Because of our algorithm to decide AC-equivalence and SUM-SWAP, D-Hammer has a significant efficiency improvement, especially on those ``computational examples'' mentioned in the DiracDec paper.
+One typical example comes from the paper by Jens about the equivalence of operators for qubits. The system has to decompose the term on the concrete $\ket{0}$ and $\ket{1}$ basis, resulting a lot of addition elements. It takes DiracDec about one minute, but D-Hammer solves it within one second.
+
+
+
+We also built an example benchmark for labelled Dirac notation, see~\Cref{sec: examples for labelled}.
+
