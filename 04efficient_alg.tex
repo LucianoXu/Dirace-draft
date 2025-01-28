@@ -5,22 +5,26 @@
 
 \section{Efficient Algorithm for Equivalence Checking}
 \label{sec: decide}
+The equivalence of Dirac notations are decided by normalization, which transforms equivalent expressions under a set of axioms into the same syntax. For the entire axiom set $R \cup F$ of Dirac notation, the previous algorithm conducts partial normalization on $R$ by term rewriting modulo $F$, and axioms in $F$ are checked by iterating through all permutations. This direct solution has factorial compleixty on maximum number of AC symbol arguemnts, and is observed to be critical to the low efficiency. Here we propose an efficient algorithm to perform total nomralization on $R \cup F$, and their comparison are illustrated below.
+\[
+\text{(partial)}\qquad e_1 \mathop{\twoheadrightarrow}^R e_1' \mathop{=}^F e_2' \mathop{\twoheadleftarrow}^R e_2
+\qquad
+\text{(total)}\qquad e_1 \mathop{\twoheadrightarrow}^{R \cup F} e \equiv e \mathop{\twoheadleftarrow}^{R \cup F} e_2
+\]
 
-We utilize the term rewriting technique to decide the equivalence of Dirac notation, based on its axiomatic semantics. The process involves normalizing two terms and checking whether they have identical syntax. This normalization is achieved through matching and substitution in universal algebra, using a set of predefined rewriting rules.
+% The problem is that, the axiom set $F$ in~\Cref{def: axiom F} cannot be decided through term rewriting. A direct solution is to decide \( E \) by examining all possible permutations in the rewriting result, which has high complexity. 
+% In this work, we introduce a more efficient approach by incorporating sorting algorithms into the normalization procedure. 
 
-As mentioned in the semantics section, the axioms in \( E \) cannot be fully decided through term rewriting. DiracDec decides \( E \) by examining all possible permutations in the rewriting result. In this work, we introduce a more efficient approach by incorporating sorting algorithms into the normalization procedure. 
-
-The normalization procedure consists of the following steps.
+The normalization procedure consists of the following steps. Steps 1 - 3 are term rewriting steps for $R$, and steps 4 - 6 are our algorithm to further normalize axiom set $F$.
 \begin{enumerate}
     \item \textbf{First Rewritings}: Expand definitions and simplify expressions.
-    \item \textbf{Variable Expansion}: Consider scalar expressions to ensure completeness.
-    \item \textbf{Second Rewritings}: Normalize terms modulo \( E \).
+    \item \textbf{Variable Expansion}: Convert to scalar expressions for better decidability.
+    \item \textbf{Second Rewritings}: Normalize terms on \( R \) modulo \( F \).
     \item \textbf{Sorting Without Bound Variables}: Normalize AC-equivalence.
     \item \textbf{Swap Successive Summations}: Normalize SUM-SWAP equivalences.
     \item \textbf{De Bruijn Normalization}: Normalize \( \alpha \)-equivalence.
 \end{enumerate}
 
-% \subsection{Normalization Modulo \( E \) by Term Rewriting}
 
 % Term rewriting rules, represented as \( l \ \reduce\ r \), are applied recursively to normalize terms. In each step, subterms matching the left-hand side \( l \) of a rule are replaced with the corresponding right-hand side \( r \). The procedure terminates when no further rewritings can be made.
 % A comprehensive list of rewriting rules can be found in~\Cref{sec: rewriting rules}. Below are some key examples to illustrate the design:
@@ -73,13 +77,8 @@ The normalization procedure consists of the following steps.
 
 
 
-\subsection{Deciding Equational Theory \( E \)}
-
-In the Mathematica implementation of DiracDec, the equational theory \( E \) is decided using unification, which attempts to find a substitution for the summation bound variables that makes two expressions syntactically equivalent. This unification process iterates through all permutations of AC symbol arguments, and its complexity is factorial in the maximum number of AC symbol arguments.
-
-\yx{mention de Bruijn normal form.}
-
-% As the first improvement, we check \( \alpha \)-equivalence using the de Bruijn index~\cite{deBruijn1972lambda}, which replaces references to bound variable names with the distance from the lambda abstraction to the variable. For instance, the nominal lambda abstraction \( \lambda x. x \) is transformed into \( \lambda . 0 \), while \( \lambda x. \lambda y. (x\ (y\ x)) \) is transformed into \( \lambda.\lambda. (1\ (0\ 1)) \). This transformation into the de Bruijn index is performed as the final step in the normalization process to check equivalence between terms with different bound variable names.
+Now we analyse the axioms in $F$ to understand the difficulty and solution for normalization. 
+For $\alpha$-equivalence, we want to rule out the influence of bound variable names. Therefore we use de Bruijn notation~\cite{deBruijn1972lambda}, which replaces the name with the distance from the lambda abstraction to the variable. For instance, the nominal lambda abstraction \( \lambda x. x \) is transformed into \( \lambda . \$0 \), while \( \lambda x. \lambda y. (x\ (y\ x)) \) is transformed into \( \lambda.\lambda. (\$1\ (\$0\ \$1)) \).
 
 The remaining axioms, such as AC-equivalence and SUM-SWAP, assert equivalence under permutations. A standard approach for deciding such equivalences is to normalize terms by sorting in a predefined order. For example, given the dictionary order \( a < b < c \), the term \( b + c + a \) (and any other AC-equivalent term) is normalized into \( a + b + c \). However, in our setting, two intertwined difficulties arise: how to assign an order to all terms in the language, and how to simultaneously sort for both axioms.
 
@@ -91,15 +90,23 @@ Consider the following two equivalent terms:
 \]
 While these two terms are equivalent, directly sorting the elements of scalar multiplication using lexical order does not yield the same form.
 
-To address this issue, we propose an algorithm that sorts terms without considering bound variables. The key observation is that in a successive sum expression \( \sum_{i \in s_1} \cdots \sum_{j \in s_n} A \), the names and order of the bound variables \( i, \dots, j \) can be freely permuted. Therefore, all bound variables should be treated uniformly during sorting, and the order of summation can then be determined based on the position of the bound variables.
+To address this issue, we propose an algorithm to sort in two steps. The key observation is that in a successive sum expression \( \sum_{i \in s_1} \cdots \sum_{j \in s_n} A \), the names and order of the bound variables \( i, \dots, j \) can be freely permuted. Therefore, a good idea is to normalize AC-equivalence first, where all bound variables are treated uniformly. Afterwards, the order of summation can then be determined based on the position of the bound variables.
+
+% \begin{align*}
+%     \sum_{i \in s_1} \sum_{j \in s_2} \bra{i} A \ket{j} \times \bra{j} B \ket{i} 
+%     \qquad
+%     \sum_{i \in s_2} \sum_{j \in s_1} \bra{i} B \ket{j} \times \bra{j} A \ket{i} \\
+%     \sum_{i \in s_1} \sum_{j \in s_2} \bra{i} A \ket{j} \times \bra{j} B \ket{i} 
+%     \qquad 
+%     \sum_{i \in s_2} \sum_{j \in s_1} \bra{j} A \ket{i} \times \bra{i} B \ket{j} \\
+%     \sum_{i \in s_1} \sum_{j \in s_2} \bra{i} A \ket{j} \times \bra{j} B \ket{i} \\
+%     \sum_{s_1} \sum_{s_2} \bra{\$1} A \ket{\$0} \times \bra{\$0} B \ket{\$1}
+% \end{align*}
 
 In the example above, we first ignore the bound variables and sort the sum body into \( \bra{\bullet} A \ket{\bullet} \times \bra{\bullet} B \ket{\bullet} \). Then, we swap the summations such that the bound variable at the first \( \bullet \) position appears at the outermost position. The results will have the same de Bruijn normal form, namely \( \sum_{s_1} \sum_{s_2} \bra{\$1} A \ket{\$0} \times \bra{\$0} B \ket{\$1} \).
 
 
 To describe the algorithm in the following, we introduce two key notations. For a term \( e = f(a_1, a_2, \dots, a_n) \), \( \textrm{head}(e) \) denotes the function symbol \( f \), while \( \textrm{arg}(e, i) \) refers to the \( i \)-th argument \( a_i \) of the term. In this context, variables and constants are treated as functions with zero arguments.
-
-
-
 \begin{definition}[Order Without Bound Variables]
 Let \( \mathcal{B} \) represent the set of bound variables, with the assumption that all bound variables are unique. We also assume that a total order exists over all symbols. The relation \( e_1 =_\mathcal{B} e_2 \) holds if:
 \begin{itemize}
@@ -114,31 +121,36 @@ The relation \( e_1 <_\mathcal{B} e_2 \) holds between two terms if:
     \item $head(e_1) = head(e_2)$, and there exists $n$ with $arg(e_1, n) <_\mathcal{B} arg(e_2, n)$, where $arg(e_1, i) =_\mathcal{B} arg(e_2, i)$ for all $i < n$.
 \end{itemize}
 \end{definition}
-It can be shown that \( e_1 =_\mathcal{B} e_2 \) if and only if neither \( e_1 <_\mathcal{B} e_2 \) nor \( e_2 <_\mathcal{B} e_1 \) holds. The purpose of this ordering is to compare function symbols in a top-down manner while ignoring bound variables. The sorted order enables normalization of terms in terms of AC equivalence.
-\yx{rephrase in pseudo code}
+It can be shown that \( e_1 =_\mathcal{B} e_2 \) if and only if neither \( e_1 <_\mathcal{B} e_2 \) nor \( e_2 <_\mathcal{B} e_1 \) holds. The purpose of this ordering is to compare function symbols in a top-down manner while ignoring bound variables. This order enables normalization of terms for AC equivalence.
 \begin{definition}[Sort Transformation]
     For a term $e$ with bound variable set $\mathcal{B}$,
-    The sort transformation sort(e) is defined as
-    \begin{itemize}
-        \item $e$, if $e$ is a variable or constant;
-        \item $\lambda x:T. \textrm{sort}(e')$, if $e \equiv \lambda x : T. e'$;
-        \item $\mu x. \textrm{sort}(e')$, if $e \equiv \mu x. \textrm{sort}(e')$; or
-        \item $f(\textrm{sort}(a_1), \cdots, \textrm{sort}(a_n))$, if $e \equiv f(a_1, \cdots, a_n)$. If $f$ is an AC symbol, then the order of sort($a_i$) is sorted ascendingly according to $<_\mathcal{B}$.
-    \end{itemize}
+    The sort transformation is defined in~\Cref{alg: sort}.
 \end{definition}
+
+\begin{algorithm}
+    \caption{Sort Transformation}
+    \label{alg: sort}
+    \begin{algorithmic}[1]
+        \Procedure{Sort}{$e, \mathcal{B}$}
+            \If{$e \equiv \lambda x : T . e'$}
+                \State \Return $\lambda x : T . \textsc{Sort}(e')$
+            \ElsIf{$e \equiv \mu x. e'$}
+                \State \Return $\mu x . \textsc{Sort}(e')$
+            \ElsIf{$e \equiv f(a_1, \cdots, a_n)$}
+                \State $ls := \textsc{Sort}(a_1), \cdots, \textsc{Sort}(a_n)$
+                \State $ls := ls$ sorted by $<_\mathcal{B}$
+                \State \Return $f(ls)$
+            \EndIf
+        \EndProcedure
+    \end{algorithmic}
+\end{algorithm}
 
 After sorting, the next step is the \textit{swap transformation}, which arranges successive summations based on the order of bound variables.
 \begin{definition}[Swap Transformation]
-For a term \( e \) with a sorting result \( \textrm{sort}(e) \), the swap transformation proceeds by ordering all bound variables according to their first appearances, except in function definitions \( \lambda x \) and \( \mu x \). The swap transformation then reorders the successive summations accordingly.
+For a term \( e \) with a sorting result \( \textsc{Sort}(e) \), the swap transformation proceeds by ordering all bound variables according to their first appearances, except in function definitions \( \lambda x \) and \( \mu x \). The swap transformation then reorders the successive summations accordingly.
 \end{definition}
 
-The algorithm that applies the sort and swap transformations, followed by de Bruijn normalization, successfully handles all equivalences in our benchmark. We formalize the completeness of this transformation in the following conjecture:
-
-\begin{conjecture}[Completeness of Transformation]
-    For any two terms \( e_1 \) and \( e_2 \) that are equivalent under AC equivalence, SUM-SWAP, and \( \alpha \)-equivalence, they will have the same form after sort, swap, and de Bruijn transformations.
-\end{conjecture}
-
-
+Take the term $\sum_{i \in s_2} \sum_{j \in s_1} \bra{i} B \ket{j} \times \bra{j} A \ket{i}$ as an example. Its bound variable set $\mathcal{B} = \{i, j\}$. Assume we have $A < B$, then the sorting result will be $\sum_{i \in s_2} \sum_{j \in s_1} \bra{j} A \ket{i} \times \bra{i} B \ket{j}$. Then we decide that the order for bound variables will be $j < i$ because $j$ appears first in the body. Using the swap transformation, the sorted result will be $\sum_{j \in s_1} \sum_{i \in s_2} \bra{j} A \ket{i} \times \bra{i} B \ket{j}$.
 
 % The order depends on there occurances in the last sorting result. If no occurance, then the order will depend on the set (for sum) and the type (for lambda abstraction only).
 
