@@ -1,29 +1,95 @@
 
 \section{Introduction}
 
-In 1939, Dirac introduced his notation for quantum mechanics~\cite{dirac1939new}, designed to represent linear algebraic formulas in a compact and convenient form. For example, the expression \( a\ket{\psi} + b\ket{\phi} \) represents the superposition of two quantum states, \( \ket{\psi} \) and \( \ket{\phi} \). Today, Dirac notation is widely accepted as the standard language in quantum computation and quantum information. Its reasoning forms the foundation of research and applications, much like boolean and integer logic do in classical computer science.
 
-In quantum algorithm formalizations and quantum programming languages, Dirac notation is frequently used in equational proofs, which are critical, repetitive, and often time-intensive. These notations also play a key role in defining program states, operations, and assertions in quantum programming languages. To automate the verification of these programs, we need tools that can simplify and check the equivalence of preconditions. However, unlike the well-established SAT and SMT solvers for classical logic, a practical solver for Dirac notation equivalence remains an unmet need, creating a barrier for progress in several fields.
+Dirac notation~\cite{dirac1939new}, a.k.a.\, bra-ket notation, is a
+mathematical formalism for representing quantum states using linear
+algebra notation: for instance, Dirac notation uses the linear
+combination \( a\ket{\psi} + b\ket{\phi} \) to represent the
+superposition of the two quantum states \( \ket{\psi} \) and
+\( \ket{\phi} \). Another essential ingredient of Dirac notation
+is the tensor product $\otimes$, which is used to describe composite
+states: for instance, Dirac notation uses the tensor expression
+\( \ket{\psi} \otimes \ket{\phi} \) to denote the composition of
+the two quantum states \( \ket{\psi} \) and \( \ket{\phi} \). It is
+also common to use a variant of Dirac notation, called labelled Dirac
+notation, to describe composite quantum states. In labelled Dirac
+notation, bras and kets are tagged with labels that identify the
+subsystems on which they operate. For instance, the labelled tensor
+expression
+\( \ket{\psi}_{S'} \otimes \ket{\phi}_{S} \)
+states that $\ket{\psi}_S$ and $\ket{\psi}_{S'}$ describe two quantum
+states over some subsystem $S$ and $S'$ respectively. By considering
+the relationship between $S$ and $S'$, one can obtain identities for
+free, e.g.\, 
+%
+$$\ket{\phi}_S \otimes \ket{\psi}_{T} = \ket{\psi}_{T} \otimes \ket{\phi}_S
+\mbox{if}~S\cap S'=\emptyset$$
+%
+In turn, commutativity of the tensor product ensures that one can
+reason locally about quantum systems, and contributes to making
+labelled Dirac notation a convenient, compositional formalism to
+reason about quantum states---in a way that is similar to the way
+bunched logics support compositional reasoning about mutable states.
 
-Recently, Xu et al.~\cite{diracdec} proposed a theory for deciding the equivalence of Dirac notation, alongside a prototype implementation in Mathematica called DiracDec. They demonstrated that the equivalence of basic Dirac notation is decidable. Their algorithm, based on a pure term rewriting system, has been proven to be confluent and terminating. Despite this, there remains a gap between DiracDec and a practical solver for Dirac notation equivalence.
-
-One challenge is the efficiency of the algorithm when dealing with equivalences beyond the scope of term rewriting. DiracDec decides the entire equational theory by rewriting modulo \( E \), where \( E \) represents a set of axioms that cannot be decided by normalization alone, such as the associativity and commutativity (AC) of certain function symbols. DiracDec uses a direct but inefficient algorithm to decide these axioms, which searches through all possible permutations and exhibits factorial complexity. This inefficiency becomes particularly evident in "computational examples" containing many AC symbols, which are time-consuming to process.
-
-Usability is another area where DiracDec falls short. It does not support labelled Dirac notation, which uses registers to denote subsystems and express states locally. Additionally, DiracDec's typing system only does not provide context for variable typing assumptions or the definition of symbols, which are required in practical scenarios. To avoid type checking during term rewriting, DiracDec separates symbols (e.g., multiplication) for different types, leading to unnecessary complexity. Moreover, integrating the Mathematica implementation into other projects as a solver is challenging.
-
-The system design of DiracDec reflects a trade-off between simplicity and efficiency. While the simplicity of term rewriting allows for strong theoretical results, it limits optimization opportunities. Building on DiracDec, this work aims to develop a practical solver. We transform the term rewriting system into a hybrid algorithm, overcoming the challenges mentioned above. Our main technical contributions are:
-\begin{itemize}
-    \item An efficient algorithm for deciding the equational theories in \( E \), based on equivalence checking through normalization, with the normal form for \( E \) being obtained via sorting.
-    \item Support for constant register labels, and reducing the equivalence decision of labelled Dirac notation to the unlabelled case.
-    \item A more user-friendly \CC\ solver, D-Hammer, featuring an abstract language and typing system. We also support the definition of symbols (e.g., transpose and trace) using function syntax.
-\end{itemize}
-
-We evaluated D-Hammer against the DiracDec benchmark and new examples involving labelled Dirac notation. The results show significant improvements in both decidability and efficiency compared to DiracDec.
-
-% D-Hammer successfully decides all the examples that are expressable in its language, including those failed by DiracDec because of complexity or insufficient decision power.
+Labelled Dirac notation is also commonly used to express assertions
+about quantum programs. Specifically, many quantum Hoare logics use
+labelled Dirac notation to express program assertions, including
+pre-conditions and post-conditions~\cite{TODO}. These logics also use
+implicitly equational reasoning between labelled Dirac expressions, to
+glue applications of proof rules---similar to the use of the rule of
+consequence in the setting of classical program. Therefore, it is
+essential for the verification of quantum programs to have automated
+means of proving equality of two complex expressions based on labelled
+Dirac notation.
 
 
-\section{Motivation and Preliminary}
+\subsubsection*{Contributions}
+This paper presents an automated tool, called D-Hammer, for reasoning
+about labelled Dirac notation. D-Hammer uses a rich, dependently typed
+language, to formalize labelled Dirac notation, and supports common
+idioms used to describe quantum systems, including big operators of
+the form $\sum_{i\in I} a_i \ket{\phi_i}_S$ to represent indexed
+superpositions of states. The semantics of typable expressions is
+given in terms of Hilbert spaces, tailored to interpreting tensor
+product as an associative and commutative operator. We leverage this
+interpretation to define a rich equational theory for labelled Dirac
+notation, and prove its soundness with respect to our denotational
+semantics. Finally, we define an efficient normalization procedure to
+prove equivalence of two expressions. We then evaluate our procedure
+with respect to examples from the literature. Our evaluation covers
+examples based on (vanilla, unlabelled) Dirac notation, as well as
+examples based on labelled Dirac notation. The main conclusions are
+that our approach outperforms prior work by~\cite{diracdec} and is
+able to prove complex examples of reasoning with labelled Dirac
+notation from the literature, including examples from prior work on
+quantum separation logic~\cite{DBLP:conf/lics/ZhouBHYY21}.
+
+
+
+%% In 1939, Dirac introduced his notation for quantum mechanics~\cite{dirac1939new}, designed to represent linear algebraic formulas in a compact and convenient form. For example, the expression \( a\ket{\psi} + b\ket{\phi} \) represents the superposition of two quantum states, \( \ket{\psi} \) and \( \ket{\phi} \). Today, Dirac notation is widely accepted as the standard language in quantum computation and quantum information. Its reasoning forms the foundation of research and applications, much like boolean and integer logic do in classical computer science.
+
+%% In quantum algorithm formalizations and quantum programming languages, Dirac notation is frequently used in equational proofs, which are critical, repetitive, and often time-intensive. These notations also play a key role in defining program states, operations, and assertions in quantum programming languages. To automate the verification of these programs, we need tools that can simplify and check the equivalence of preconditions. However, unlike the well-established SAT and SMT solvers for classical logic, a practical solver for Dirac notation equivalence remains an unmet need, creating a barrier for progress in several fields.
+
+%% Recently, Xu et al.~\cite{diracdec} proposed a theory for deciding the equivalence of Dirac notation, alongside a prototype implementation in Mathematica called DiracDec. They demonstrated that the equivalence of basic Dirac notation is decidable. Their algorithm, based on a pure term rewriting system, has been proven to be confluent and terminating. Despite this, there remains a gap between DiracDec and a practical solver for Dirac notation equivalence.
+
+%% One challenge is the efficiency of the algorithm when dealing with equivalences beyond the scope of term rewriting. DiracDec decides the entire equational theory by rewriting modulo \( E \), where \( E \) represents a set of axioms that cannot be decided by normalization alone, such as the associativity and commutativity (AC) of certain function symbols. DiracDec uses a direct but inefficient algorithm to decide these axioms, which searches through all possible permutations and exhibits factorial complexity. This inefficiency becomes particularly evident in "computational examples" containing many AC symbols, which are time-consuming to process.
+
+%% Usability is another area where DiracDec falls short. It does not support labelled Dirac notation, which uses registers to denote subsystems and express states locally. Additionally, DiracDec's typing system only does not provide context for variable typing assumptions or the definition of symbols, which are required in practical scenarios. To avoid type checking during term rewriting, DiracDec separates symbols (e.g., multiplication) for different types, leading to unnecessary complexity. Moreover, integrating the Mathematica implementation into other projects as a solver is challenging.
+
+%% The system design of DiracDec reflects a trade-off between simplicity and efficiency. While the simplicity of term rewriting allows for strong theoretical results, it limits optimization opportunities. Building on DiracDec, this work aims to develop a practical solver. We transform the term rewriting system into a hybrid algorithm, overcoming the challenges mentioned above. Our main technical contributions are:
+%% \begin{itemize}
+%%     \item An efficient algorithm for deciding the equational theories in \( E \), based on equivalence checking through normalization, with the normal form for \( E \) being obtained via sorting.
+%%     \item Support for constant register labels, and reducing the equivalence decision of labelled Dirac notation to the unlabelled case.
+%%     \item A more user-friendly \CC\ solver, D-Hammer, featuring an abstract language and typing system. We also support the definition of symbols (e.g., transpose and trace) using function syntax.
+%% \end{itemize}
+
+%% We evaluated D-Hammer against the DiracDec benchmark and new examples involving labelled Dirac notation. The results show significant improvements in both decidability and efficiency compared to DiracDec.
+
+%% % D-Hammer successfully decides all the examples that are expressable in its language, including those failed by DiracDec because of complexity or insufficient decision power.
+
+
+\section{Motivation and Preliminaries}
 
 An interesting property of quantum mechanics is that for two maximally entangled states, applying a quantum operator \( M \) to one subsystem is equivalent to applying \( M^T \) (the transpose of \( M \)) to the other subsystem. This relationship holds regardless of the spatial separation between the two systems, and it can be expressed as an equation in Dirac notation.
 \begin{example}
