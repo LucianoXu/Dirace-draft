@@ -1,8 +1,17 @@
 
 \section{Language, Typing and Semantics}
-The first step is to formalize the language for Dirac notation. In DiracDec, the language has a concrete design, where the same syntax for different types corresponds to distinct symbols. Our goal is to transition from this concrete design to a more abstract one, which aligns more closely with the conventional Dirac notation we use and simplifies the term rewriting system.
+We use a typed abstract syntax to represent Dirac notation. The overall system design leads to the following advantages. 
+\begin{itemize}
+    \item Dirac notation can be divided into four types, namely scalar, ket, bra and operator. Many function symbols have constraints on types. It is important to have a typing system and check the validity of expressions. 
+    \item It has functions and higher-order typing. It allows to formally encode defined symbols like transpose or trace, which are usually used to reprensent the term in an abstract manner. 
+    \item We use an abstract syntax for better and simpler representations. It follows the conventional Dirac notation, where we extensively use the composition symbol to denote calculations, and symbols like scalar multiplications for different types are unified as one.
+    \item The structures are friendly to optimizations for efficiency. For example, associative and commutative (AC) symbols have indefinite arities, which enables normalization by sorting.
+\end{itemize}
 
-To achieve this, we organize our language into three layers: the index, the type, and the term. Terms represent concrete instances such as kets, bras, and operators, which will be typed and checked. The index represents classical data types and appears in type expressions to differentiate between various Hilbert spaces and sets.
+Since a Hilbert space $\mathcal{H}_V$ is dependent on the basis set $V$,
+types for Dirac notation also depends on the type index.
+Therefore, the language is organized into three layers: the index, the type, and the term. 
+Terms represent concrete instances such as kets, bras, and operators, which will be typed and checked. The index represents classical data types and appears in type expressions to differentiate between various Hilbert spaces and sets.
 
 \begin{definition}[Index Syntax]
     The syntax for type indices is:
@@ -30,32 +39,28 @@ Index functions are essential for defining polymorphic transformations across Hi
     The syntax for Dirac notation terms is:
     \begin{align*}
         e ::=\ & x \mid \lambda x : T.e \mid \mu x.e \mid e_1\ e_2 \mid (e_1, e_2) \\
-        & |\ 0 \mid 1 \mid \ADDS(e_1, \cdots, e_n) \mid e_1 \times \cdots \times e_n \mid e^* \mid \delta_{e_1, e_2} \mid \DOT(e_1, e_2) \\
+        & |\ 0 \mid 1 \mid e_1 \times \cdots \times e_n \mid e^* \mid \delta_{e_1, e_2} \\
         & |\ \ZEROK(\sigma) \mid \ZEROB(\sigma) \mid \ZEROO(\sigma_1, \sigma_2) \mid \ONEO(\sigma) \\
-        & |\ \ket{e} \mid \bra{t} \mid e^\dagger \mid e_1.e_2 \mid \ADD(e_1, \cdots, e_n) \mid e_1 \otimes e_2 \\
-        & |\ \MULK(e_1, e_2) \mid \MULB(e_1, e_2) \mid \OUTER(e_1, e_2) \mid \MULO(e_1, e_2) \\
+        & |\ \ket{e} \mid \bra{t} \mid e^\dagger \mid e_1.e_2 \mid e_1 + \cdots + e_n \mid e_1 \otimes e_2 \mid e_1 \cdot e_2 \\
         & |\ \mathbf{U}(\sigma) \mid e_1 \star e_2 \mid \sum_{e_1} e_2.
     \end{align*}
 \end{definition}
-The terms above are explained in order:
-\( \lambda x : T.e \) represents the abstraction for normal functions, and \( \mu x.e \) represents the abstraction for index functions.
-\( e_1\ e_2 \) denotes function application.
-\( (e_1, e_2) \) is the basis pair for product types.
-The constants \( 0 \), \( 1 \), \( \ADDS \), \( e_1 \times \cdots \times e_n \), and \( e^* \) are symbols for scalars.
-The next line includes constant symbols for kets, bras, and operators.
-\( \ket{e} \) is a ket, \( \bra{t} \) is a bra, and \( e^\dagger \) denotes the conjugate transpose of \( e \).
-\( e_1.e_2 \) represents scaling the term \( e_2 \) by scalar \( e_1 \).
-\( \mathbf{U}(\sigma) \) denotes the universal set with index \( \sigma \).
-\( e_1 \star e_2 \) represents the Cartesian product of \( e_1 \) and \( e_2 \).
-\( \sum_{e_1} e_2 \) is the big operator sum, modeled by folding the function \( e_2 \) over the value set \( e_1 \). Typically, the sum's body is given by an abstraction. For convenience, we also use the notation \( \sum_{x \in s} X \) to represent \( \sum_{s} \lambda x : T . X \).
-Additionally, \( \ADDS \) and \( \ADD \) are distinct AC symbols: \( \ADDS \) is used for scalar addition and \( \ADD \) for linear algebra addition.
-There are five kinds of linear algebraic multiplications among kets, bras, and operators. These are encoded using five different symbols: \( \DOT \), \( \MULK \), \( \MULB \), \( \OUTER \), and \( \MULO \).
+The terms above are explained in five lines.
+\begin{enumerate}
+    \item \textbf{function and basis}: \( \lambda x : T.e \) represents the abstraction for normal functions, and \( \mu x.e \) represents the abstraction for index functions.
+    \( e_1\ e_2 \) denotes function application.
+    \( (e_1, e_2) \) is the basis pair for product types.
+    \item \textbf{scalar}: \( 0 \), \( 1 \), \( e_1 \times \cdots \times e_n \) and \( e^* \) are symbols for scalars.
+    \( \delta_{e_1, e_2} \) compares where two basis are the same and evaluates to $1$ or $0$ accordingly.
+    \item \textbf{Dirac constant}: zero ket, zero bra, zero operator and identity operator.
+    \item \textbf{Dirac function}: \( \ket{e} \) is a ket, \( \bra{t} \) is a bra, and \( e^\dagger \) denotes the conjugate transpose of \( e \). \( e_1.e_2 \) represents scaling the term \( e_2 \) by scalar \( e_1 \). \(e_1 + \cdots + e_n\) is the addition. \( e_1 \otimes e_2 \) represents tensor product, and \( e_1 \cdot e_2 \) represents the multiplication.
+    \item \textbf{summation}: \( \mathbf{U}(\sigma) \) denotes the universal set with index \( \sigma \). \( e_1 \star e_2 \) represents the Cartesian product of \( e_1 \) and \( e_2 \). \( \sum_{e_1} e_2 \) is the big operator sum, modeled by folding the function \( e_2 \) over the value set \( e_1 \). Typically, the sum's body is given by an abstraction. For convenience, we also use the notation \( \sum_{x \in s} X \) to represent \( \sum_{s} \lambda x : T . X \).
+\end{enumerate}
 
-Compared to DiracDec, the symbols for addition, adjoint, scaling, and tensor products have been consolidated.
-The multiplications are still kept separate due to their differing properties.
-These operations are denoted as \( B \cdot K \), \( K_1 \cdot K_2 \), \( B_1 \cdot B_2 \), \( K \cdot B \), and \( O_1 \cdot O_2 \), respectively.
-
-
+The scalar multiplication $\times$ and addition $+$ are AC symbols, and they have indefinite arity. 
+Because we use abstract syntax, the Dirac functions have different interpertations for different types. 
+We use letters like $a, b, c$ to represent scalar variables, $K$ and $B$ to represent ket and bra variables, and $O$ for operators.
+Therefore, $O \cdot K$ is interpreted as the operator-ket multiplication, and scalars can also be constructed from inner products $B \cdot K$.
 
 
 \subsection{Typing System}
