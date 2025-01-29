@@ -91,16 +91,29 @@ quantum separation logic~\cite{DBLP:conf/lics/ZhouBHYY21}.
 
 \section{Motivation and Preliminaries}
 
-An interesting property of quantum mechanics is that for two maximally entangled states, applying a quantum operator \( M \) to one subsystem is equivalent to applying \( M^T \) (the transpose of \( M \)) to the other subsystem. This relationship holds regardless of the spatial separation between the two systems, and it can be expressed as an equation in Dirac notation.
+
+An interesting property of quantum mechanics is that for two maximally entangled states, applying a quantum operator \( M \) to one subsystem is equivalent to applying \( M^T \) (the transpose of \( M \)) to the other subsystem. This relationship holds regardless of the spatial separation between the two systems, and it can be expressed as an equation in labelled Dirac notation.
 \begin{example}
     \label{ex: motivating}
     Let \( q \) and \( r \) represent two quantum systems in the Hilbert space \( \mathcal{H}_T \). Let \( M \) be a quantum operation acting on \( \mathcal{H}_T \), and let \( \ket{\Phi} = \sum_{i \in T} \ket{i} \otimes \ket{i} \) be the maximally entangled state. Then, we have the following equation:
     \[
-    M_q \ket{\Phi}_{q; r} = M_r^T \ket{\Phi}_{q; r}.
+    M_q \ket{\Phi}_{(q, r)} = M_r^T \ket{\Phi}_{(q, r)}.
     \]
 \end{example}
 
-In this equation, \( q \) and \( r \) are labels denoting the respective subsystems in the Dirac notation. To automate reasoning about such equations, we must formalize the language and develop a proof system to handle it.
+A little explanation on the notation and terms.
+Quantum states are represented as vectors in complex Hilbert spaces, and operations on these states are described by linear transformations, or operators. Dirac notation uses the ket \( \ket{i} \) and the bra \( \bra{i} \) to denote basis vectors in a Hilbert space and its dual space, respectively. These symbols can be composed together in various ways to form more complex expressions.
+For example, $M \ket{i}$ represents the operator-vector multiplication, and the tensor product \(\ket{i}\otimes\ket{i}\) describes the product state on multiple quantum systems.
+
+
+
+In this equation, \( q \) and \( r \) are labels denoting the respective subsystems in the Dirac notation. $M_q$ means that the operation $M$ is applied on system $q$, and $\ket{\Phi}_{(q, r)}$ denotes the quantum state $\ket{\Phi}$ on the (ordered) composed system $(q, r)$.
+To reason about their equivalence, we can remove the labels by extending them to the global system $(q, r)$:
+\begin{align}
+    (M \otimes I) \ket{\Phi} = (I \otimes M^T) \ket{\Phi}.
+    \label{eq: motivating unlabelled}
+\end{align}
+Here the identity operator $I$ are inserted in suitable positions to extend the operator $M$, a special case of extending to the global system called cylinder extension.
 
 
 
@@ -141,19 +154,6 @@ Here $\$0$ and $\$1$ are de Bruijn indices. The result is a ket on the $\{r_1, r
 
 
 
-
-\subsubsection{Dirac Notation}
-
-Quantum states are represented as vectors in complex Hilbert spaces, and operations on these states are described by linear transformations. Dirac notation uses the ket \( \ket{i} \) and the bra \( \bra{i} \) to denote basis vectors in a Hilbert space and its dual space, respectively. These symbols can be composed together in various ways to form more complex expressions. The meaning of these compositions depends on the types of the operands involved.
-For example, the inner product \( \braket{i|j} \) represents the scalar result of the dot product between \( \bra{i} \) and \( \ket{j} \), while the outer product \( \ket{i}\bra{j} \) represents an operator. Additionally, Dirac notation uses the tensor product symbol \( \otimes \) to describe the combined space of multiple quantum systems.
-
-One of the key features of Dirac notation is its order-independent interpretation. This means that the composition of terms can be written without parentheses, as the interpretation is unaffected by the order of multiplication. For instance, the formula \( \bra{i}\ket{\phi}\bra{\psi}\ket{j} \) can be understood as:
-\[
-    \braket{i|\phi}\braket{\psi|j} = \bra{i} (\ket{\phi}\bra{\psi}) \ket{j},
-\]
-and these expressions are equivalent for all variables involved.
-
-In practice, Dirac notation is often combined with other syntactic elements, such as the summation symbol \( \sum_{i \in S} A \), to enhance expressiveness. Furthermore, labelled Dirac notation, such as \( \ket{i}_q \otimes \ket{i}_r \), is used to denote quantum systems in consideration, where subscripts (registers) are added to distinguish different subsystems.
 
 \subsubsection{Universal Algebra}
 We use universal algebra and equational logic to formally represent Dirac notation and the reasoning procedure. A universal algebra defines a signature of function symbols, with terms constructed from constants, variables, and function applications. 
