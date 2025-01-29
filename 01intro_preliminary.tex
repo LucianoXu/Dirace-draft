@@ -117,41 +117,6 @@ Here the identity operator $I$ are inserted in suitable positions to extend the 
 
 
 
-\subsubsection{Use Case}
-\yx{simplify to fit in the motivating section}
-Here we encode the motivating~\Cref{ex: motivating}, examine and explain how it is checked in D-Hammer. The encoding is shown below.
-
-    \begin{lstlisting}[style=dhammer]
-Var T : INDEX. Var M : OTYPE[T, T].
-Def phi := idx T => Sum nv in USET[T], |(nv, nv)>.
-Var r1 : REG[T]. Var r2 : REG[T].
-CheckEq M_r1;r1 (phi T)_(r1, r2) with (TPO T T M)_r2;r2 (phi T)_(r1, r2).
-    \end{lstlisting}        
-
-The first three lines use the \texttt{\textcolor{NavyBlue}{Var}} and \texttt{\textcolor{NavyBlue}{Def}} commands to set up the context for the Dirac notation.
-\texttt{T} is a type index, representing arbitrary Hilbert space types. \texttt{M} is assume to be an operator in the Hilbert space with type \texttt{T}. \texttt{phi} is defined as the maximally entangled state, depending on the bound variable \texttt{T} as index.
-\texttt{r1} and \texttt{r2} are register names for the two subsystems.
-
-In the left hand side of \texttt{\textcolor{NavyBlue}{CheckEq}} command, \texttt{M\_r1;r1} denotes the labelled notation $M_{r_1; r_1}$, and \texttt{(phi T)\_(r1, r2)} denotes the entangled state $\ket{\Phi}_{(r_1, r_2)}$. They are connected by a white space, which is parsed into the composition of Dirac notation, and will be reduced into the operator-ket multiplication after typing. The right hand side is interpreted similarly, except the defined symbol \texttt{TPO} in the environment:
-
-\begin{lstlisting}[style=dhammer]
-Def TPO := idx sigma => idx tau => fun O : OTYPE[sigma, tau] => Sum i in USET[sigma], Sum j in USET[tau], (<i| O |j>).(|j> <i|).
-\end{lstlisting}
-
-The \texttt{TPO} symbol represents the transpose of operators, and encodes the formalization in~\Cref{ex: formalizing motivating}. Thanks to the design of environment and functions, many other commonly used symbols in Dirac notation are encoded and provided as defined symbols in D-Hammer.
-
-Within one second, the prover reports the result of equivalence with their common normal form:
-    \begin{lstlisting}[style=dhammer]
-The two terms are equal.
-[Normalized Term] SUM[USET[T], FUN[BASIS[T], SUM[USET[T], FUN[BASIS[T], SCR[DOT[BRA[$\texttt{\$1}$], MULK[M, KET[$\texttt{\$0}$]]], LTSR[LKET[$\texttt{\$1}$, r1], LKET[$\texttt{\$0}$, r2]]]]]]] : DTYPE[RSET[r1, r2], RSET]
-    \end{lstlisting}
-
-The normal form is in the internal syntax tree format mentioned above. A more readable interpretation is:
-\[
-\sum_{\mathbf{U}(T)} \sum_{\mathbf{U}(T)} \bra{\$1}M\ket{\$ 0} . \ket{\$1}_{r_1} \otimes \ket{\$0}_{r_2} : \DType(\{r_1, r_2\}, \emptyset).
-\]
-Here $\$0$ and $\$1$ are de Bruijn indices. The result is a ket on the $\{r_1, r_2\}$ system as expected, and follows pattern proposed in~\Cref{sec: labelled}.
-
 
 
 

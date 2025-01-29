@@ -4,7 +4,6 @@ We use a typed abstract syntax to represent Dirac notation. The overall system d
 \begin{itemize}
     \item Dirac notation can be divided into four types, namely scalar, ket, bra and operator. Many function symbols have constraints on types. It is important to have a typing system and check the validity of expressions. 
     \item It has functions and higher-order typing. It allows to formally encode defined symbols like transpose or trace, which are usually used to reprensent the term in an abstract manner. 
-    \item We use an abstract syntax for better and simpler representations. It follows the conventional Dirac notation, where we extensively use the composition symbol to denote calculations, and symbols like scalar multiplications for different types are unified as one.
     \item The structures are friendly to optimizations for efficiency. For example, associative and commutative (AC) symbols have indefinite arities, which enables normalization by sorting.
 \end{itemize}
 
