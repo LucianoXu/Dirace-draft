@@ -136,7 +136,21 @@
 \maketitle              % typeset the header of the contribution
 %
 \begin{abstract}
-Dirac notation is a fundamental language in quantum computation and quantum information. Recently, the term rewriting system DiracDec~\cite{diracdec} was introduced to automate equational reasoning with Dirac notation, a critical yet time-intensive task. Building upon DiracDec, this work aims to develop a solver optimized for practical applications. Enhancements include an improved typing system, a simplified language and rewriting system, more efficient algorithms, and added support for labeled Dirac notation. Our solver, D-Hammer, is implemented in \CC\ with a Mathematica backend, demonstrating significant improvements in decision-making power and time efficiency.
+Labelled Dirac notation is a formalism commonly used by physicists to
+represent many-body quantum systems and computer scientists to assert
+properties of quantum programs. Labelled Dirac notation is supported
+by a rich equational theory for proving equality between expressions
+of the language. These proofs are typically carried on pen-and-paper,
+and can be exceedingly long and error-prone. We introduce D-Hammer,
+the first tool to supported automated equational proof for labelled
+Dirac notation. The salient features of D-Hammer are: an expressive,
+higher-order, dependently-typed language for labelled Dirac notation;
+an efficient algorithm to normalize expressions (modulo associativity
+and commutativity); and an optimized \CC\ implementation. We evaluate
+the implementation on representative examples from plain and labelled
+Dirac notation. In the case of plain Dirac notation, we show that our
+implementation significantly outperforms DiracDec (Xu et al, POPL'25).
+  
 
 
 % \keywords{First keyword  \and Second keyword \and Another keyword.}
