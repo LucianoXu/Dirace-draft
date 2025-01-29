@@ -75,31 +75,31 @@ Some typing rules are introduced here.
 The rule for $\DType(s_1, s_2)$ requires that all registers in variable set $s_1$ and $s_2$ are well-typed.
 The rule for $K_R$ demonstrates how a register label is added to the Dirac notation, and the rule for $D^\dagger$ shows that labelled Dirac notation also have symbols for calculation, such as the adjoint.
 \[
-    \frac{E[\Gamma] \vdash  \sigma : \Index}{E[\Gamma] \vdash \reg(\sigma) : \Type}
+    \frac{E \vdash  \sigma : \Index}{E \vdash \reg(\sigma) : \Type}
     \qquad
-    \frac{E[\Gamma] \vdash r : \reg(\sigma_r) \text{ for all $r$ in $s_1$ and $s_2$} }{E[\Gamma] \vdash \DType(s_1, s_2) : \textsf{Type}} 
+    \frac{E \vdash r : \reg(\sigma_r) \text{ for all $r$ in $s_1$ and $s_2$} }{E \vdash \DType(s_1, s_2) : \textsf{Type}} 
 \]
 \[
-    \frac{E[\Gamma] \vdash R : \reg(\sigma)\qquad E[\Gamma] \vdash K : \KType(\sigma)}{E[\Gamma] \vdash K_R : \DType(\var R, \emptyset)}
+    \frac{E \vdash R : \reg(\sigma)\qquad E \vdash K : \KType(\sigma)}{E \vdash K_R : \DType(\var R, \emptyset)}
     \qquad
-    \frac{E[\Gamma] \vdash D : \DType(s_1,s_2)}{E[\Gamma] \vdash D^\dagger : \DType(s_2,s_1)}
+    \frac{E \vdash D : \DType(s_1,s_2)}{E \vdash D^\dagger : \DType(s_2,s_1)}
 \]
 The dot and the tensor product symbols are different from those in unlabelled Dirac notation. Since the goal of labels is to replace the order and structure of tensor products by the reference to registers, the tensor product becomes an AC symbol. The typing still checks whether the component subsystems are disjoint with each other.
 \[
     \frac{
-        E[\Gamma] \vdash D_i : \DType(s_i,s_i') \qquad
+        E \vdash D_i : \DType(s_i,s_i') \qquad
         \bigcap_i s_i = \emptyset \qquad
         \bigcap_i s_i' = \emptyset
     }
-    {E[\Gamma] \vdash D_1 \otimes \cdots \otimes D_i : \DType(\bigcup_i s_i, \bigcup_i s_i')}.
+    {E \vdash D_1 \otimes \cdots \otimes D_i : \DType(\bigcup_i s_i, \bigcup_i s_i')}.
 \]
 As for the dot product, the disjointness is considered except registers contracted by multiplication.
 \[
     \qquad
     \frac{
         \begin{aligned}
-            E[\Gamma] \vdash D_1 : \DType(s_1,s_1') \\
-            E[\Gamma] \vdash D_2 : \DType(s_2,s_2')
+            E \vdash D_1 : \DType(s_1,s_1') \\
+            E \vdash D_2 : \DType(s_2,s_2')
         \end{aligned}
         \qquad 
         \begin{aligned}
@@ -107,7 +107,7 @@ As for the dot product, the disjointness is considered except registers contract
             s_2' \cap s_1' \backslash s_2 = \emptyset
         \end{aligned}
     }
-    {E[\Gamma] \vdash D_1\cdot D_2 : \DType(s_1 \cup (s_2\backslash s_1'), s_2' \cup (s_1'\backslash s_2))}.
+    {E \vdash D_1\cdot D_2 : \DType(s_1 \cup (s_2\backslash s_1'), s_2' \cup (s_1'\backslash s_2))}.
 \]
 
 \subsubsection{Normalization}

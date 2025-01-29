@@ -134,8 +134,8 @@ It can be shown that \( e_1 =_\mathcal{B} e_2 \) if and only if neither \( e_1 <
         \Procedure{Sort}{$e, \mathcal{B}$}
             \If{$e \equiv \lambda x : T . e'$}
                 \State \Return $\lambda x : T . \textsc{Sort}(e')$
-            \ElsIf{$e \equiv \mu x. e'$}
-                \State \Return $\mu x . \textsc{Sort}(e')$
+            \ElsIf{$e \equiv \lambda x : \Index. e'$}
+                \State \Return $\lambda x : \Index . \textsc{Sort}(e')$
             \ElsIf{$e \equiv f(a_1, \cdots, a_n)$}
                 \State $ls := \textsc{Sort}(a_1), \cdots, \textsc{Sort}(a_n)$
                 \State $ls := ls$ sorted by $<_\mathcal{B}$
@@ -147,7 +147,7 @@ It can be shown that \( e_1 =_\mathcal{B} e_2 \) if and only if neither \( e_1 <
 
 After sorting, the next step is the \textit{swap transformation}, which arranges successive summations based on the order of bound variables.
 \begin{definition}[Swap Transformation]
-For a term \( e \) with a sorting result \( \textsc{Sort}(e) \), the swap transformation proceeds by ordering all bound variables according to their first appearances, except in function definitions \( \lambda x \) and \( \mu x \). The swap transformation then reorders the successive summations accordingly.
+For a term \( e \) with a sorting result \( \textsc{Sort}(e) \), the swap transformation proceeds by ordering all bound variables according to their first appearances, except in function definitions \( \lambda x \). The swap transformation then reorders the successive summations accordingly.
 \end{definition}
 
 Take the term $\sum_{i \in s_2} \sum_{j \in s_1} \bra{i} B \ket{j} \times \bra{j} A \ket{i}$ as an example. Its bound variable set $\mathcal{B} = \{i, j\}$. Assume we have $A < B$, then the sorting result will be $\sum_{i \in s_2} \sum_{j \in s_1} \bra{j} A \ket{i} \times \bra{i} B \ket{j}$. Then we decide that the order for bound variables will be $j < i$ because $j$ appears first in the body. Using the swap transformation, the sorted result will be $\sum_{j \in s_1} \sum_{i \in s_2} \bra{j} A \ket{i} \times \bra{i} B \ket{j}$.
@@ -162,7 +162,7 @@ Take the term $\sum_{i \in s_2} \sum_{j \in s_1} \bra{i} B \ket{j} \times \bra{j
 Lastly, we can prove that the equivalence established by this normalization procedure is sound with respect to the semantics.
 
 \begin{theorem}[Soundness]
-    For any well-formed context \( E[\Gamma] \) and well-typed expressions \( e_1 \) and \( e_2 \), if  $e_1$ and $e_2$ have the same normal form, then \( \sem{e_1} = \sem{e_2} \).
+    For any well-formed context \( E \) and well-typed expressions \( e_1 \) and \( e_2 \), if  $e_1$ and $e_2$ have the same normal form, then \( \sem{e_1} = \sem{e_2} \).
 \end{theorem}
 
 \begin{proof}
