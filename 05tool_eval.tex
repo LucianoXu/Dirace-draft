@@ -102,12 +102,12 @@ Here $\$0$ and $\$1$ are de Bruijn indices. The result is a ket on the $\{r_1, r
 
 
 
-\subsubsection{Benchmark performance}
+\subsection{Evaluation}
+We evaluate D-Hammer on several example sets, and make a comparison with the previous tool DiracDec.
+The experiments are carried out using a MacBook Pro with M3 Max chip. See~\Cref{fig: all examples} for a summary.
 
-To evaluate D-Hammer, we first test the examples from DiracDec benchmark and make a comparison.
-The experiments are carried out using a MacBook Pro with M3 Max chip.
 
-\begin{figure}
+\begin{figure}[h]
     \center
     \begin{tabular}{c|c c c|c c c}
         \hline
@@ -117,20 +117,45 @@ The experiments are carried out using a MacBook Pro with M3 Max chip.
         \hline
         textbook(QCQI)          & 18          & 18        &    1.02        &    18      & 18          &   0.82      \\
         CoqQ                    & 162          & 156       &    48.69       &   158     &  158   &     9.74     \\
-        circuits                 & 2          & 2       &    17.67       &   3     &  2   &     1.4     \\
-        research paper                & 4          & 4         &  59.53       &   4    & 4       &  0.73     \\
+        others                  & 7          &  6         &   77.20    &    7        &   6     &  2.13     \\
+        % circuits                 & 2          & 2       &    17.67       &   3     &  2   &     1.4     \\
+        % research paper                & 4          & 4         &  59.53       &   4    & 4       &  0.73     \\
+        labelled Dirac notation      &   -         &   -          &     -           &      -      &        13       &     6.69    \\
         \hline
     \end{tabular}        
-    \caption{For DiracDec, examples that cannot be decided within 60 seconds are not included.}
+    \caption{Summary of all examples evaluated.}
+    \label{fig: all examples}
 \end{figure}
 
-The timing of D-Hammer does not include the initialization of Mathematica kernel link, which takes about 3 seconds in the beginning.
-As to expressibility, the language for DiracDec has the support for projectors $\texttt{fst}$ and $\texttt{snd}$ on basis pairs, satisfying $\texttt{fst} (s, t) = s$ and $\texttt{snd} (s, t) = t$. We found this feature is almost not used, so we removed the support. As a result, D-Hammer encodes 158 examples for the CoqQ part, 4 less than DiracDec. For decidability, we improved the rewriting rules about sum for D-Hammer, and proved several more examples failed by DiracDec. 
-The main difference is about their time efficiency. Because of our algorithm to decide AC-equivalence and SUM-SWAP, D-Hammer has a significant efficiency improvement, especially on those ``computational examples'' mentioned in the DiracDec paper.
-One typical example comes from the paper by Jens about the equivalence of operators for qubits. The system has to decompose the term on the concrete $\ket{0}$ and $\ket{1}$ basis, resulting a lot of addition elements. It takes DiracDec about one minute, but D-Hammer solves it within one second.
+\subsubsection{Textbook (QCQI)}
+The 18 examples of QCQI textbook equations from DiracDec are all encoded and solved. The running time are short and close because these examples are simple and direct.
 
 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{fig/coqq.pdf}
+    \caption{The running time comparison between DiracDec and D-Hammer on the CoqQ benchmark.}
+    \label{fig: CoqQ plot}
+\end{figure}
 
-We also built an example benchmark for labelled Dirac notation, see~\Cref{sec: examples for labelled}.
+\subsubsection{CoqQ}
+As to expressibility, D-Hammer encodes 158 examples for the CoqQ part, 4 less than DiracDec. This is because the language for DiracDec has the support for projectors $\texttt{fst}$ and $\texttt{snd}$ on basis pairs, satisfying $\texttt{fst} (s, t) = s$ and $\texttt{snd} (s, t) = t$. We found this feature is almost not used and removed the support. For decidability, we improved the rewriting rules about sum for D-Hammer, and proved several more examples failed by DiracDec. 
+\Cref{fig: CoqQ plot} shows a direct comparison of their time efficiency.
+We can observe that for small examples, D-Hammer is slower because of the marginal overhead. 
+When the running time goes up, D-Hammer provides 2 to 40 times of acceleration in average.
+The relationship between efficiency improvement and example structure further supports the necessity of our algorithm. 
+We find that examples with great efficiency improvement, e.g. COQQ-129 and COQQ-148 shown in~\Cref{fig: CoqQ plot}, tend to use deeply nested summations, where our algorithm has an effect.
 
-\yx{Mention that our tool can do more complicated examples.}
+\subsubsection{Others}
+Other examples are taken from quantum circuits and one recent paper [TODO]. Because these examples involve decomposition on concrete $\ket{0}$ and $\ket{1}$ qubit basis, resulting a lot of addition elements, our algorithm dealing with AC symbols brings along significant improvement.
+One typical example is
+\begin{gather*}
+    (I \otimes P) \cdot U \cdot (I \otimes P) \cdot U^\dagger = \ket{0}\bra{0} \otimes I + \ket{1}\bra{1}\otimes (P \cdot P), \\
+    \textrm{where } P \triangleq e^{-i\theta/2} \ket{0}\bra{0} + e^{i\theta/2}\ket{1}\bra{1}, \qquad U \triangleq \ket{0}\bra{0} \otimes X + \ket{1}\bra{1} \otimes I.
+\end{gather*}
+It takes DiracDec about one minute, but D-Hammer solves it within one second.
+
+
+\subsubsection{Labelled Dirac Notation}
+We have a new set of examples for labelled Dirac notation, see~\Cref{sec: examples for labelled}.
+These examples use label to express multiplication and summation flexibly. D-Hammer extends these labelled notations to the global system using the algorithm in~\Cref{sec: labelled}, and decide their equivalence within reasonable time. In particular, D-Hammer solved a very sophisticated long example with 7 registers from [LICS...], which is challenging even for experts.
