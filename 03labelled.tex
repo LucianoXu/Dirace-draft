@@ -1,9 +1,62 @@
 
 
+\def\>{\ensuremath{\rangle}}
+\def\<{\ensuremath{\langle}}
+
+\newcommand {\cnot } {{\mathsf{CNOT}}}
+\newcommand {\swap } {{\mathsf{SWAP}}}
+
 % Labelled Dirac Notation
 
 \section{Labelled Dirac Notation}
 \label{sec: labelled}
+
+\subsection{Why Labelled Dirac Notation Important?}
+
+Dirac notation provides an intuitive and concise mathematical expression for describing quantum states and system evolution. However, its description of local evolution in multi-body systems can still be further simplified. For example, when we attempt to describe the local evolution of the (unnormalized) GHZ entangled state on three qubits $p,q,r$ using standard Dirac notation, specifically applying the CNOT gate to $p,r$, we use the formula:
+$$(\cnot\otimes I)(|000\>+|111\>)$$
+and follow the conventions for writing and interpreting it as follows: 1. Arrange $p,q,r$ in the conventional order, 2. Lift the local operation to the global level, i.e., $\cnot\otimes I$ because CNOT acts on $p,r$ (the first and second systems) in sequence, and the operation on $q$ (the third system) is equivalent to identity operation $I$. This is also why we arrange them as $p,r,q$ instead of $p,q,r$.
+We quickly realize that this method becomes involved for complex situations since the conventional order cannot guarantee that 1. the order of all local operations is consistent with it, 2. the local operations involve adjacent qubits in the conventional order, as illustrated below.
+When we continue to apply the CNOT operation to $q,r$ and $p,q$, we need to write it as:
+$${\color{blue}(I\otimes \swap)(\cnot\otimes I)(I\otimes \swap)}{\color{red}(I\otimes (\swap\cdot \cnot\cdot \swap))}(\cnot\otimes I)(|000\>+|111\>),$$
+since: $q,r$ are reversely ordered, so the lift of CNOT on $q,r$ is not $I\otimes \cnot$, but $I\otimes (\swap\cdot \cnot\cdot \swap)$, where SWAP is used to temporarily swap the $q,r$ systems; $p,q$ are not adjacent, and their lift cannot be simply described as the tensor product of CNOT and $I$. Instead, we need to use SWAP to temporarily swap $q,r$, $(I\otimes \swap)(\cnot\otimes I)(I\otimes \swap)$, where $(I\otimes \swap)$ indicates the temporary swap of $q,r$.
+
+This significantly limits the application of standard Dirac notation in multi-body systems. To address this, physicists introduce labels (or subscripts) to indicate the systems on which quantum states or operations are applied, thereby avoiding unnecessary lifting and employment of swap gates. For example, rewriting the above example using labels:
+$$\cnot_{p,q}\cnot_{q,r}\cnot_{p,r}(|000\>_{pqr}+|111\>_{pqr}),$$
+without the need of determining the conventional order nor lifting using additional SWAPs. 
+The introduction of labels allows us to avoid deliberately maintaining the order of qubits. Tensor products become AC symbols, so we can rearrange qubits as needed to perform calculations. For example, we can perform the calculation as follows:
+\begin{align*}
+  &\cnot_{p,q}\cnot_{q,r}\cnot_{p,r}(|000\>_{pqr}+|111\>_{pqr}) \\
+  =\ &\cnot_{p,q}\cnot_{q,r}((\cnot|00\>)_{pr}|0\>_q + (\cnot|11\>)_{pr}|1\>_r) \\
+  =\ &\cnot_{p,q}\cnot_{q,r}(|000\>_{pqr} + |110\>_{pqr}) \\
+  =\ &\cnot_{p,q}((\cnot|00\>)_{qr}|0\>_p + (\cnot|10\>)_{qr}|1\>_p) \\
+  =\ &\cnot_{p,q}(|000\>_{pqr} + |111\>_{pqr}) \\
+  =\ &((\cnot|00\>)_{pq}|0\>_r + (\cnot|11\>)_{pq}|1\>_r) \\
+  =\ &|000\>_{pqr} + |101\>_{pqr}
+\end{align*}
+In addition, it can very freely describe local measurements, partial traces (the state or evolution of subsystems in multi-body systems), and partial inner products (the representation of partial traces in pure states), which are sufficient to handle the mathematical formulas of quantum mechanics in multi-body systems.
+
+Labelled Dirac notation is not only ubiquitous in the description of multi-body systems, but also plays an important role in program logic -- just as in classical program logic, variable names are used to construct logical formulas instead of describing them as global memory functions, in quantum program logic, variable names are used to label the subsystems on which quantum gates act, rather than lifting them to the global system -- the latter would cause exponential length of the formula w.r.t the number of variables, as discussed in \cite{}.
+
+Related Work:
+Labelled Dirac notation vs. graph representation.
+Therefore, in the circuit model, graph structures such as DAG or ZX calculus are often used to describe the evolution of two-qubit gates in multi-qubit systems.
+
+
+what is the labelled dirac notation?
+
+the semantics -- cylinder extension -- uniqueness
+
+\subsection{Syntax, Typing and Rewriting Rules}
+
+syntax -- typing -- rules
+
+\subsection{Normalization}
+
+normalization -- algorithm that eliminate labels
+
+
+
 Labelled Dirac notation uses register names to indicate the quantum system of vectors and operators. This allows us to express and reason aboud the states and operations locally, without referring to the whole system. For instance, assume $Q$ and $R$ are two registers, we have
 \[
     M_Q \cdot \ket{\Phi}_{(Q, R)} = ((M \otimes I) \cdot \ket{\Phi})_{(Q, R)}.
