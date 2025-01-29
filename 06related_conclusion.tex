@@ -1,27 +1,98 @@
-
 \section{Related Work}
+Categorical quantum mechanics (CQM)~\cite{DBLP:conf/lics/AbramskyC04}
+is a category-theoretic foundation for quantum mechanics. CQM is the
+basis of the ZX calculus~\cite{DBLP:conf/icalp/CoeckeD08}, a popular
+graphical calculus for quantum states~\cite{vandewetering2020zx}. A
+key aspect of the ZX calculus and related graphical calculi is that
+they can be equipped with powerful rewriting systems. These systems
+support a form of graph rewriting, i.e.\, they exploit the graph
+representation of quantum states. There exists several completeness
+results for ZX-like rewriting systems, as well as some practical
+tools, such as PyZX~\cite{kissinger2019pyzx}. Similarly, there exist
+completeness results and tools for the sum-over-paths representation
+of quantum states~\cite{amy2018towards,amy2023complete}.
+
+\paragraph*{Comparison with DiracDec~\cite{diracdec}}
+Xu \emph{et al}~\cite{diracdec} define a language and an associate and
+commutative rewriting system for Dirac notation, and implement their
+language and rewriting system in Mathematica. Our approach follows a
+similar pattern. However, there are significant differences in terms
+of scope, expressiveness, and efficiency. We review these differences
+below.
+
+The most obvious difference is that D-Hammer targets labelled Dirac
+notation, whereas DiracDec targets plain Dirac notation. As already
+mentioned, the use of labelled Dirac notation is essential in many
+applications; in particular, labelled Dirac notation can simplify
+notation and proofs, and is in general better suited for writing and
+reasoning about complex, many-body, quantum states. However, there are
+several other important differences. First, our language leverages the
+power of higher-order dependent type theory. In particular, we
+leverage higher-order functions to provide a compact and expressive
+representation of big operators. Second, our language supports AC
+symbols with indefinite arities, which leads to compact representation
+of terms, and eases AC reasoning. Third, the relation with Mathematica
+is fundamentally different. DiracDec is implemented in Mathematica; as
+a consequence, its behavior, and in particular, its typing rules are
+constrained by the type system of Mathematica. In contrast, D-Hammer
+is designed as a separate tool; as a consequence, it benefits from an
+improved representation of terms (e.g.\, AC operators with indefinite
+arity), a more expressive type system (e.g.\, dependent types), and a
+more efficient rewriting engine. D-Hammer still relies on Mathematica
+to reason about functions that are not natively supported by rewriting
+rules, but these interactions are constrained and do not have negative
+effects on the overall efficiency of the system. This is reflected in
+our experimental comparison of D-Hammer and DiracDec, which shows how
+the former outperforms the latter.
 
 
-The first step is to formalize the language for Dirac notation. In DiracDec, the language has a concrete design, where the same syntax for different types corresponds to distinct symbols. Our goal is to transition from this concrete design to a more abstract one, which aligns more closely with the conventional Dirac notation we use and simplifies the term rewriting system.
+%% The first step is to formalize the language for Dirac notation. In DiracDec, the language has a concrete design, where the same syntax for different types corresponds to distinct symbols. Our goal is to transition from this concrete design to a more abstract one, which aligns more closely with the conventional Dirac notation we use and simplifies the term rewriting system.
 
-Automated theorem proving has seen significant advancements in recent years, particularly through the development of satisfiability modulo theories (SMT) solvers,
-% SMT solvers extend propositional satisfiability by integrating theories such as arithmetic, arrays, and bit-vectors, making them suitable for solving a wide range of verification problems in both hardware and software domains. 
-including prominent tools like Z3. These solvers have become essential in various fields such as formal verification, synthesis, and model checking. 
-Equational reasoning is another crucial area of research within automated theorem proving, which focuses on solving problems that involve equations between terms in an algebraic structure. 
-Equational provers, such as Vampire and E, have played a pivotal role in addressing the challenge of proving equations in first-order logic, employing sophisticated algorithms like superposition and term rewriting.
+%% %% Automated theorem proving has seen significant advancements in recent years, particularly through the development of satisfiability modulo theories (SMT) solvers,
+%% %% % SMT solvers extend propositional satisfiability by integrating theories such as arithmetic, arrays, and bit-vectors, making them suitable for solving a wide range of verification problems in both hardware and software domains. 
+%% %% including prominent tools like Z3. These solvers have become essential in various fields such as formal verification, synthesis, and model checking. 
+%% %% Equational reasoning is another crucial area of research within automated theorem proving, which focuses on solving problems that involve equations between terms in an algebraic structure. 
+%% %% Equational provers, such as Vampire and E, have played a pivotal role in addressing the challenge of proving equations in first-order logic, employing sophisticated algorithms like superposition and term rewriting.
 
-Formal verification of quantum computation is receiving increasing attentions during these years. See~\cite{Lewis2023} for a comprehensive review. 
-Verification frameworks in Coq include the foundational formalization CoqQ and quantum circuit language QWIRE. 
-Verifications of quantum programs are also considered, such as the Hoare logic based methods [] and model checking based methods [].
-The equational reasoning of Dirac notation is crucial for establishing property proofs in these works.
-Verification theoreis and tools based on other languages are also proposed, such as PyZX for reasoning and simplification of ZX-calculus.
+%% %% Formal verification of quantum computation is receiving increasing attentions during these years. See~\cite{Lewis2023} for a comprehensive review. 
+%% %% Verification frameworks in Coq include the foundational formalization CoqQ and quantum circuit language QWIRE. 
+%% %% Verifications of quantum programs are also considered, such as the Hoare logic based methods [] and model checking based methods [].
+%% %% The equational reasoning of Dirac notation is crucial for establishing property proofs in these works.
+%% %% Verification theoreis and tools based on other languages are also proposed, such as PyZX for reasoning and simplification of ZX-calculus.
 
 
 
 
 \section{Conclusion and Future Work}
-Based on the first equational reasoning tool for Dirac notation called DiracDec, this work improves and extends the theory for practical applications, and provides the solver D-Hammer. Experiments show that the tool demonstrates advantages in decidability, efficiency and usability. 
+We have designed and implemented D-Hammer, a dependently typed
+higher-order language and proof system for labelled Dirac
+notation. D-Hammer benefits from an optimized implementation in
+\CC\ and a tight integration with Mathematica to reason about a broad
+range of mathematical functions, including trigonometric and
+exponential functions, that are commonly used in quantum physics.
+There are three important directions for future work. The first
+direction is to enhance D-Hammer with support for big tensor notation,
+i.e.\, to support expressions of the form $\bigotimes_{i\in I}
+e_i$. The second direction is to extend D-Hammer with a mechanism to
+generate independently verifiable certificates.  There is a large body
+of work on producing certificates for automated tools, in particular
+SMT solvers; see e.g.~\cite{DBLP:journals/cacm/BarbosaBCDKLNNOPRTZ23}
+for a recent overview. One potential option would be to integrate
+D-Hammer with the Coq or Lean proof assistants; in the first case, one
+would benefit from the formalization of labelled Dirac notation in
+CoqQ~\cite{Zhou2023}, whereas in the second case, one would benefit
+from powerful mechanisms to integrate rewriting procedures into the
+Lean proof assistant. Finally, the third direction is to connect
+D-Hammer with quantum program verifiers. Two potential applications
+are automating equational proofs for tools that already use Dirac
+notation, and to substitute numerical methods for tools that use
+matrices instead of symbolic assertions.
 
-We expect D-Hammer to have applications in areas like quantum program verification or proofs of post-quantum cryptography protocols in the future.
-One promising following up is to connect D-Hammer with theorem provers like Coq. It involves transforming theorem prover expressions into D-Hammer, and verify the proof trace of D-Hammer in theorem provers. Besids, most quantum program verifiers nowadays depend on matrix calculations. D-Hammer can serve as the replacement for matrix methods to enable symbolic deductions.
+
+
+
+%% Based on the first equational reasoning tool for Dirac notation called DiracDec, this work improves and extends the theory for practical applications, and provides the solver D-Hammer. Experiments show that the tool demonstrates advantages in decidability, efficiency and usability. 
+
+%% We expect D-Hammer to have applications in areas like quantum program verification or proofs of post-quantum cryptography protocols in the future.
+%% One promising following up is to connect D-Hammer with theorem provers like Coq. It involves transforming theorem prover expressions into D-Hammer, and verify the proof trace of D-Hammer in theorem provers. Besids, most quantum program verifiers nowadays depend on matrix calculations. D-Hammer can serve as the replacement for matrix methods to enable symbolic deductions.
 
