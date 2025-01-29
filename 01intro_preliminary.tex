@@ -89,35 +89,94 @@ logic~\cite{DBLP:conf/lics/ZhouBHYY21}.
 
 
 \section{Motivation and Preliminaries}
+\subsection{Standard Dirac Notation}
 
+Dirac notation, also known as bra-ket notation, provides an intuitive and concise mathematical framework for describing quantum states and operations in quantum mechanics. 
+We write $\cH$ for a Hilbert space, i.e., a vector space equipped with an standard inner produce $\<\bu,\bv\> \in \bC$ for $\bu,\bv\in\cH$.
+Dirac notation consists of the following components that reflect the basic postulates of quantum mechanics:
+\begin{itemize}
+  \item Ket $|u\>$ is a column vector that denotes a quantum state $\bu$ in the state Hilbert space $\cH$. For example, the computational bases of qubit system are commonly written as $|0\> = \matrix{1 \\ 0}$ and $|1\> = \matrix{0 \\ 1}$.
+  \item Bra $\<u|$ is a row vector, the conjugate transpose of $|u\>$, that denotes the dual state of $|u\>$. 
+  %It is alternative to interpret as a linear mapping from $\cH$ to $\bC$ defined as $\<u| : |v\> \mapsto \<\bu,\bv\>$. It is the conjugate transpose of $|u\>$.
+  For exmaple, $\<0| = \matrix{1 & 0}$ and $\<1| = \matrix{0 & 1}$.
+  \item Inner produce $\<u|v\> \triangleq \<\bu,\bv\>$ which indicates the probability amplitude for $|u\>$ to collapse into $|v\>$. 
+  In convention, it is computed by matrix multiplication of two state, e.g., 
+  $\<0|1\> = \matrix{1 & 0} \matrix{0 \\ 1} = 0.$
+  \item Outer product $|u\>\<v| \triangleq |w\> \mapsto (\<v|w\>) |u\>$. Any linear map, such as unitary tranformation, measurement operators, etc, can be decomposed as the sum of outer products. It is also computed by matrix multiplication, e.g., 
+  $|1\>\<0| = \matrix{0 \\ 1} \matrix{1 & 0}  = \matrix{0 & 0 \\ 1 & 0}.$
+  \item Tensor product $|u\>\otimes|v\>$ (or simply $|u\>|v\>$ or $|uv\>$), $\<u|\otimes\<v|$ (or simply $\<u|\<v|$ or $\<uv|$) for describing the state, dual state and linear map of composite systems respectively. It is computed by the the Kronecker product of matrices, e.g., $\<0|\<1| = {\color{blue}\matrix{1 & 0}}\otimes {\color{red}\matrix{1 & 0}} = \matrix{({\color{blue}1}*{\color{red}1}) & ({\color{blue}1}*{\color{red}0}) & ({\color{blue}0}*{\color{red}1}) & ({\color{blue}0}*{\color{red}0})} = \matrix{1&0&0&0}$.
+\end{itemize}
 
-An interesting property of quantum mechanics is that for two maximally entangled states, applying a quantum operator \( M \) to one subsystem is equivalent to applying \( M^T \) (the transpose of \( M \)) to the other subsystem. This relationship holds regardless of the spatial separation between the two systems, and it can be expressed as an equation in labelled Dirac notation.
+\subsection{Labelled Dirac Notation and Motivating Example}
+
+Unfortunately, the standard Dirac notation becomes unexpectedly tedious for describing multi-body systems. To see this, consider the following example:
 \begin{example}
-    \label{ex: motivating}
-    Let \( q \) and \( r \) represent two quantum systems in the Hilbert space \( \mathcal{H}_T \). Let \( M \) be a quantum operation acting on \( \mathcal{H}_T \), and let \( \ket{\Phi} = \sum_{i \in T} \ket{i} \otimes \ket{i} \) be the maximally entangled state. Then, we have the following equation:
-    \[
-    M_q \ket{\Phi}_{(q, r)} = M_r^T \ket{\Phi}_{(q, r)}.
-    \]
+  \label{example1}
+  Let $p,q,r$ be three qubits and initially in the (unnormalized) $\ghz$ state $|\ghz\> \triangleq |000\>+|111\>$. Show that applying 3-qubit Toffoli gate ($\ccnot$) with control qubits $p,r$ and target qubit $q$ is equivalent to applying 2-qubit $\cnot$ gate with control qubit $r$ or $p$ and target qubit $q$. 
+\end{example}
+We formalize the conclusion using standard Dirac notation as
+\begin{align*}
+  \ccnot|\ghz\> &= (I\otimes \cnot)|\ghz\> \\
+  &= (\swap\otimes I)(I\otimes \cnot)(\swap\otimes I)|\ghz\>
+\end{align*}
+following the steps: 1. Arrange qubits in the conventional order, here we choose $p,r,q$ to simplify the representation of $\ccnot$; 2. Lift the local operation $\cnot$ to the global system. For $\cnot$ acting on $r,q$ is easier, since $r,q$ consistent with the chosen order, and we only need to tensoring it by an identity operator $I$ on $p$, i.e., $(I\otimes \cnot)$.
+For $\cnot$ acting on $p,q$, realize that $p,q$ is not adjacent in the chosen order, we additionally need to use $\swap$ to temporarily exchange the qubits $p$ and $r$, i.e., globally, the $(\swap\otimes I)$ before and after $(I\otimes \cnot)$ (lifting of $\cnot$ on $r,q$).
+
+Roughly speaking, encoding in standard Dirac notation needs to tensoring identity operators and employing additional $\swap$ gates since generally the conventional order cannot guarantee 1. the order of all local operations is consistent with it, 2. the local operations involve only adjacent qubits in the conventional order.
+
+To address this, physicists introduce labels (or subscripts) to indicate the systems on which quantum states or operations are applied, thereby avoiding unnecessary lifting and swap gates. For example, rewriting the above example using labels:
+\begin{align*}
+  \ccnot_{prq}|\ghz\>_{pqr} = 
+  \cnot_{rq}|\ghz\>_{pqr}
+  = \cnot_{pq}|\ghz\>_{pqr}
+\end{align*}
+without determining the conventional order nor lifting using additional $I$ and $\swap$s. 
+The use of labels allows us to avoid deliberately maintaining the order of qubits. Tensor product become an AC symbol, so we can rearrange qubits as needed to perform calculations. For example, we can perform the calculation as follows:
+\begin{align*}
+  &\ccnot_{prq}|\ghz\>_{pqr}
+  = (\ccnot|000\> + \ccnot|111\>)_{prq}
+  = (|000\> + |110\>)_{prq}\\
+  &\cnot_{rq}|\ghz\>_{pqr}
+  = (\cnot|00\>)_{rq}|0\>_p + (\cnot|11\>)_{rq}|1\>_p
+  =(|000\> + |101\>)_{rqp}\\
+  &\cnot_{pq}|\ghz\>_{pqr}
+  = (\cnot|00\>)_{pq}|0\>_r + (\cnot|11\>)_{pq}|1\>_r
+  = (|000\> + |101\>)_{pqr}
+\end{align*}
+where the RHS of each line are equivalent.
+In addition, it can very freely describe local measurements, partial traces (the state or evolution of subsystems in multi-body systems), and partial inner products (the representation of partial traces in pure states), which are sufficient to handle the mathematical formulas of quantum mechanics in multi-body systems.
+
+Labelled Dirac notation is not only ubiquitous in the description of multi-body systems, but also plays an important role in program logic -- just as in classical program logic, variable names are used to construct logical formulas instead of describing them as global memory functions, in quantum program logic, variable names are used to label the subsystems on which quantum gates act, rather than lifting them to the global system -- the latter would cause exponential length of the formula w.r.t the number of variables, as discussed in \cite{}.
+
+We generalize Example \ref{example1} as the motivating example in the following:
+\begin{example}[Apply multiplexer to $\ghz$ state]
+  \label{ex: motivating}
+  Let $p,q,r$ be three quantum systems with the same Hilbert space \( \mathcal{H}_T \) (i.e., with computational bases $\{|i\>\}_{i\in T}$) and GHZ state $\ghz = \sum_i|iii\>\<iii|$. Consider the linear operator sets $U_{ij}$ and the corresponding multiplexers $M\triangleq \sum_{ij}|ij\>\<ij|\otimes U_{ij}$ and $N\triangleq \sum_i|i\>\<i|\otimes U_{ii}$. Show that:
+  $$M_{prq}\ghz_{prq} = N_{rq}|\ghz\>_{pqr} = N_{pq}|\ghz\>_{pqr}.$$
 \end{example}
 
-A little explanation on the notation and terms.
-Quantum states are represented as vectors in complex Hilbert spaces, and operations on these states are described by linear transformations, or operators. Dirac notation uses the ket \( \ket{i} \) and the bra \( \bra{i} \) to denote basis vectors in a Hilbert space and its dual space, respectively. These symbols can be composed together in various ways to form more complex expressions.
-For example, $M \ket{i}$ represents the operator-vector multiplication, and the tensor product \(\ket{i}\otimes\ket{i}\) describes the product state on multiple quantum systems.
+% An interesting property of quantum mechanics is that for two maximally entangled states, applying a quantum operator \( M \) to one subsystem is equivalent to applying \( M^T \) (the transpose of \( M \)) to the other subsystem. This relationship holds regardless of the spatial separation between the two systems, and it can be expressed as an equation in labelled Dirac notation.
+% \begin{example}
+%     \label{ex: motivating}
+%     Let \( q \) and \( r \) represent two quantum systems in the Hilbert space \( \mathcal{H}_T \). Let \( M \) be a quantum operation acting on \( \mathcal{H}_T \), and let \( \ket{\Phi} = \sum_{i \in T} \ket{i} \otimes \ket{i} \) be the maximally entangled state. Then, we have the following equation:
+%     \[
+%     M_q \ket{\Phi}_{(q, r)} = M_r^T \ket{\Phi}_{(q, r)}.
+%     \]
+% \end{example}
+
+% A little explanation on the notation and terms.
+% Quantum states are represented as vectors in complex Hilbert spaces, and operations on these states are described by linear transformations, or operators. Dirac notation uses the ket \( \ket{i} \) and the bra \( \bra{i} \) to denote basis vectors in a Hilbert space and its dual space, respectively. These symbols can be composed together in various ways to form more complex expressions.
+% For example, $M \ket{i}$ represents the operator-vector multiplication, and the tensor product \(\ket{i}\otimes\ket{i}\) describes the product state on multiple quantum systems.
 
 
 
-In this equation, \( q \) and \( r \) are labels denoting the respective subsystems in the Dirac notation. $M_q$ means that the operation $M$ is applied on system $q$, and $\ket{\Phi}_{(q, r)}$ denotes the quantum state $\ket{\Phi}$ on the (ordered) composed system $(q, r)$.
-To reason about their equivalence, we can remove the labels by extending them to the global system $(q, r)$:
-\begin{align}
-    (M \otimes I) \ket{\Phi} = (I \otimes M^T) \ket{\Phi}.
-    \label{eq: motivating unlabelled}
-\end{align}
-Here the identity operator $I$ are inserted in suitable positions to extend the operator $M$, a special case of extending to the global system called cylinder extension.
-
-
-
-
-
+% In this equation, \( q \) and \( r \) are labels denoting the respective subsystems in the Dirac notation. $M_q$ means that the operation $M$ is applied on system $q$, and $\ket{\Phi}_{(q, r)}$ denotes the quantum state $\ket{\Phi}$ on the (ordered) composed system $(q, r)$.
+% To reason about their equivalence, we can remove the labels by extending them to the global system $(q, r)$:
+% \begin{align}
+%     (M \otimes I) \ket{\Phi} = (I \otimes M^T) \ket{\Phi}.
+%     \label{eq: motivating unlabelled}
+% \end{align}
+% Here the identity operator $I$ are inserted in suitable positions to extend the operator $M$, a special case of extending to the global system called cylinder extension.
 
 \subsubsection{Universal Algebra}
 We use universal algebra and equational logic to formally represent Dirac notation and the reasoning procedure. A universal algebra defines a signature of function symbols, with terms constructed from constants, variables, and function applications. 
