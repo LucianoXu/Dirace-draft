@@ -63,23 +63,46 @@ Finally, D-Hammer uses a prover to host the computation. The prover maintains a 
 \end{itemize}
 The prover will type check the terms for each command. We can also use \texttt{\textcolor{NavyBlue}{Normalize} term \textcolor{NavyBlue}{with trace}.} to output the proof trace during normalization. The proof trace is a sequence of records, including the rule or transformation appied, the position of application, and the pre- and post-transformation terms. The record helps understand the normalization procedure better, and can be turned into verified proofs in theorem provers in the future.
 
+\subsection{Equivalence Checking Algorithm}
+
+The equivalence of Dirac notations are decided by normalization, which transforms equivalent expressions under a set of axioms into the same syntax. We use an efficient algorithm to perform the normalization totally on $R \cup F$.
 
 
-\subsubsection{Use Case}
-Here we encode the motivating~\Cref{ex: motivating}, examine and explain how it is checked in D-Hammer. The encoding is shown below.
+\begin{enumerate}
+    \item \textbf{First Rewritings}: Expand definitions and simplify expressions.
+    \item \textbf{Variable Expansion}: Convert to abstract element-wise representation.
+    \item \textbf{Second Rewritings}: Normalize terms on \( R \) modulo \( F \).
+    \item \textbf{Sorting Without Bound Variables}: Normalize AC-equivalence.
+    \item \textbf{Swap Successive Summations}: Normalize SUM-SWAP equivalence.
+    \item \textbf{De Bruijn Normalization}: Normalize \( \alpha \)-equivalence.
+\end{enumerate}
+Here steps 1 - 3 are term rewriting for $R$, and steps 4 - 6 are special algorithms to further normalize the axiom set $F$. Step 2 expands variables like $K$ to their abstract element-wise representation $\sum_{i} (\bra{i} \cdot K). \ket{i}$, which improves the decidability with sum. For step 4 and 5, the key observation is that in a successive sum expression \( \sum_{i \in s_1} \cdots \sum_{j \in s_n} A \), the names and order of the bound variables \( i, \dots, j \) can be freely permuted. Therefore we first ignore bound variables and normalize AC-equivalence by sorting. Then decide the order of summation accordingly. The last step converts functions to de Bruijn indeices~\cite{deBruijn1972lambda} to decide $\alpha$-equivalence.
+
+As a comparison, the previous work conducts normalization paritally on $R$, and decide axioms in $F$ by iterating through all possible permutations.
+Our algorithm totally normalize the term and significantly improves the efficiency.
+\[
+\text{(partial)}\qquad e_1 \mathop{\twoheadrightarrow}^R e_1' \mathop{=}^F e_2' \mathop{\twoheadleftarrow}^R e_2
+\qquad
+\text{(total)}\qquad e_1 \mathop{\twoheadrightarrow}^{R \cup F} e \equiv e \mathop{\twoheadleftarrow}^{R \cup F} e_2
+\]
+
+\yx{we can add a normalization example here.}
+
+\subsection{Use Case}
+Here we encode the motivating~\Cref{ex: motivating}, examine and explain how to check it using D-Hammer. The encoding is shown below.
 
     \begin{lstlisting}[style=dhammer]
 Var T : INDEX. Var M : OTYPE[T, T].
 Def phi := idx T => Sum nv in USET[T], |(nv, nv)>.
 Var r1 : REG[T]. Var r2 : REG[T].
-CheckEq M_r1;r1 (phi T)_(r1, r2) with (TPO T T M)_r2;r2 (phi T)_(r1, r2).
+CheckEq M_r1 (phi T)_(r1, r2) with (TPO T T M)_r2 (phi T)_(r1, r2).
     \end{lstlisting}        
 
 The first three lines use the \texttt{\textcolor{NavyBlue}{Var}} and \texttt{\textcolor{NavyBlue}{Def}} commands to set up the context for the Dirac notation.
 \texttt{T} is a type index, representing arbitrary Hilbert space types. \texttt{M} is assume to be an operator in the Hilbert space with type \texttt{T}. \texttt{phi} is defined as the maximally entangled state, depending on the bound variable \texttt{T} as index.
 \texttt{r1} and \texttt{r2} are register names for the two subsystems.
 
-In the left hand side of \texttt{\textcolor{NavyBlue}{CheckEq}} command, \texttt{M\_r1;r1} denotes the labelled notation $M_{r_1; r_1}$, and \texttt{(phi T)\_(r1, r2)} denotes the entangled state $\ket{\Phi}_{(r_1, r_2)}$. They are connected by a white space, which is parsed into the composition of Dirac notation, and will be reduced into the operator-ket multiplication after typing. The right hand side is interpreted similarly, except the defined symbol \texttt{TPO} in the environment:
+In the left hand side of \texttt{\textcolor{NavyBlue}{CheckEq}} command, \texttt{M\_r1} denotes the labelled notation $M_{r_1}$, and \texttt{(phi T)\_(r1, r2)} denotes the entangled state $\ket{\Phi}_{(r_1, r_2)}$. They are connected by a white space, which is parsed into the composition of Dirac notation, and will be reduced into the operator-ket multiplication after typing. The right hand side is interpreted similarly, except the defined symbol \texttt{TPO} in the environment:
 
 \begin{lstlisting}[style=dhammer]
 Def TPO := idx sigma => idx tau => fun O : OTYPE[sigma, tau] => Sum i in USET[sigma], Sum j in USET[tau], (<i| O |j>).(|j> <i|).
@@ -101,12 +124,11 @@ Here $\$0$ and $\$1$ are de Bruijn indices. The result is a ket on the $\{r_1, r
 
 
 
-\subsection{Evaluation}
+\section{Evaluation}
 We evaluate D-Hammer on several example sets, and make a comparison with the previous tool DiracDec~\cite{diracdec}.
-The experiments are carried out using a MacBook Pro with M3 Max chip. See~\Cref{fig: all examples} for a summary.
+The experiments are carried out using a MacBook Pro with M3 Max chip. Results are summarized as follows.
 
-
-\begin{figure}[h]
+{
     \center
     \begin{tabular}{c|c c c|c c c}
         \hline
@@ -119,12 +141,10 @@ The experiments are carried out using a MacBook Pro with M3 Max chip. See~\Cref{
         % others                  & 7          &  6         &   77.20    &    7        &   6     &  2.13     \\
         % circuits                 & 2          & 2       &    17.67       &   3     &  2   &     1.4     \\
         % research paper                & 4          & 4         &  59.53       &   4    & 4       &  0.73     \\
-        labelled Dirac notation      &   -         &   -          &     -           &      -      &        13       &     6.69    \\
+        labelled Dirac notation      &   -         &   -          &     -           &      -      &        18       &     22.72    \\
         \hline
     \end{tabular}        
-    \caption{Summary of all examples evaluated.}
-    \label{fig: all examples}
-\end{figure}
+}
 
 \subsubsection{Textbook (QCQI)}
 The 18 examples of QCQI textbook equations from DiracDec are all encoded and solved. The running time are short and close because these examples are simple and direct.
@@ -156,6 +176,31 @@ We find that examples with great efficiency improvement, e.g. COQQ-129 and COQQ-
 
 
 \subsubsection{Labelled Dirac Notation}
-We have a new set of examples for labelled Dirac notation, see~\Cref{sec: examples for labelled}.
-These examples comes from multiple sources, including 
-These examples use label to express multiplication and summation flexibly. D-Hammer extends these labelled notations to the global system using the algorithm in~\Cref{sec: labelled}, and decide their equivalence within reasonable time. In particular, D-Hammer solved a very sophisticated long example with 7 registers from [LICS...], which is challenging even for experts.
+We present a new set of examples for labelled Dirac notation (LDN), as detailed in~\Cref{sec: examples for labelled}. These examples, illustrated in~\Cref{fig: labelled examples}, include six representative cases drawn from a variety of sources, such as well-established theorems, research paper results, quantum circuit equivalence, and quantum program verification.
+D-Hammer normalizes them and successfully checks their equivalence using the algorithm in~\Cref{sec: labelled}.
+Among the examples, LDN-12 shows the flexibility in combining labelled Dirac notations.
+Example LDN-14 and LDN-18 are about circuits or programs on qubits. LDN-14 shows how to calculate controlled-not gate in different ways. In LDN-18, $q, q_1$ and $q_2$ represent variables for quantum programs, and the equation shows the change of the state after applying $X$ gate on $q_2$. Experiments show that our algorithm is relatively inefficient for labelled Dirac notations based on qubits.
+
+It is a noteworthy result that D-Hammer solved LDN-10, a highly complex and lengthy example. It is a theorem on quantum separation logic from~\cite{DBLP:conf/lics/ZhouBHYY21}, and is challenging to prove even for experts. Notice that 7 registers are involved here, and it would be impractical to organize and referring to the subsystems without using labels.
+
+\begin{figure}[h]
+    \center
+    % \scriptsize
+    \setlength{\extrarowheight}{2pt}
+    \begin{tabular}{l c c l}
+        \hline
+        example & source & time(s) & equation \\
+        \hline
+        LDN-4 & theorem & 0.03 & \( \bra{\Phi}_{(x, y)} M_y \cdot N_x \ket{\Phi}_{(x, y)} = \mathrm{tr}(M^T N) \) \\
+        LDN-10 & paper~\cite{DBLP:conf/lics/ZhouBHYY21} & 5.17 & \( \mathrm{tr}_{((a',(b,b')),c')}\Big[\mathrm{tr}_{r}\Big(U_{(r,(a,b))} \cdot\Big(|s\>_r\<s|\otimes 
+        \Big[V_{((a',(b,b')),c')} \cdots \)\\
+        LDN-11 & paper~\cite{PALSBERG2024206} & 0.12 & \( U_{(a,b)}\cdot W_{(b,c)}\cdot V_{(a,c)} = 
+        \sum_i |i\>_a\<i|\otimes \big((P_i)_c\cdot W_{(b,c)}\cdot (Q_i)_c\big)\) \\
+        LDN-12 & circuit & 0.07 & \( \ket{i}_{a;b}\bra{j} \cdot C_{(b,c)} \cdot D_{(c,d)} = {}_b\bra{j} \cdot C_{(b,c)} \cdot D_{(c,d)} \cdot \ket{i}_{a}\) \\
+        LDN-14 & circuit & 7.37 & \scriptsize{\( \textsf{CNOT}_{rq}\ket{\textrm{GHZ}}_{pqr} = (\textsf{CNOT}\ket{00})_{rq}\ket{0}_p + (\textsf{CNOT}\ket{11})_{rq}\ket{1}_p \)} \\
+        LDN-18 & program & 1.01 & \( -\ket{0}_q\ket{+-}_{q_1, q_2} = X_{q_2} \ket{0}_q\ket{+-}_{q_1, q_2} \) \\
+        \hline
+    \end{tabular}
+    \caption{Part of examples for labelled Dirac notations.}
+    \label{fig: labelled examples}
+\end{figure}

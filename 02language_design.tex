@@ -125,7 +125,7 @@ The idea behind the interpretation of types and terms is to formalize the typing
     The proof follows directly by checking each case.
 \end{proof}
 
-This interpretation formalizes the standard understanding of Dirac notation and provides the foundation for the algorithm. However, computers cannot directly reason about equivalence through mathematical interpretations. Therefore, we proceed by defining a proof system that abstracts these concepts.
+This interpretation formalizes the standard understanding of Dirac notation and provides the foundation for the algorithm. However, computers cannot directly reason about equivalence through mathematical interpretations. We proceed by defining a proof system that abstracts these concepts.
 
 
 
@@ -154,26 +154,28 @@ The scalar theories are treated separately as a module and are not considered in
 
 These equational axioms provide an operable theory for the proof automation algorithm. Denotational semantics can be seen as one model for this theory, meaning that equivalences derived from the axioms always imply equivalence in the interpretations.
 \begin{lemma}
-    For all well-formed contexts \( E \) and terms \( e_1, e_2 \), if \( \vdash e_1 = e_2 \), then \( \sem{e_1} = \sem{e_2} \).
+    For all well-formed contexts \( E \) and terms \( e_1, e_2 \), if \( E \vdash e_1 = e_2 \), then \( \sem{e_1} = \sem{e_2} \).
 \end{lemma}
 \begin{proof}
     This follows directly from checking all cases.
 \end{proof}
 
-% With these syntax, typing and semantics introduced, we demonstrate the formalization of the symbols used in the motivating example to conclude this section.
-% \begin{example}[Formalizing the Motivating Example]
-%     \label{ex: formalizing motivating}
-%     Definitions and assumptions in the environment \( E \) are formalized as follows:
-%     \begin{align*}
-%         & \text{TPO} && := \lambda T_1 : \Index. \lambda T_2 : \Index. \lambda O : \OType(T_1, T_2). \sum_{i \in \mathbf{U}(T_1)} \sum_{j \in \mathbf{U}(T_2)} \bra{i} O \ket{j} . \ket{j}\bra{i} \\
-%         & &&\quad : \forall T_1. \forall T_2. \OType(T_1, T_2) \to \OType(T_2, T_1); \\
-%         &\text{phi} &&:= \lambda T : \Index. \sum_{i \in \mathbf{U}(T)} \sum_{j \in \mathbf{U}(T)} \ket{(i, j)} : \forall T.\KType(T \times T); \\
-%         & T && : \Index; \\
-%         & M && : \OType(T, T).
-%     \end{align*}
-%     The symbol \( \text{TPO} \) represents the transpose of an operator, polymorphic on the Hilbert spaces \( T_1 \) and \( T_2 \). The symbol \( \text{phi} \) takes the index \( T \) and defines the maximally entangled states, summing over all basis elements in \( T \), as indicated by the universal set \( \mathbf{U}(T) \).
-%     With the assumption of the index \( T \) and operator \( M \), we can express the equivalence in the non-labelled version as:
-%     \[
-%     (\textrm{M} \otimes \mathbf{1}_\mathcal{O}(\textrm{T})) \cdot (\textrm{phi T}) = (\mathbf{1}_\mathcal{O}(\textrm{T}) \otimes (\textrm{TPO T T M})) \cdot (\textrm{phi T}).
-%     \]
-% \end{example}
+With these syntax, typing and semantics introduced, we demonstrate the formalization of the symbols used in the motivating example to conclude this section.
+\begin{example}[Formalizing the Motivating Example]
+    \label{ex: formalizing motivating}
+    Definitions and assumptions in the environment \( E \) are formalized as follows:
+    \begin{align*}
+        & \text{TPO} && := \lambda T_1 : \Index. \lambda T_2 : \Index. \lambda O : \OType(T_1, T_2). \sum_{i \in \mathbf{U}(T_1)} \sum_{j \in \mathbf{U}(T_2)} \bra{i} O \ket{j} . \ket{j}\bra{i} \\
+        & &&\quad : \forall T_1. \forall T_2. \OType(T_1, T_2) \to \OType(T_2, T_1); \\
+        &\text{phi} &&:= \lambda T : \Index. \sum_{i \in \mathbf{U}(T)} \sum_{j \in \mathbf{U}(T)} \ket{(i, j)} : \forall T.\KType(T \times T); \\
+        & T && : \Index; \\
+        & M && : \OType(T, T).
+    \end{align*}
+    Notice how the functions and higher-order typing helps to formalize the abstract concepts here.
+    The symbol \( \text{TPO} \) represents the transpose of an operator, polymorphic on the Hilbert spaces \( T_1 \) and \( T_2 \). And its type \(\forall T_1. \forall T_2. \OType(T_1, T_2) \to \OType(T_2, T_1)\) suggests that TPO is a function from operators to operators, depending on the index $T_1$ and $T_2$.
+    The symbol \( \text{phi} \) takes the index \( T \) and defines the maximally entangled states, summing over all basis elements in \( T \), as indicated by the universal set \( \mathbf{U}(T) \).
+    With the assumption of the index \( T \) and operator \( M \), we can express the equivalence in the plain Dirac notation as:
+    \[
+    (\textrm{M} \otimes \mathbf{1}_\mathcal{O}(\textrm{T})) \cdot (\textrm{phi T}) = (\mathbf{1}_\mathcal{O}(\textrm{T}) \otimes (\textrm{TPO T T M})) \cdot (\textrm{phi T}).
+    \]
+\end{example}
