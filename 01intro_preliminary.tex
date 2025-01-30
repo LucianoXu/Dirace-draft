@@ -183,9 +183,9 @@ of quantum mechanics in multi-body systems.
 
 Labelled Dirac notation is not only ubiquitous in the description of multi-body systems, but also plays an important role in program logics. Just as in classical program logic, variable names are used to construct logical formulas instead of describing them as global memory functions, in quantum program logic, variable names are used to label the subsystems on which quantum gates act, rather than lifting them to the global system. Indeed, the latter would cause exponential length of the formula w.r.t the number of variables, as discussed in [cite].
 
-The next sections introduce labelled Dirac notation, and an automated
-procedure for proving equalities. 
-Instead of GHZ state in Example \ref{example1}, we will use a similar but simpler example on Bell state as motivating example:
+The next sections introduce the formal language, labelled Dirac notation and the systematical way to reduce labels and prove equalities. 
+For this purpose, we use the following motivating example as the main role in our explanations.
+Instead of GHZ states, it is a similar but simpler example on Bell states:
 \begin{example}
     \label{ex: motivating}
     Let \( q \) and \( r \) represent two quantum systems in the Hilbert space \( \mathcal{H}_T \). Let \( M \) be a quantum operation acting on \( \mathcal{H}_T \), and let \( \ket{\Phi} = \sum_{i \in T} \ket{i} \otimes \ket{i} \) be the maximally entangled state. Then, it holds that
@@ -193,6 +193,12 @@ Instead of GHZ state in Example \ref{example1}, we will use a similar but simple
     M_q \ket{\Phi}_{(q, r)} = M_r^T \ket{\Phi}_{(q, r)}.
     \]
 \end{example}
+Following the introduction on labels, we can consider the global system $(q,r)$ and transform the equation above into the plain Dirac notation:
+\begin{align}
+    (M \otimes I) \ket{\Phi} = (I \otimes M^T) \ket{\Phi}.
+    \label{eq: motivating plain}
+\end{align}
+Together with corresponding explanations for this example, we show how an automated system is built and used to solve equalities likewise.
 
 % We will use the following
 % generalization of Example \ref{example1} as motivating example:
