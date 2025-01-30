@@ -154,12 +154,12 @@ The third line gives the typing of labelled tensoring with a check whether the c
 \begin{definition}[Cylindrical Extension]
   For any $D : \cD(s_1,s_2)$ and $s$ that disjoint with both $s_1$ and $s_2$, we define $\cl(D,s) \triangleq D\otimes \mathbf{1}_{s}$ of type $\cD(s_1\cup s, s_2\cup s)$.
 \end{definition}
-Formally, we equip $\cR$ with a default order, say for example the alphabetical order of names. For any valid register $R$, there exists the operator $\swap_R$ that sorts $R$; for example, if $E\vdash p : \reg(\sigma_p)$ and $E\vdash q : \reg(\sigma_q)$, then $\swap_{(q,p)} \triangleq \sum_{i\in \bU(\sigma_p)}\sum_{j\in \bU(\sigma_q)}|i\>\<j|\otimes |j\>\<i|$. We can further define $\swap_{s_1,s_2,\cdots}$ for merging disjoint sets orderly.
+Formally, we equip $\cR$ with a default order, say for example the alphabetical order of names. For any valid register $R$, there exists the operator $\Swap_R$ that sorts $R$; for example, if $E\vdash p : \reg(\sigma_p)$ and $E\vdash q : \reg(\sigma_q)$, then $\Swap_{(q,p)} \triangleq \sum_{i\in \bU(\sigma_p)}\sum_{j\in \bU(\sigma_q)}|i\>\<j|\otimes |j\>\<i|$. We can further define $\Swap_{s_1,s_2,\cdots}$ for merging disjoint sets orderly.
 
 For any interpretation $\sem{\cdot}$, and write $\cH_{\sem{s}} \triangleq \bigotimes_{r\in s}\cH_{\sem{\sigma_r}}$ for any $s\subseteq \cR$, where $E\vdash r : \reg(\sigma_r)$ for all $r\in\cR$. We interpret labelled Dirac notations inductively as (see details in Appendix) : assume $E\vdash D_i : \cD(s_i,s'_i)$ in the following,
 \begin{itemize}
-  \item $\sem{|i\>_r} = |\sem{i}\>$; $\sem{K_R} = \swap_R \cdot \sem{K}$; $\sem{O_{R_1,R_2}} = \swap_{R_1}\cdot \sem{O}\cdot \swap_{R_2}$;
-  \item $\sem{D_1\otimes \cdots \otimes D_n} = \swap_{s_1,\cdot,s_n}\cdot (\sem{D_1}\otimes \cdots \otimes \sem{D_1})\cdot \swap_{s'_1,\cdot,s'_n}$;
+  \item $\sem{|i\>_r} = |\sem{i}\>$; $\sem{K_R} = \Swap_R \cdot \sem{K}$; $\sem{O_{R_1,R_2}} = \Swap_{R_1}\cdot \sem{O}\cdot \Swap_{R_2}$;
+  \item $\sem{D_1\otimes \cdots \otimes D_n} = \Swap_{s_1,\cdot,s_n}\cdot (\sem{D_1}\otimes \cdots \otimes \sem{D_1})\cdot \Swap_{s'_1,\cdot,s'_n}$;
   \item $\sem{D_1\cdot D_2} = \sem{\cl(D_1, s_2\backslash s'_1)}\cdot \sem{\cl(D_2, s'_1\backslash s_2)}$. Note that $s_2\backslash s'_1$ and $s'_1\backslash s_2$ are the minimal extension that make it interpretable. E.g., to interpret ${}_p\<i|\cdot |j\>_{p,q}$, we at least need to extend ${}_p\<i|$ to ${}_p\<i|\otimes I_{q}$.
 \end{itemize}
 Thus, $\sem{D}$ is a linear map from $\cH_{\sem{s'}}$ to $\cH_{\sem{s}}$ given $E\vdash D : \cD(s,s')$. Following the semantics, labelled tensor is independent of its order, i.e., $\sem{D_1\otimes D_2} = \sem{D_2\otimes D_1}$ and $\sem{D_1\otimes (D_2\otimes D_3)} = \sem{(D_1\otimes D_2)\otimes D_3}$, which ensures the soundness of treating labelled tensor as an AC symbol.

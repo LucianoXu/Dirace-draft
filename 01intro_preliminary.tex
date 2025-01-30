@@ -115,6 +115,19 @@ of quantum mechanics:
 Labelled Dirac notation is a generalization of Dirac notation for
 describing multi-body quantum systems. The need for labelled Dirac
 notation is motivated by the following example:
+
+% \begin{figure}[t]
+% \begin{quantikz}
+%   & \gate{X} & \ctrl{1} & \\
+%   & & \targ{} &
+%   \end{quantikz}
+%   =\begin{quantikz}
+%   & \ctrl{1} & \gate{X} & \\
+%   & \targ{} & \gate{X} &
+%   \end{quantikz}
+%   \end{figure}
+
+
 \begin{example}
   \label{example1}
   Let $p,q,r$ be three qubits and initially in the (unnormalized)
@@ -125,8 +138,30 @@ notation is motivated by the following example:
   Using Dirac notation, the identity is written as:
 \begin{align*}
   \ccnot|\ghz\rangle &= (I\otimes \cnot)|\ghz\rangle \\
-  &= (\swap\otimes I)(I\otimes \cnot)(\swap\otimes I)|\ghz\rangle
+  &= (\Swap\otimes I)(I\otimes \cnot)(\Swap\otimes I)|\ghz\rangle
 \end{align*}
+which might be illustrated by the following circuit models.
+\begin{figure}[h]
+  % \begin{minipage}{0.48\linewidth}
+      \centering
+      \vspace{-0.5cm}
+      \begin{quantikz}[column sep=0.1em, row sep=0em]
+      \lstick{$p\qquad\qquad $} & \lstick{} &[0.2cm] & \ctrl{1} & [0.2cm] &  \quad \ \ \;\! \quad\qquad\quad & 
+      &[0.2cm] & & [0.2cm] & \quad \ \ \;\! \quad\qquad\quad & 
+      &[0.2cm] & \gate[2,swap,style={dashed}]{} & [0.2cm] & [0.2cm]\gate[2,swap,style={dashed}]{} & [0.2cm] & \\[-0.1cm]
+      \lstick{$r\qquad\qquad $} & \lstick{$|\ghz\>$} & & \ctrl{1} & & \quad = \quad\qquad\quad & \lstick{$|\ghz\>$} 
+      & & \ctrl{1} & & \quad = \quad\qquad\quad & \lstick{$|\ghz\>$}
+      & & & \ctrl{1} & & & \\
+      \lstick{$q\qquad\qquad $} & \lstick{} & & \targ{} & & \quad \ \ \;\! \quad\qquad\quad & 
+      & & \targ{} & & \quad \ \ \;\! \quad\qquad\quad &
+      & & & \targ{} & & & \\
+      \end{quantikz}
+      \vspace{-0.5cm}
+      % \vspace{-0.7em}
+      % \caption{Circuit computing the last bit of $a+(011)_2$.}
+      % \label{fig:addition}
+  %  \end{minipage}
+  \end{figure}
 Formalizing the statement in Dirac notation requires the following
 steps: 1. Arrange qubits in the conventional order, here we choose
 $p,r,q$ to simplify the representation of $\ccnot$; 2. Lift the local
@@ -134,15 +169,15 @@ operation $\cnot$ to the global system. For $\cnot$ acting on $r,q$ is
 easier, since $r,q$ consistent with the chosen order, and we only need
 to tensoring it by an identity operator $I$ on $p$, i.e., $(I\otimes
 \cnot)$.  For $\cnot$ acting on $p,q$, realize that $p,q$ is not
-adjacent in the chosen order, we additionally need to use $\swap$ to
+adjacent in the chosen order, we additionally need to use $\Swap$ to
 temporarily exchange the qubits $p$ and $r$, i.e., globally, the
-$(\swap\otimes I)$ before and after $(I\otimes \cnot)$ (lifting of
+$(\Swap\otimes I)$ before and after $(I\otimes \cnot)$ (lifting of
 $\cnot$ on $r,q$).
 
 
 
 Roughly speaking, encoding in standard Dirac notation needs to
-tensoring identity operators and employing additional $\swap$ gates
+tensoring identity operators and employing additional $\Swap$ gates
 since generally the conventional order cannot guarantee 1. the order
 of all local operations is consistent with it, 2. the local operations
 involve only adjacent qubits in the conventional order.
@@ -158,7 +193,7 @@ yields:
   = \cnot_{pq}|\ghz\rangle_{pqr}
 \end{align*}
 This formalization avoids determining and maintaining the conventional
-order of qubits. nor lifting using additional $I$ and $\swap$s. In
+order of qubits, nor lifting using additional $I$ and $\Swap$s. In
 this setting, the tensor products become an associative and
 commutative (AC) symbol, so we can rearrange qubits as needed to
 perform calculations. For our example, we can perform the calculation as
