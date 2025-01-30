@@ -1317,7 +1317,7 @@ This section includes all the rewriting rules used in the system. Related rules 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Efficient Algorithm for Equivalence Checking}
+\section{Efficient Algorithm for Deciding the equivalence}
 \label{sec: decide}
 The equivalence of Dirac notations are decided by normalization, which transforms equivalent expressions under a set of axioms into the same syntax. For the entire axiom set $R \cup F$ of Dirac notation, the previous algorithm conducts normalization partially on $R$ by term rewriting modulo $F$, and axioms in $F$ are checked by iterating through all permutations. This direct solution has factorial compleixty on maximum number of AC symbol arguemnts, and is observed to be critical to the low efficiency. Here we propose an efficient algorithm to perform total nomralization on $R \cup F$, and their comparison are illustrated below.
 \[

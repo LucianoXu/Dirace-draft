@@ -154,16 +154,17 @@ The scalar theories are treated separately as a module and are not considered in
 
 These equational axioms provide an operable theory for the proof automation algorithm. Denotational semantics can be seen as one model for this theory, meaning that equivalences derived from the axioms always imply equivalence in the interpretations.
 \begin{lemma}
+    \label{lem: axiom sound}
     For all well-formed contexts \( E \) and terms \( e_1, e_2 \), if \( E \vdash e_1 = e_2 \), then \( \sem{e_1} = \sem{e_2} \).
 \end{lemma}
 \begin{proof}
     This follows directly from checking all cases.
 \end{proof}
 
-With these syntax, typing and semantics introduced, we demonstrate the formalization of the symbols used in the motivating example to conclude this section.
-\begin{example}[Formalizing the Motivating Example]
+With these syntax, typing and semantics introduced, we can formalize~\Cref{eq: motivating plain}, the motivating~\Cref{ex: motivating} in plain Dirac notation.
+\begin{example}[Motivating Example Formalization]
     \label{ex: formalizing motivating}
-    Definitions and assumptions in the environment \( E \) are formalized as follows:
+    Definitions and assumptions in the context \( E \) are formalized as follows:
     \begin{align*}
         & \text{TPO} && := \lambda T_1 : \Index. \lambda T_2 : \Index. \lambda O : \OType(T_1, T_2). \sum_{i \in \mathbf{U}(T_1)} \sum_{j \in \mathbf{U}(T_2)} \bra{i} O \ket{j} . \ket{j}\bra{i} \\
         & &&\quad : \forall T_1. \forall T_2. \OType(T_1, T_2) \to \OType(T_2, T_1); \\
@@ -179,3 +180,49 @@ With these syntax, typing and semantics introduced, we demonstrate the formaliza
     (\textrm{M} \otimes \mathbf{1}_\mathcal{O}(\textrm{T})) \cdot (\textrm{phi T}) = (\mathbf{1}_\mathcal{O}(\textrm{T}) \otimes (\textrm{TPO T T M})) \cdot (\textrm{phi T}).
     \]
 \end{example}
+
+
+
+\subsection{Algorithm to Decide Equivalence}
+
+The equivalence of Dirac notations are decided by normalization, which transforms equivalent expressions under a set of axioms into the same syntax. We use an efficient algorithm to perform the normalization totally on $R \cup F$.
+
+\begin{enumerate}
+    \item \textbf{First Rewritings}: Expand definitions and simplify expressions.
+    \item \textbf{Variable Expansion}: Convert to abstract element-wise representation.
+    \item \textbf{Second Rewritings}: Normalize terms on \( R \) modulo \( F \).
+    \item \textbf{Sorting Without Bound Variables}: Normalize AC-equivalence.
+    \item \textbf{Swap Successive Summations}: Normalize SUM-SWAP equivalence.
+    \item \textbf{De Bruijn Normalization}: Normalize \( \alpha \)-equivalence.
+\end{enumerate}
+
+Here steps 1 - 3 are term rewriting for $R$. 
+Term rewriting reduces a term repeatedly using a set of rules in the form of $l\ \reduce\ r$. The reduction proceeds by matching the subterms with the left-hand side, and replacing it with the right-hand side. 
+For example, the rule $a.K + K\ \reduce\ (a + 1).K$ matches the term $(x\times y) . \ket{t} + \ket{t}$ by the substitution $\{a \to  x\times y, K \to \ket{t}\}$, and is rewritten into $(x\times y + 1) . \ket{t}$.
+Step 1 and 3 uses the same set of rewriting rules, see~\Cref{sec: rewriting rules}.
+Step 2 expands variables like the ket $K$ to their abstract element-wise representation $\sum_{i} (\bra{i} \cdot K). \ket{i}$, which improves the decidability with sum. 
+
+
+Steps 4 - 6 are special algorithms to further normalize the axiom set $F$.
+Here the main difficulty is the coexistence of AC-equivalence and SUM-SWAP, so that naive sorting will not convert equivalent terms to the same form.
+For step 4 and 5, the key observation is that in a successive sum expression \( \sum_{i \in s_1} \cdots \sum_{j \in s_n} A \), the names and order of the bound variables \( i, \dots, j \) can be freely permuted. Therefore we first ignore bound variables and normalize AC-equivalence by sorting. Then the order of summation can be decided accordingly. The last step converts functions to de Bruijn indices~\cite{deBruijn1972lambda} to decide $\alpha$-equivalence. For detailed descriptions, see~\Cref{sec: decide}.
+
+As a comparison, the previous work conducts normalization paritally on $R$, and decide axioms in $F$ by iterating through all possible permutations.
+Our algorithm totally normalize the term, as is illustrated below.
+\[
+\text{(partial)}\qquad e_1 \mathop{\twoheadrightarrow}^R e_1' \mathop{=}^F e_2' \mathop{\twoheadleftarrow}^R e_2
+\qquad
+\text{(total)}\qquad e_1 \mathop{\twoheadrightarrow}^{R \cup F} e \equiv e \mathop{\twoheadleftarrow}^{R \cup F} e_2
+\]
+While the permutation checking algorithm has factorial complexity on the number of AC symbol arguments, our algorithm uses normalization by sorting, and the complexity is polynomial on the term size. This improvement in efficiency is also confirmed by experiments.
+
+
+% Lastly, we can prove that the equivalence established by this normalization procedure is sound with respect to the semantics.
+
+% \begin{theorem}[Soundness]
+%     For any well-formed context \( E \) and well-typed expressions \( e_1 \) and \( e_2 \), if  $e_1$ and $e_2$ have the same normal form, then \( \sem{e_1} = \sem{e_2} \).
+% \end{theorem}
+% \begin{proof}
+%     Because of~\Cref{lem: axiom sound}, we only need to prove soundness with respect to axioms. 
+%     This is because the term rewriting procedure follows from the fact that each rewriting rule preserves equivalence. Furthermore, the operations in the sort and swap transformations respect the AC-equivalence and SUM-SWAP axioms. Finally, the de Bruijn normalization ensures soundness for \( \alpha \)-equivalence.
+% \end{proof}

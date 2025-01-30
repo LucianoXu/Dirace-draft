@@ -1,8 +1,9 @@
 
 \section{Implementation and Case Study}
-The refinements and extensions above concludes in our implementation called D-Hammer, a solver written in \CC. It has a parser built by ANTLR4, and scalar reasonings are powered by a Mathematica kernel. The user can use commands to make definitions and assumptions in the maintained context, conduct the normalization and equivalence checking, and obtain the rewriting trace output. 
+The improvement and extensions above concludes in our implementation called D-Hammer, a solver written in \CC. It has a parser built by ANTLR4, and scalar reasonings are powered by a Mathematica kernel. The user can use commands to make definitions and assumptions in the maintained context, conduct the normalization and equivalence checking, and obtain the rewriting trace output. 
 It can be used from the command line interactively, or can be integrated into other \CC\ projects as a library.
 This implementation is tested on the benchmark of the previous work and new examples for labelled Dirac notation, demonstrating significant improvement in expressivity and efficiency. 
+The tool and example encodings will be open-source and public available.
 
 \subsubsection{Project Structure}
 The project structure is illustrated in~\Cref{fig: dhammer structure}.
@@ -63,33 +64,9 @@ Finally, D-Hammer uses a prover to host the computation. The prover maintains a 
 \end{itemize}
 The prover will type check the terms for each command. We can also use \texttt{\textcolor{NavyBlue}{Normalize} term \textcolor{NavyBlue}{with trace}.} to output the proof trace during normalization. The proof trace is a sequence of records, including the rule or transformation appied, the position of application, and the pre- and post-transformation terms. The record helps understand the normalization procedure better, and can be turned into verified proofs in theorem provers in the future.
 
-\subsection{Equivalence Checking Algorithm}
 
-The equivalence of Dirac notations are decided by normalization, which transforms equivalent expressions under a set of axioms into the same syntax. We use an efficient algorithm to perform the normalization totally on $R \cup F$.
-
-
-\begin{enumerate}
-    \item \textbf{First Rewritings}: Expand definitions and simplify expressions.
-    \item \textbf{Variable Expansion}: Convert to abstract element-wise representation.
-    \item \textbf{Second Rewritings}: Normalize terms on \( R \) modulo \( F \).
-    \item \textbf{Sorting Without Bound Variables}: Normalize AC-equivalence.
-    \item \textbf{Swap Successive Summations}: Normalize SUM-SWAP equivalence.
-    \item \textbf{De Bruijn Normalization}: Normalize \( \alpha \)-equivalence.
-\end{enumerate}
-Here steps 1 - 3 are term rewriting for $R$, and steps 4 - 6 are special algorithms to further normalize the axiom set $F$. Step 2 expands variables like $K$ to their abstract element-wise representation $\sum_{i} (\bra{i} \cdot K). \ket{i}$, which improves the decidability with sum. For step 4 and 5, the key observation is that in a successive sum expression \( \sum_{i \in s_1} \cdots \sum_{j \in s_n} A \), the names and order of the bound variables \( i, \dots, j \) can be freely permuted. Therefore we first ignore bound variables and normalize AC-equivalence by sorting. Then decide the order of summation accordingly. The last step converts functions to de Bruijn indeices~\cite{deBruijn1972lambda} to decide $\alpha$-equivalence.
-
-As a comparison, the previous work conducts normalization paritally on $R$, and decide axioms in $F$ by iterating through all possible permutations.
-Our algorithm totally normalize the term and significantly improves the efficiency.
-\[
-\text{(partial)}\qquad e_1 \mathop{\twoheadrightarrow}^R e_1' \mathop{=}^F e_2' \mathop{\twoheadleftarrow}^R e_2
-\qquad
-\text{(total)}\qquad e_1 \mathop{\twoheadrightarrow}^{R \cup F} e \equiv e \mathop{\twoheadleftarrow}^{R \cup F} e_2
-\]
-
-\yx{we can add a normalization example here.}
-
-\subsection{Use Case}
-Here we encode the motivating~\Cref{ex: motivating}, examine and explain how to check it using D-Hammer. The encoding is shown below.
+\subsubsection{Use Case}
+As a tutorial, we encode the motivating~\Cref{ex: motivating}, examine and explain how to check it using D-Hammer. The encoding is shown below.
 
     \begin{lstlisting}[style=dhammer]
 Var T : INDEX. Var M : OTYPE[T, T].
@@ -128,8 +105,7 @@ Here $\$0$ and $\$1$ are de Bruijn indices. The result is a ket on the $\{r_1, r
 We evaluate D-Hammer on several example sets, and make a comparison with the previous tool DiracDec~\cite{diracdec}.
 The experiments are carried out using a MacBook Pro with M3 Max chip. Results are summarized as follows.
 
-{
-    \center
+\begin{center}
     \begin{tabular}{c|c c c|c c c}
         \hline
         \multirow{2}{*}{source} & \multicolumn{3}{c|}{DiracDec} & \multicolumn{3}{c}{D-Hammer} \\
@@ -141,10 +117,10 @@ The experiments are carried out using a MacBook Pro with M3 Max chip. Results ar
         % others                  & 7          &  6         &   77.20    &    7        &   6     &  2.13     \\
         % circuits                 & 2          & 2       &    17.67       &   3     &  2   &     1.4     \\
         % research paper                & 4          & 4         &  59.53       &   4    & 4       &  0.73     \\
-        labelled Dirac notation      &   -         &   -          &     -           &      -      &        18       &     22.72    \\
+        % labelled Dirac notation      &   -         &   -          &     -           &      -      &        18       &     22.72    \\
         \hline
     \end{tabular}        
-}
+\end{center}
 
 \subsubsection{Textbook (QCQI)}
 The 18 examples of QCQI textbook equations from DiracDec are all encoded and solved. The running time are short and close because these examples are simple and direct.
@@ -162,7 +138,7 @@ As to expressibility, D-Hammer encodes 158 examples for the CoqQ part, 4 less th
 \Cref{fig: CoqQ plot} shows a direct comparison of their time efficiency.
 We can observe that for small examples, D-Hammer is slower because of the marginal overhead. 
 When the running time goes up, D-Hammer provides 2 to 40 times of acceleration in average.
-The relationship between efficiency improvement and example structure further supports the necessity of our algorithm. 
+The relationship between efficiency improvement and example characteristics further supports the necessity of our algorithm. 
 We find that examples with great efficiency improvement, e.g. COQQ-129 and COQQ-148 shown in~\Cref{fig: CoqQ plot}, tend to use deeply nested summations, where our algorithm has an effect.
 
 % \subsubsection{Others}
