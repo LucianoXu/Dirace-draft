@@ -174,20 +174,26 @@ Take operator as an example:
 \begin{align*}
     & O_{R,R'} \ \reduce\ \sum_{i_{r_1}\in\bU(\sigma_{r_1})}\cdots \sum_{i_{r_n}\in\bU(\sigma_{r_n})}
     \sum_{i_{r'_1}\in\bU(\sigma_{r'_1})}\cdots \sum_{i_{r'_{n'}}\in\bU(\sigma_{r'_{n'}})} \\
-    & \qquad (\<i_R|\cdot O\cdot |i_{R'}\>).(|i_{r_1}\>_{r_i}\otimes\cdots\otimes|i_{r_n}\>_{r_n} \otimes {}_{r'_1}\<i_{r'_1}|\otimes\cdots\otimes{}_{r'_{n'}}\<i_{r'_{n'}}|).
+    & \qquad (\<i_R|\cdot O\cdot |i_{R'}\>).(|i_{r_1}\>_{r_1}\otimes\cdots\otimes|i_{r_n}\>_{r_n} \otimes {}_{r'_1}\<i_{r'_1}|\otimes\cdots\otimes{}_{r'_{n'}}\<i_{r'_{n'}}|).
 \end{align*}
-The rules for $e_R$ (ket and bra) are similar.
+where $|i_R\>$ and $\<i_{R'}|$ is constructed by tensoring the basis according to the structure of $R$. The rules for $e_R$ (ket and bra) are similar.
 %This step reduces all labelled terms $e_R$ or $e_{R;R}$.
 
 \paragraph*{2. Rewriting to the normal form.}
-We add three types of rules for dealing with operators on labeled terms, 1) recursively applying them to subterms, 2) push big operators out and 3) eliminate bra-ket pairs. For example,
+We add three types of rules for dealing with operators on labeled terms, 1) recursively applying them to subterms, 2) push big operators out and 3) eliminate generalized composition and bra-ket pairs.
 %Other symbols on labelled Dirac notation are also 
 Take the rule for conjugate $(D_1 \cdot D_2)^\dagger \ \reduce\ D_2^\dagger \cdot D_1^\dagger$ as an example of 1).
-For 2), 
-The final step operates on sum and dot product. They will lift summation to the outside, and eliminate the bra-ket pairs whenever possible.
+For 2), we use distributivity rules for scaling, labelled tensor and generalized composition. For example, rule
+\[
+% \textrm{(R-SUM-PUSHD0)}
+X_1 \otimes \cdots (\sum_{i \in M} D) \cdots \otimes X_2\ \reduce\ \sum_{i \in M} (X_1 \otimes \cdots D \cdots \otimes X_n)
+\]
+will lift summation to the outside.
+Extra rules for 3) are established including:
+% The final step operates on sum and dot product. They will lift summation to the outside, and eliminate the bra-ket pairs whenever possible.
 \begin{align*}
-    & \textrm{(R-SUM-PUSHD0)}
-    && X_1 \otimes \cdots (\sum_{i \in M} D) \cdots \otimes X_2\ \reduce\ \sum_{i \in M} (X_1 \otimes \cdots D \cdots \otimes X_n) \\
+    % & \textrm{(R-SUM-PUSHD0)}
+    % && X_1 \otimes \cdots (\sum_{i \in M} D) \cdots \otimes X_2\ \reduce\ \sum_{i \in M} (X_1 \otimes \cdots D \cdots \otimes X_n) \\
     % %
     % & \textrm{(R-SUM-PUSHD1)}
     % && (\sum_{i \in M} D_1) \cdot D_2 \ \reduce\ \sum_{i \in M} (D_1 \cdot D_2) \\
@@ -203,13 +209,45 @@ The final step operates on sum and dot product. They will lift summation to the 
     %
 \end{align*}
 % These rules are added to the rewriting system in~\Cref{sec: decide} and executed together.
-In the end, if there are no variables of $\DType(s_1, s_2)$, the expression will be reduced to the addition of big operator sum, and each sum body is labelled basis with Dirac notation scalar coefficients:
-\[
-    \sum_{i}\cdots\sum_{j} a_1 . (\ket{i}_{p} \otimes \cdots \otimes \bra{j}_{q})
-    + \cdots +
-    \sum_{k}\cdots\sum_{l} a_m . (\ket{k}_{r} \otimes \cdots \otimes \bra{l}_{s})
-\]
-In this stage, we only need to check the scalars to decide the equivalence of labelled Dirac notation.
+Assuming no variables of $\DType(s_1, s_2)$, 
+repeating the application of the above rules yield the normal form -- the addition of big operator sum: 
+\begin{equation}
+  \label{eqn:Labelled normal}
+  \sum_{i}\cdots\sum_{j} a_1 . (\ket{i}_{p} \otimes \cdots \otimes \bra{j}_{q})
+  + \cdots +
+  \sum_{k}\cdots\sum_{l} a_m . (\ket{k}_{r} \otimes \cdots \otimes \bra{l}_{s})
+\end{equation}
+where each sum body is a tensor of labelled basis with Dirac notation scalar coefficients.
+\paragraph*{3. Ordering and elimination of quantum variables.} 
+We further sort tensors of labelled basis in every sum body of Eqn. (\ref{eqn:Labelled normal}) by 1. ket first and 2. the default order of variables. This yield the same shape of every subterm, e.g., 
+\begin{equation*}
+  % \label{eqn:Labelled normal}
+  \sum_{i}\cdots\sum_{j}\cdots \sum_{i'}\cdots\sum_{j'} a_1 . ((\ket{i}_p \otimes \cdots \otimes \ket{j}_q) \otimes (\bra{i'}_{p'}\otimes\cdots\otimes \bra{j'}_{q'}))
+\end{equation*}
+and thus it is equivalent to decide the equivalence of additions of subterms of:
+\begin{equation}
+  \label{eqn:Labelled normal1}
+  \sum_{i}\cdots\sum_{j}\cdots \sum_{i'}\cdots\sum_{j'} a_1 . ((\ket{i} \otimes \cdots \otimes \ket{j}) \otimes (\bra{i'}\otimes\cdots\otimes \bra{j'}))
+\end{equation}
+which do not involve any labels.
+
+\begin{theorem}[Soundness]
+  All rewriting rules for labelled Dirac notations listed here and in Appendix are sound, i.e., for any interpretation $\sem{\cdot}$, $D\reduce D'$ implies $\sem{D} = \sem{D'}$.
+\end{theorem}
+\begin{proof}
+  By checking each rules and its semantics.
+\end{proof}
+
+\begin{theorem}[Completeness for Dealing with Labels]
+  Above normalization procedure translates every well-typed equality of labelled Dirac notations to equality of Dirac notation.
+\end{theorem}
+\begin{proof}
+  It is sufficient to check if each step achieves its goal. Step 1 is trivial. For step 2, it can be further checked that if it is not in form (\ref{eqn:Labelled normal}), there must exists one of the rules can be further applied.
+  For step 3, realize that all rewriting rules perserve the types, i.e., $D\reduce D'$ then $E\vdash D : \cD(s,s')$ and $E\vdash D : \cD(s,s')$ for some $s,s'\subseteq \cR$, which ensure the same shape of every subterm after sorting. 
+\end{proof}
+% , we claim that tensor of labelled basis in every sum body of Eqn. (\ref{eqn:Labelled normal}) are of the same type. As a consequence, by sort the labelled tensors according to a default order of variables, they 
+
+% In this stage, we only need to check the scalars to decide the equivalence of labelled Dirac notation.
 
 % \begin{lemma}[normal form]
 %     \label{lem: labelled normal form}
