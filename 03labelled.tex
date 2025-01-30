@@ -1,4 +1,6 @@
 
+\newcommand {\cD } {{\mathcal{D}}}
+\newcommand {\cl } {{\mathit{cl}}}
 
 % Labelled Dirac Notation
 
@@ -23,7 +25,7 @@ In this section, we extend the language by allowing quantum variables to indicat
 As discussed, this allows us to express and reason aboud the states and operations locally, without referring to the whole system. 
 We further demonstrate how to transform the equivalence problem into that for the Dirac notation studied above.
 
-\subsection{Syntax, Typing, Semantics and Rewriting Rules}
+\subsection{Syntax, Typing and Semantics}
 We first introduce the notation of quantum registers for structured variable combinations. This is necessary because, unlike assignments for classical variables, unitary transformations on composite systems -- a quantum version of assignments -- cannot generally be decomposed into separate unitary transformations on individual subsystems.
 Let $\cR$ be the set of quantum variables.
 %The first new notion is quantum registers, and we assume they are constructed from a set $\cR$.
@@ -147,19 +149,41 @@ The third line gives the typing of labelled tensoring with a check whether the c
 %     {E \vdash D_1\cdot D_2 : \DType(s_1 \cup (s_2\backslash s_1'), s_2' \cup (s_1'\backslash s_2))}.
 % \]
 
-\paragraph*{Semantics} While the labelled Dirac notation avoid unnecessary lifting and ordering, its semantics faithfully capture these details. The key points are 1. cylindrical extension that lift a ket or bra or operator to any larger domain and codomain; 2. general composition further employs cylindrical extension obeys the principle of ``localizing objects as much as possible''~\cite{Zhou2023}.
+\paragraph*{Semantics.} While the labelled Dirac notation avoids unnecessary lifting and ordering, its semantics faithfully capture these details. The key points are 1. cylindrical extension that lift a ket or bra or operator to larger domain and codomain; 2. general composition further employs cylindrical extension that obeys the principle of ``localizing objects as much as possible''~\cite{Zhou2023}.
 
+\begin{definition}[Cylindrical Extension]
+  For any $D : \cD(s_1,s_2)$ and $s$ that disjoint with both $s_1$ and $s_2$, we define $\cl(D,s) \triangleq D\otimes \mathbf{1}_{s}$ of type $\cD(s_1\cup s, s_2\cup s)$.
+\end{definition}
+Formally, we equip $\cR$ with a default order, say for example the alphabetical order of names. For any valid register $R$, there exists the operator $\swap_R$ that sorts $R$; for example, if $E\vdash p : \reg(\sigma_p)$ and $E\vdash q : \reg(\sigma_q)$, then $\swap_{(q,p)} \triangleq \sum_{i\in \bU(\sigma_p)}\sum_{j\in \bU(\sigma_q)}|i\>\<j|\otimes |j\>\<i|$. We can further define $\swap_{s_1,s_2,\cdots}$ for merging disjoint sets orderly.
 
-\subsubsection{Normalization}
-The normalization procedure of Dirac notation is extended to check equivalence with labels.
-We add rules to the term rewriting system, which in general try to represent labelled Dirac notation with labelled basis and scalar coefficients. The first step is the label elimination. Take operator as an example:
+For any interpretation $\sem{\cdot}$, and write $\cH_{\sem{s}} \triangleq \bigotimes_{r\in s}\cH_{\sem{\sigma_r}}$ for any $s\subseteq \cR$, where $E\vdash r : \reg(\sigma_r)$ for all $r\in\cR$. We interpret labelled Dirac notations inductively as (see details in Appendix) : assume $E\vdash D_i : \cD(s_i,s'_i)$ in the following,
+\begin{itemize}
+  \item $\sem{|i\>_r} = |\sem{i}\>$; $\sem{K_R} = \swap_R \cdot \sem{K}$; $\sem{O_{R_1,R_2}} = \swap_{R_1}\cdot \sem{O}\cdot \swap_{R_2}$;
+  \item $\sem{D_1\otimes \cdots \otimes D_n} = \swap_{s_1,\cdot,s_n}\cdot (\sem{D_1}\otimes \cdots \otimes \sem{D_1})\cdot \swap_{s'_1,\cdot,s'_n}$;
+  \item $\sem{D_1\cdot D_2} = \sem{\cl(D_1, s_2\backslash s'_1)}\cdot \sem{\cl(D_2, s'_1\backslash s_2)}$. Note that $s_2\backslash s'_1$ and $s'_1\backslash s_2$ are the minimal extension that make it interpretable. E.g., to interpret ${}_p\<i|\cdot |j\>_{p,q}$, we at least need to extend ${}_p\<i|$ to ${}_p\<i|\otimes I_{q}$.
+\end{itemize}
+Thus, $\sem{D}$ is a linear map from $\cH_{\sem{s'}}$ to $\cH_{\sem{s}}$ given $E\vdash D : \cD(s,s')$. Following the semantics, labelled tensor is independent of its order, i.e., $\sem{D_1\otimes D_2} = \sem{D_2\otimes D_1}$ and $\sem{D_1\otimes (D_2\otimes D_3)} = \sem{(D_1\otimes D_2)\otimes D_3}$, which ensures the soundness of treating labelled tensor as an AC symbol.
+
+\subsection{Normalization}
+The normalization procedure of labelled Dirac notation allows us to eliminate all labels and thus translate the equality of labelled terms to the equality of standard Dirac terms. This is achieved by the following three steps: 
+
+\paragraph*{1. Elimination of $e_R$ or $e_{R;R}$.}
+We decompose all $e_R$ or $e_{R;R}$ to the labelled basis with scalar coefficients. 
+%We add rules to the term rewriting system, which in general try to represent labelled Dirac notation with labelled basis and scalar coefficients. The first step is the label elimination. 
+Take operator as an example:
 \begin{align*}
     & O_{R,R'} \ \reduce\ \sum_{i_{r_1}\in\bU(\sigma_{r_1})}\cdots \sum_{i_{r_n}\in\bU(\sigma_{r_n})}
     \sum_{i_{r'_1}\in\bU(\sigma_{r'_1})}\cdots \sum_{i_{r'_{n'}}\in\bU(\sigma_{r'_{n'}})} \\
     & \qquad (\<i_R|\cdot O\cdot |i_{R'}\>).(|i_{r_1}\>_{r_i}\otimes\cdots\otimes|i_{r_n}\>_{r_n} \otimes {}_{r'_1}\<i_{r'_1}|\otimes\cdots\otimes{}_{r'_{n'}}\<i_{r'_{n'}}|).
 \end{align*}
-The rules for $e_R$ (ket and bra) are similar. This step reduces all labelled terms $e_R$ or $e_{R;R}$.
-Other symbols on labelled Dirac notation are also reduced by rules like $(D_1 \cdot D_2)^\dagger \ \reduce\ D_2^\dagger \cdot D_1^\dagger$.
+The rules for $e_R$ (ket and bra) are similar.
+%This step reduces all labelled terms $e_R$ or $e_{R;R}$.
+
+\paragraph*{2. Rewriting to the normal form.}
+We add three types of rules for dealing with operators on labeled terms, 1) recursively applying them to subterms, 2) push big operators out and 3) eliminate bra-ket pairs. For example,
+%Other symbols on labelled Dirac notation are also 
+Take the rule for conjugate $(D_1 \cdot D_2)^\dagger \ \reduce\ D_2^\dagger \cdot D_1^\dagger$ as an example of 1).
+For 2), 
 The final step operates on sum and dot product. They will lift summation to the outside, and eliminate the bra-ket pairs whenever possible.
 \begin{align*}
     & \textrm{(R-SUM-PUSHD0)}
