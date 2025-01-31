@@ -36,14 +36,16 @@ Let $\cR$ be the set of quantum variables.
 \end{definition}
 For simplicity, we only allow pairing the registers, which corresponds to the structure of tensor product, i.e., $\cH_{(R_1,R_2)}$ is isomorphic to $\cH_{R_1}\otimes \cH_{R_2}$, which allows us to view the tensor product space as the space of paired registers.
 
-The no-cloning theorem, a fundamental property of quantum computing, prevents us from copying an unknown quantum state. This requires an additional check on the valid registers--they should not include repeated quantum variables--which is often handled in programming languages via linear types. Here, we start from the basic definition of \emph{order-free} variable set of a register:
-\begin{definition}
-The variable set of a register is defined inductively by:
-\begin{itemize}
-    \item $\var(R) = \{r\}$, if $R\equiv r$; or
-    \item $\var(R) = \var(R_1) \cup\var(R_2)$, if $R\equiv (R_1,R_2)$.
-\end{itemize}
-\end{definition}
+The no-cloning theorem, a fundamental property of quantum computing, prevents us from copying an unknown quantum state. This requires an additional check on the valid registers--they should not include repeated quantum variables--which is often handled in programming languages via linear types. As such, we define the \emph{order-free} variable set of a register inductively by: 1) $\var(R) \triangleq \{r\}$, if $R\equiv r$ and 2) $\var(R) \triangleq \var(R_1) \cup\var(R_2)$, if $R\equiv (R_1,R_2)$.
+We use the variable set to establish side conditions of typing valid registers and employ it as the type parameter for annotating labelled Dirac terms.
+
+% \begin{definition}
+% The variable set of a register is defined inductively by:
+% \begin{itemize}
+%     \item $\var(R) = \{r\}$, if $R\equiv r$; or
+%     \item $\var(R) = \var(R_1) \cup\var(R_2)$, if $R\equiv (R_1,R_2)$.
+% \end{itemize}
+% \end{definition}
 
 % \textbf{Remark: } Set operations: $\cup$ for union; $\cap$ for intersection; $\setminus$ for difference. So,
 % % \begin{itemize}
@@ -61,10 +63,10 @@ Now, we are ready to extend the type syntax and term syntax as follows:
     e \otimes e \otimes \cdots \otimes e \mid e \cdot e.
   \end{align*}
 \end{definition}
-$\DType(s_1, s_2)$ is the unified type for all labelled Dirac notation, where $s_1$ indicates the codomain systems and $s_2$ indicates the domain systems. For instance, labelled ket $|i\>_r$ has type $\DType(\{r\}, \emptyset)$, and labelled bra ${}_r\<i|$ has type $\DType(\emptyset, \{r\})$.
+$\DType(s_1, s_2)$ is the unified type for all labelled Dirac notation, where $s_1$ indicates the codomain systems and $s_2$ indicates the domain systems.
+Roughly speaking, we define Hilbert space $\cH_s\triangleq\bigotimes_{r\in s}\cH_r$ for each set $s$, so that $\cH_{\emptyset}$ is a one-dimensional space isomorphic to complex numbers. Then the function view of ket and bra~\cite{Zhou2023} provides an alternative way, i.e., a ket on subsystem $s$ as a linear map from $\cH_{\emptyset}$ to $\cH_s$, a bra as a linear map from $\cH_s$ to $\cH_{\emptyset}$, to unify the type of kets, bras, and operators. For instance, labelled ket $|i\>_r$ has type $\DType(\{r\}, \emptyset)$, and labelled bra ${}_r\<i|$ has type $\DType(\emptyset, \{r\})$.
 $\reg(\sigma)$ are types for registers $R$, and the index $\sigma$ indicates the type of Hilbert space represented by the register.
-It is allowed to lift a plain Dirac notation associate with corresponding quantum variables or registers, e.g., $\ket{i}_r$ and ${}_r\bra{i}$ are labelled basis, 
-$e_R$ for bra, ket and $e_{R;R}$ for operators. 
+It is allowed to lift a plain Dirac notation associate with corresponding quantum variables or registers, e.g., $\ket{i}_r$ and ${}_r\bra{i}$ are labelled basis, $e_R$ for bra, ket, and $e_{R;R'}$ for operators which additionally allows different domain $R'$ and codomain $R$.
 We further introduce new $\cdot$ for generalized composition (unified for all kinds of multiplications between kets, bras and operators) and $\otimes$ for labelled tensor product since they do not share the same properties v.s. its counterpart in plain Dirac notation, i.e., generalized composition is not associative and labelled tensor is indeed an AC symbol.
 % In labelled Dirac notation, the structure of tensor product does not matter, therefore $\otimes$ is an AC symbol.
 % Following the unified type $\DType(s,s)$, all kinds of multiplications are represented by the same dot product $e \cdot e$.
@@ -156,13 +158,17 @@ The third line gives the typing of labelled tensoring with a check whether the c
 \end{definition}
 Formally, we equip $\cR$ with a default order, say for example the alphabetical order of names. For any valid register $R$, there exists the operator $\Swap_R$ that sorts $R$; for example, if $E\vdash p : \reg(\sigma_p)$ and $E\vdash q : \reg(\sigma_q)$, then $\Swap_{(q,p)} \triangleq \sum_{i\in \bU(\sigma_p)}\sum_{j\in \bU(\sigma_q)}|i\>\<j|\otimes |j\>\<i|$. We can further define $\Swap_{s_1,s_2,\cdots}$ for merging disjoint sets orderly.
 
-For any interpretation $\sem{\cdot}$, and write $\cH_{\sem{s}} \triangleq \bigotimes_{r\in s}\cH_{\sem{\sigma_r}}$ for any $s\subseteq \cR$, where $E\vdash r : \reg(\sigma_r)$ for all $r\in\cR$. We interpret labelled Dirac notations inductively as (see details in Appendix) : assume $E\vdash D_i : \cD(s_i,s'_i)$ in the following,
+For any valuation $v$, and write $\cH_{\sem{s}_v} \triangleq \bigotimes_{r\in s}\cH_{\sem{\sigma_r}_v}$ for any $s\subseteq \cR$, where $E\vdash r : \reg(\sigma_r)$ for all $r\in\cR$. We interpret labelled Dirac notations inductively as: assume $E\vdash D_i : \cD(s_i,s'_i)$ in the following,
 \begin{itemize}
-  \item $\sem{|i\>_r} = |\sem{i}\>$; $\sem{K_R} = \Swap_R \cdot \sem{K}$; $\sem{O_{R_1,R_2}} = \Swap_{R_1}\cdot \sem{O}\cdot \Swap_{R_2}$;
-  \item $\sem{D_1\otimes \cdots \otimes D_n} = \Swap_{s_1,\cdot,s_n}\cdot (\sem{D_1}\otimes \cdots \otimes \sem{D_1})\cdot \Swap_{s'_1,\cdot,s'_n}$;
-  \item $\sem{D_1\cdot D_2} = \sem{\cl(D_1, s_2\backslash s'_1)}\cdot \sem{\cl(D_2, s'_1\backslash s_2)}$. Note that $s_2\backslash s'_1$ and $s'_1\backslash s_2$ are the minimal extension that make it interpretable. E.g., to interpret ${}_p\<i|\cdot |j\>_{p,q}$, we at least need to extend ${}_p\<i|$ to ${}_p\<i|\otimes I_{q}$.
+  \item $\sem{|i\>_r}_v = |\sem{i}_v\>$;\quad 
+        $\sem{\<i|_r}_v = \<\sem{i}_v|$;\quad  
+        $\sem{K_R}_v = \sem{\Swap_R}_v \cdot \sem{K}_v$; \\
+        $\sem{B_R}_v = \sem{B}_v\cdot \sem{\Swap_R}_v$;\quad
+        $\sem{O_{R_1,R_2}} = \sem{\Swap_{R_1}}_v\cdot \sem{O}_v\cdot \sem{\Swap_{R_2}}_v$;
+  \item $\sem{D_1\otimes \cdots \otimes D_n}_v = \sem{\Swap_{s_1,\cdot,s_n}}_v\cdot (\sem{D_1}_v\otimes \cdots \otimes \sem{D_1}_v)\cdot \sem{\Swap_{s'_1,\cdot,s'_n}}_v$;
+  \item $\sem{D_1\cdot D_2}_v = \sem{\cl(D_1, s_2\backslash s'_1)}_v\cdot \sem{\cl(D_2, s'_1\backslash s_2)}_v$. Note that $s_2\backslash s'_1$ and $s'_1\backslash s_2$ are the minimal extension that make it interpretable. E.g., to interpret ${}_p\<i|\cdot |j\>_{p,q}$, we at least need to extend ${}_p\<i|$ to ${}_p\<i|\otimes I_{q}$.
 \end{itemize}
-Thus, $\sem{D}$ is a linear map from $\cH_{\sem{s'}}$ to $\cH_{\sem{s}}$ given $E\vdash D : \cD(s,s')$. Following the semantics, labelled tensor is independent of its order, i.e., $\sem{D_1\otimes D_2} = \sem{D_2\otimes D_1}$ and $\sem{D_1\otimes (D_2\otimes D_3)} = \sem{(D_1\otimes D_2)\otimes D_3}$, which ensures the soundness of treating labelled tensor as an AC symbol.
+Thus, $\sem{D}_v$ is a linear map from $\cH_{\sem{s'}_v}$ to $\cH_{\sem{s}_v}$ given $E\vdash D : \cD(s,s')$. Following the semantics, labelled tensor is independent of its order, i.e., $\sem{D_1\otimes D_2}_v = \sem{D_2\otimes D_1}_v$ and $\sem{D_1\otimes (D_2\otimes D_3)}_v = \sem{(D_1\otimes D_2)\otimes D_3}_v$, which ensures the soundness of treating labelled tensor as an AC symbol.
 
 \subsection{Normalization}
 The normalization procedure of labelled Dirac notation allows us to eliminate all labels and thus translate the equality of labelled terms to the equality of plain Dirac terms. This is achieved by the following three steps: 
@@ -210,7 +216,7 @@ Extra rules for 3) are established including:
 \end{align*}
 % These rules are added to the rewriting system in~\Cref{sec: decide} and executed together.
 Assuming no variables of $\DType(s_1, s_2)$, 
-repeating the application of the above rules yield the normal form--the addition of big operator sum: 
+repeating the application of the above rules yield the normal form of both sides of the equality--the addition of big operators: 
 \begin{equation}
   \label{eqn:Labelled normal}
   \sum_{i}\cdots\sum_{j} a_1 . (\ket{i}_{p} \otimes \cdots \otimes \bra{j}_{q})
@@ -219,7 +225,7 @@ repeating the application of the above rules yield the normal form--the addition
 \end{equation}
 where each sum body is a tensor of labelled basis with scalar coefficients in plain Dirac notation.
 \paragraph*{3. Ordering and elimination of quantum variables.} 
-We further sort tensors of labelled basis in every sum body of Eqn. (\ref{eqn:Labelled normal}) by 1. ket first and 2. the default order of variables. This yield the same shape of every subterm, e.g., 
+We further sort tensors of labelled basis in every sum body of Eqn. (\ref{eqn:Labelled normal}) by 1. ket first and 2. the default order of variables. This yield the same shape of every subterm on both sides of the equality, e.g., 
 \begin{equation*}
   % \label{eqn:Labelled normal}
   \sum_{i}\cdots\sum_{j}\cdots \sum_{i'}\cdots\sum_{j'} a_1 . ((\ket{i}_p \otimes \cdots \otimes \ket{j}_q) \otimes (\bra{i'}_{p'}\otimes\cdots\otimes \bra{j'}_{q'}))
