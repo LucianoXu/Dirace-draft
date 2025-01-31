@@ -167,7 +167,8 @@ The type system is sound w.r.t.\, the denotational semantics of
 expressions. Specifically, for a well-formed context \( E \), term \( t \), and type \( T \), if \( E \vdash t : T \), then for any valuation \( v \) that is valid for $\Gamma$, the interpretation of \( t \)  w.r.t.\, $v$ is an element of the interpretation of \( T \) w.r.t.\, $v$.
 
 \begin{lemma}[Soundness of type system]
-    For any well-formed context \( E \), term \( t \), and type \( T \), if \( E \vdash t : T \), then for all valuations \( v \), \( \sem{t}_v \in \sem{T}_v \).
+  If \( E \vdash t : T \), then for all valuations \( v \) valid w.r.t.\,
+  $\Gamma$, we have \( \sem{t}_v \in \sem{T}_v \).
 \end{lemma}
 \begin{proof}
 By induction on the derivation.
