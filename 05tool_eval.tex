@@ -77,7 +77,7 @@ CheckEq M_r1 (phi T)_(r1, r2) with (TPO T T M)_r2 (phi T)_(r1, r2).
     \end{lstlisting}        
 
 The first three lines use the \texttt{\textcolor{NavyBlue}{Var}} and \texttt{\textcolor{NavyBlue}{Def}} commands to set up the context for the Dirac notation.
-\texttt{T} is a type index, representing arbitrary Hilbert space types. \texttt{M} is assume to be an operator in the Hilbert space with type \texttt{T}. \texttt{phi} is defined as the maximally entangled state, depending on the bound variable \texttt{T} as index.
+\texttt{T} is a type index, representing arbitrary Hilbert space types. \texttt{M} is assumed to be an operator in the Hilbert space with type \texttt{T}. \texttt{phi} is defined as the maximally entangled state, depending on the bound variable \texttt{T} as index.
 \texttt{r1} and \texttt{r2} are register names for the two subsystems.
 
 In the left hand side of \texttt{\textcolor{NavyBlue}{CheckEq}} command, \texttt{M\_r1} denotes the labelled notation $M_{r_1}$, and \texttt{(phi T)\_(r1, r2)} denotes the entangled state $\ket{\Phi}_{(r_1, r_2)}$. They are connected by a white space, which is parsed into the composition of Dirac notation, and will be reduced into the operator-ket multiplication after typing. The right hand side is interpreted similarly, except the defined symbol \texttt{TPO} in the context:
@@ -156,7 +156,8 @@ We find that examples with great efficiency improvement, e.g. COQQ-129 and COQQ-
 We present a new set of examples for labelled Dirac notation (LDN). These examples, illustrated in~\Cref{fig: labelled examples}, include six representative cases drawn from a variety of sources, such as well-established theorems, research paper results, quantum circuit equivalence, and quantum program verification.
 D-Hammer normalizes them and successfully checks their equivalence using the algorithm in~\Cref{sec: labelled}.
 Among the examples, LDN-12 shows the flexibility in combining labelled Dirac notations.
-Example LDN-14 and LDN-18 are about circuits or programs on qubits. LDN-14 shows how to calculate controlled-not gate in different ways. In LDN-18, $q, q_1$ and $q_2$ represent variables for quantum programs, and the equation shows the change of the state after applying $X$ gate on $q_2$. 
+LDN-14 shows how to calculate controlled-not gate in different ways. 
+%In LDN-18, $q, q_1$ and $q_2$ represent variables for quantum programs, and the equation shows the change of the state after applying $X$ gate on $q_2$. 
 % Experiments show that our algorithm is relatively inefficient for labelled Dirac notations based on qubits.
 
 It is a noteworthy result that D-Hammer solved LDN-10, a highly complex and lengthy example. It is a theorem on quantum separation logic from~\cite{DBLP:conf/lics/ZhouBHYY21}, and is challenging to prove even for experts. Notice that 7 registers are involved here, and it would be impractical to organize and referring to the subsystems without using labels.

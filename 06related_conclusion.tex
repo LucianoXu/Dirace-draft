@@ -14,6 +14,7 @@ of quantum states~\cite{amy2018towards,amy2023complete}.
 
 Automata-based approaches has also been successfully applied for reasoning about quantum circuit~\cite{AutoQ_pldi_2023}. Instead of representing a set of  $n$-qubit states in exponential size, \cite{AutoQ_pldi_2023} encode it as (finite) tree automata with much less (often $\mathit{poly}(n)$) transitions.  They further established transformers to implement the semantics of quantum gates over this representation, providing better scalability compared to other approaches. It is developed as a practical tool \textsc{autoq} with the capabilities for symbolic reasoning~\cite{AutoQ2023}. More recently, \cite{AutoQ_popl2025} further explore level-synchronized tree automata to encoding state, a promising model for parameterized verification.
 
+
 \paragraph*{Comparison with DiracDec~\cite{diracdec}}
 Xu \emph{et al}~\cite{diracdec} define a language and an associate and
 commutative rewriting system for Dirac notation, and implement their
@@ -31,12 +32,12 @@ reasoning about complex, many-body, quantum states. However, there are
 several other important differences. First, our language leverages the
 power of higher-order dependent type theory. In particular, we
 leverage higher-order functions to provide a compact and expressive
-representation of big operators. Second, our language supports AC
+representation of big operators. Second, our language adopts AC
 symbols with indefinite arities, which leads to compact representation
 of terms, and eases AC reasoning. Third, the relation with Mathematica
 is fundamentally different. DiracDec is implemented in Mathematica; as
 a consequence, its behavior, and in particular, its typing rules are
-constrained by the type system of Mathematica. In contrast, D-Hammer
+constrained by the lack of typing in Mathematica. In contrast, D-Hammer
 is designed as a separate tool; as a consequence, it benefits from an
 improved representation of terms (e.g.\, AC operators with indefinite
 arity), a more expressive type system (e.g.\, dependent types), and a
