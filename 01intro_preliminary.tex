@@ -29,14 +29,14 @@ $$\ket{\phi}_S \otimes \ket{\psi}_{T} = \ket{\psi}_{T} \otimes \ket{\phi}_S
 In turn, commutativity of the tensor product ensures that one can
 reason locally about quantum systems, and contributes to making
 labelled Dirac notation a convenient, compositional formalism to
-reason about quantum states---in a way that is similar to the way
+reason about quantum states --- in a way that is similar to the way
 bunched logics support compositional reasoning about mutable states.
 
 Labelled Dirac notation is also commonly used to express assertions
 about quantum programs. Specifically, many quantum Hoare logics use
 labelled Dirac notation to express program assertions~\cite{DBLP:conf/lics/ZhouBHYY21,Zhou2023}. These logics also use
 implicitly equational reasoning between labelled Dirac expressions, to
-glue applications of proof rules---similar to the use of the rule of
+glue applications of proof rules --- similar to the use of the rule of
 consequence in the setting of classical program. Therefore, it is
 essential for the verification of quantum programs to have automated
 means of proving equality of two complex expressions based on labelled
@@ -89,7 +89,7 @@ logic~\cite{DBLP:conf/lics/ZhouBHYY21}.
 
 
 \section{Motivation and Preliminaries}
-\subsection{Standard Dirac Notation}
+\subsection{Plain Dirac Notation}
 
 Dirac notation, also known as bra-ket notation, provides an intuitive
 and concise mathematical framework for describing quantum states and
@@ -113,7 +113,7 @@ of quantum mechanics:
 
 \subsection{Labelled Dirac Notation and Motivating Example}
 Labelled Dirac notation is a generalization of Dirac notation for
-describing multi-body quantum systems. The need for labelled Dirac
+describing many-body quantum systems. The need for labelled Dirac
 notation is motivated by the following example:
 
 % \begin{figure}[t]
@@ -168,7 +168,7 @@ $p,r,q$ to simplify the representation of $\ccnot$; 2. Lift the local
 operation $\cnot$ to the global system. For $\cnot$ acting on $r,q$ is
 easier, since $r,q$ consistent with the chosen order, and we only need
 to tensoring it by an identity operator $I$ on $p$, i.e., $(I\otimes
-\cnot)$.  For $\cnot$ acting on $p,q$, realize that $p,q$ is not
+\cnot)$.  For $\cnot$ acting on $p,q$, realize that $p,q$ are not
 adjacent in the chosen order, we additionally need to use $\Swap$ to
 temporarily exchange the qubits $p$ and $r$, i.e., globally, the
 $(\Swap\otimes I)$ before and after $(I\otimes \cnot)$ (lifting of
@@ -176,7 +176,7 @@ $\cnot$ on $r,q$).
 
 
 
-Roughly speaking, encoding in standard Dirac notation needs to
+Roughly speaking, encoding in plain Dirac notation needs to
 tensoring identity operators and employing additional $\Swap$ gates
 since generally the conventional order cannot guarantee 1. the order
 of all local operations is consistent with it, 2. the local operations
@@ -211,12 +211,12 @@ follows:
 \end{align*}
 where the RHS of each line are equivalent.  In addition, labelled
 Dirac notation can conveniently describe local measurements, partial
-traces (the state or evolution of subsystems in multi-body systems),
+traces (the state or evolution of subsystems in many-body systems),
 and partial inner products (the representation of partial traces in
 pure states), which are sufficient to handle the mathematical formulas
-of quantum mechanics in multi-body systems.
+of quantum mechanics in many-body systems.
 
-Labelled Dirac notation is not only ubiquitous in the description of multi-body systems, but also plays an important role in program logics. Just as in classical program logic, variable names are used to construct logical formulas instead of describing them as global memory functions, in quantum program logic, variable names are used to label the subsystems on which quantum gates act, rather than lifting them to the global system. Indeed, the latter would cause exponential length of the formula w.r.t the number of variables, as discussed in [cite].
+Labelled Dirac notation is not only ubiquitous in the description of many-body systems, but also plays an important role in program logics. Just as in classical program logic, variable names are used to construct logical formulas instead of describing them as global memory functions, in quantum program logic, variable names are used to label the subsystems on which quantum gates act, rather than lifting them to the global system. Indeed, the latter would cause exponential length of the formula w.r.t the number of variables, as discussed in [cite].
 
 The next sections introduce the formal language, labelled Dirac notation and the systematical way to reduce labels and prove equalities. 
 For this purpose, we use the following motivating example as the main role in our explanations.

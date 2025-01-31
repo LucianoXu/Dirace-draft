@@ -247,3 +247,59 @@ author = {Jens Palsberg and Nengkun Yu},
 keywords = {Quantum computing, Unitary matrices, Optimality},
 abstract = {We give a detailed proof of a well-known theorem in quantum computing. The theorem characterizes the number of two-qubit gates that is necessary for implementing three-qubit quantum gates with two controls. For example, the theorem implies that five 2-qubit gates are necessary for implementing the Toffoli gate. No detailed proof was available earlier.}
 }
+
+@InProceedings{AutoQ2023,
+author="Chen, Yu-Fang
+and Chung, Kai-Min
+and Leng{\'a}l, Ond{\v{r}}ej
+and Lin, Jyun-Ao
+and Tsai, Wei-Lun",
+editor="Enea, Constantin
+and Lal, Akash",
+title="AutoQ: An Automata-Based Quantum Circuit Verifier",
+booktitle="Computer Aided Verification",
+year="2023",
+publisher="Springer Nature Switzerland",
+address="Cham",
+pages="139--153",
+abstract="We present a specification language and a fully automated tool named AutoQ for verifying quantum circuits symbolically. The tool implements the automata-based algorithm from [14] and extends it with the capabilities for symbolic reasoning. The extension allows to specify relational properties, i.e., relationships between states before and after executing a circuit. We present a number of use cases where we used AutoQ to fully automatically verify crucial properties of several quantum circuits, which have, to the best of our knowledge, so far been proved only with human help.",
+isbn="978-3-031-37709-9"
+}
+
+@article{AutoQ_popl_2023,
+author = {Chen, Yu-Fang and Chung, Kai-Min and Leng\'{a}l, Ond\v{r}ej and Lin, Jyun-Ao and Tsai, Wei-Lun and Yen, Di-De},
+title = {An Automata-Based Framework for Verification and Bug Hunting in Quantum Circuits},
+year = {2023},
+issue_date = {June 2023},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {7},
+number = {PLDI},
+url = {https://doi.org/10.1145/3591270},
+doi = {10.1145/3591270},
+abstract = {We introduce a new paradigm for analysing and finding bugs in quantum circuits. In our approach, the problem is given by a ‍triple {P} C {Q} and the question is whether, given a set P of quantum states on the input of a circuit C, the set of quantum states on the output is equal to (or included in) a set Q. While this is not suitable to specify, e.g., functional correctness of a quantum circuit, it is sufficient to detect many bugs in quantum circuits. We propose a technique based on tree automata to compactly represent sets of quantum states and develop transformers to implement the semantics of quantum gates over this representation. Our technique computes with an algebraic representation of quantum states, avoiding the inaccuracy of working with floating-point numbers. We implemented the proposed approach in a prototype tool and evaluated its performance against various benchmarks from the literature. The evaluation shows that our approach is quite scalable, e.g., we managed to verify a large circuit with 40 qubits and 141,527 gates, or catch bugs injected into a circuit with 320 qubits and 1,758 gates, where all tools we compared with failed. In addition, our work establishes a connection between quantum program verification and automata, opening new possibilities to exploit the richness of automata theory and automata-based verification in the world of quantum computing.},
+journal = {Proc. ACM Program. Lang.},
+month = jun,
+articleno = {156},
+numpages = {26},
+keywords = {verification, tree automata, quantum circuits}
+}
+
+@article{AutoQ_popl2025,
+author = {Abdulla, Parosh Aziz and Chen, Yo-Ga and Chen, Yu-Fang and Hol\'{\i}k, Luk\'{a}\v{s} and Leng\'{a}l, Ond\v{r}ej and Lin, Jyun-Ao and Lo, Fang-Yi and Tsai, Wei-Lun},
+title = {Verifying Quantum Circuits with Level-Synchronized Tree Automata},
+year = {2025},
+issue_date = {January 2025},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {9},
+number = {POPL},
+url = {https://doi.org/10.1145/3704868},
+doi = {10.1145/3704868},
+abstract = {We present a new method for the verification of quantum circuits based on a novel symbolic representation of sets of quantum states using level-synchronized tree automata (LSTAs). LSTAs extend classical tree automata by labeling each transition with a set of choices, which are then used to synchronize subtrees of an accepted tree. Compared to the traditional tree automata, LSTAs have an incomparable expressive power while maintaining important properties, such as closure under union and intersection, and decidable language emptiness and inclusion. We have developed an efficient and fully automated symbolic verification algorithm for quantum circuits based on LSTAs. The complexity of supported gate operations is at most quadratic, dramatically improving the exponential worst-case complexity of an earlier tree automata-based approach. Furthermore, we show that LSTAs are a promising model for parameterized verification, i.e., verifying the correctness of families of circuits with the same structure for any number of qubits involved, which principally lies beyond the capabilities of previous automated approaches. We implemented this method as a C++ tool and compared it with three symbolic quantum circuit verifiers and two simulators on several benchmark examples. The results show that our approach can solve problems with sizes orders of magnitude larger than the state of the art.},
+journal = {Proc. ACM Program. Lang.},
+month = jan,
+articleno = {32},
+numpages = {31},
+keywords = {quantum circuits, tree automata, verification}
+}
