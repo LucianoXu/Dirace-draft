@@ -238,6 +238,51 @@ Our algorithm totally normalize the term, as is illustrated below.
 \]
 While the permutation checking algorithm has factorial complexity on the number of AC symbol arguments, our algorithm uses normalization by sorting, and the complexity is polynomial on the term size. This improvement in efficiency is also confirmed by experiments.
 
+\Cref{fig: normalization demo} shows the normalization outline for $(M \otimes \mathbf{1}_\mathcal{O}(T)) \cdot (\text{phi}\ T)$.
+
+\begin{figure}
+    \scriptsize
+    \begin{align*}
+        & (\eqnmarkbox[blue]{mvar}{M} \otimes \eqnmarkbox[red]{identity}{\mathbf{1}_\mathcal{O}(T)})(\eqnmarkbox[red]{phi-definition}{\textrm{phi}\ T})
+        \Rightarrow
+        (\sum_{k,l\in T} \bra{k} M \ket{l}.\ket{k}\bra{l}
+        \eqnmarkbox[red]{sumpush1}{\otimes \sum_{i \in T}} \ket{i}\bra{i})(\eqnmarkbox[red]{sumpush2}{\sum_{j\in T}}\ket{j, j}) 
+        \\
+        & \Rightarrow
+        \sum_{i,j,k,l\in T} \bra{k} M \ket{l} . \ket{k, i}\eqnmarkbox[red]{braket-dot}{\bra{l, i} \cdot \ket{j,j}}
+        \\
+        & \Rightarrow
+        \eqnmarkbox[red]{delta-elim-sum}{\sum_{i,j,k,l\in T}} (\eqnmarkbox[red]{delta-elim-delta}{\delta_{l,j} \times \delta_{i,j}} \times \bra{k} M \ket{l}) . \ket{k, i}
+        \Rightarrow
+        \eqnmarkbox[brown]{swapsum}{\sum_{j, k \in T}} \bra{k} M \ket{j} . \ket{k, j}
+        \\[1em]
+        & \Rightarrow
+        \sum_{k, j \in T} \bra{k} M \ket{j} . \ket{k, j}
+        \ \eqnmarkbox[brown]{deBruijn}{\xRightarrow{\text{de Bruijn}}}\ 
+        \sum_T\sum_T\bra{\$1} M \ket{\$0} . \ket{\$1, \$0}
+    \end{align*}
+    \annotate[yshift=1em]{right}{mvar}{\scriptsize{variable expansion}}
+    \annotate[yshift=0.5em, xshift=1cm]{right}{identity}{\scriptsize{identity operator}}
+    \annotate[yshift=0em]{below,left}{phi-definition}{\scriptsize{definition}}
+    \annotatetwo[yshift=0em]{below}{sumpush1}{sumpush2}{\scriptsize{sum lifting}}
+    \annotate[yshift=0em]{below}{braket-dot}{\scriptsize{inner product}}
+    \annotatetwo[yshift=0em,xshift=2cm]{below}{delta-elim-sum}{delta-elim-delta}{\scriptsize{$\delta$-elimination}}
+    \annotate[yshift=0em]{below}{swapsum}{\scriptsize{sum swapping}}
+    \caption{A nomralization outline for the left-hand side of~\Cref{eq: motivating plain}. Matched subterms are marked with colors. Blue marking represents variable expansion, red marking represents rule applications, and brown marking represents normalization step 4-6.}
+    \label{fig: normalization demo}
+\end{figure}
+
+% \begin{gather*}
+%     \eqnmarkbox[blue]{node1}{GEBV} = \sum_{i}^{n} \eqnmarkbox[red]{node2}{X_{i}} b_{i} \\
+%     \eqnmarkbox[green]{node3}{ssssss}
+% \end{gather*}
+    
+%     \annotate[yshift=1em]{left}{node1}{Genomic Estimated Breeding Value}
+%     \annotate[yshift=-1em]{below}{node2}{Genotype at locus i}
+%     \annotatetwo[yshift=2em]{above}{node2}{node3}{var 1}
+
+
+
 
 % Lastly, we can prove that the equivalence established by this normalization procedure is sound with respect to the semantics.
 
