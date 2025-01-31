@@ -1,16 +1,29 @@
 
-\section{Language, Typing and Semantics}
-We use a typed abstract syntax to represent Dirac notation. The overall system design leads to the following advantages. 
+\section{Dirac notation}
+This section introduces the language of Dirac notation, its
+denotational and axiomatic semantics, and describes D-Hammer approach
+to equational reasoning. Two main ingredients of our language are:
 \begin{itemize}
-    \item Dirac notation can be divided into four types, namely scalar, ket, bra and operator. Many function symbols have constraints on types. It is important to have a typing system and check the validity of expressions. 
-    \item It has functions and higher-order typing. It allows to formally encode defined symbols like transpose or trace, which are usually used to reprensent the term in an abstract manner. 
-    \item The structures are friendly to optimizations for efficiency. For example, associative and commutative (AC) symbols have indefinite arities, which enables normalization by sorting.
+\item a rich typing discipline that distinguishes between scalars,
+  kets, bras and operators, but supports sufficient overloading to
+  remain close to standard Dirac notation;
+\item higher-order, indexed (a.k.a.\, weak dependent) types. It allows
+  to formally encode defined symbols like transpose or trace, which
+  are usually used to represent the term in an abstract manner;
+\item operators with indefinite arities. Indefinite arities are
+  instrumental for reasoning efficiently about associative and
+  commutative (AC) symbols have indefinite arities, as they enable
+  normalization by sorting.
 \end{itemize}
 
-Since a Hilbert space $\mathcal{H}_V$ is dependent on the basis set $V$,
-types for Dirac notation also depends on the type index.
-Therefore, the language is organized into three layers: the index, the type, and the term. 
-Terms represent concrete instances such as kets, bras, and operators, which will be typed and checked. The index represents classical data types and appears in type expressions to differentiate between various Hilbert spaces and sets.
+\subsection{Language}
+Since a Hilbert space $\mathcal{H}_V$ is dependent on the basis set
+$V$, types for Dirac notation also depends on the type index.
+Therefore, the language is organized into three layers: the index, the
+type, and the term.  Terms represent concrete instances such as kets,
+bras, and operators, which will be typed and checked. The index
+represents classical data types and appears in type expressions to
+differentiate between various Hilbert spaces and sets.
 
 \begin{definition}[Index Syntax]
     The syntax for type indices is:
@@ -102,7 +115,16 @@ Especially, the big operator sum is modeled by folding a function over a set, wi
 The semantics of a language define the meaning of its expressions. In this context, the objective of our algorithm is to determine whether two expressions are semantically equivalent. We define the semantics in a denotational manner, mapping syntax to set-theoretic objects.
 
 \subsubsection{Denotational Semantics}
-The denotational semantics interpret every expression as an object in linear algebra, according to a valuation mapping \( v \), which assigns values to the variables in the expression. The semantics of an expression \( e \) with a given valuation \( v \) is denoted as \( \sem{e}_v \). Two expressions \( e_1 \) and \( e_2 \) are considered equivalent if their semantics are equal for all valuations, i.e., \( \sem{e_1}_v = \sem{e_2}_v \) for all \( v \).
+The denotational semantics interpret every expression as an object in
+linear algebra, according to a valuation mapping \( v \), which
+assigns values to the variables in the expression. Concretely, we
+first define an interpretation $\sem{T}$ for each type.{\textcolor{red}{TODO}}
+
+
+The semantics of an expression \( e \) with a given valuation \( v \)
+is denoted as \( \sem{e}_v \). Two expressions \( e_1 \) and \( e_2 \)
+are semantically equivalent if their semantics are equal for all
+valuations, i.e., \( \sem{e_1}_v = \sem{e_2}_v \) for all \( v \).
 
 The complete interpretation of terms and types is provided in~\Cref{sec: full denotational sem}. Variables typed with \( \Index \) are interpreted as finite sets, and the product of two indices \( \sem{\sigma_1 \times \sigma_2} \) is defined as the Cartesian product of the sets \( \sem{\sigma_1} \) and \( \sem{\sigma_2} \). More generally, each type is interpreted as a set. For example, the scalar type \( \sem{\SType} \) is interpreted as the set of complex numbers \( \mathbb{C} \), and the ket and bra types \( \sem{\KType(\sigma)} \) and \( \sem{\BType(\sigma)} \) are interpreted as the Hilbert space \( \mathcal{H}_{\sem{\sigma}} \) and its dual \( \mathcal{H}_{\sem{\sigma}}^* \), respectively. Terms are explained as the set elements. For example, the semantics of ket tensor product $\sem{K_1 \otimes K_2} \equiv \sem{K_1} \otimes \sem{K_2}$, is obtained by first calculating the semantics $\sem{K_1}$ and $\sem{K_2}$ as vectors, and then take the vector tensor product as result.
 
