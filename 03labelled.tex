@@ -158,7 +158,10 @@ The third line gives the typing of labelled tensoring with a check whether the c
 \end{definition}
 Formally, we equip $\cR$ with a default order, say for example the alphabetical order of names. For any valid register $R$, there exists the operator $\Swap_R$ that sorts $R$; for example, if $E\vdash p : \reg(\sigma_p)$ and $E\vdash q : \reg(\sigma_q)$, then $\Swap_{(q,p)} \triangleq \sum_{i\in \bU(\sigma_p)}\sum_{j\in \bU(\sigma_q)}|i\>\<j|\otimes |j\>\<i|$. We can further define $\Swap_{s_1,s_2,\cdots}$ for merging disjoint sets orderly.
 
-For any valuation $v$, and write $\cH_{\sem{s}_v} \triangleq \bigotimes_{r\in s}\cH_{\sem{\sigma_r}_v}$ for any $s\subseteq \cR$, where $E\vdash r : \reg(\sigma_r)$ for all $r\in\cR$. We interpret labelled Dirac notations inductively as: assume $E\vdash D_i : \cD(s_i,s'_i)$ in the following,
+For given context $E$ and set $s = \{r_1,\cdots,r_n\}\subseteq\cR$ ($r_i$ is sorted) with $E\vdash r_i : \sigma_i$, we define $\sigma_s\triangleq \sigma_1\times\cdots\times\sigma_n$ if $s$ is non-empty. \label{context: sigma s}
+For any valuation $v$, we further write $\cH_{\sem{s}_v} \triangleq \bigotimes_{i}\cH_{\sem{\sigma_i}_v}$ which equals to $\cH_{\sem{\sigma_s}_v}$ for non-empty $s$.
+% for any $s\subseteq \cR$, where $E\vdash r : \reg(\sigma_r)$ for all $r\in\cR$. 
+We interpret labelled Dirac notations inductively as (assume $E\vdash D_i : \cD(s_i,s'_i)$) :
 \begin{itemize}
   \item $\sem{|i\>_r}_v = |\sem{i}_v\>$;\quad 
         $\sem{\<i|_r}_v = \<\sem{i}_v|$;\quad  
@@ -235,22 +238,33 @@ and thus it is equivalent to decide the equivalence of additions of subterms of:
   \label{eqn:Labelled normal1}
   \sum_{i}\cdots\sum_{j}\cdots \sum_{i'}\cdots\sum_{j'} a_1 . ((\ket{i} \otimes \cdots \otimes \ket{j}) \otimes (\bra{i'}\otimes\cdots\otimes \bra{j'}))
 \end{equation}
-which do not involve any labels.
+which do not involve any labels. 
 
-\begin{theorem}[Soundness]
-  All rewriting rules for labelled Dirac notations listed here and in Appendix are sound, i.e., for any interpretation $\sem{\cdot}$, $D\reduce D'$ implies $\sem{D} = \sem{D'}$.
+Define $T_{s,s'}$ as $\SType$ if $s=s'=\emptyset$, $\KType(\sigma_s)$ if $s'=\emptyset$, $\BType(\sigma_{s'})$ if $s=\emptyset$ and $\OType(\sigma_s,\sigma_{s'})$ otherwise (see Sec. \ref{context: sigma s}). We claim the soundness of our normalization as:
+% Then if the original equality is $E\vdash D_1 = D_2 : \cD(s,s')$, what remains to be check $E\vdash e_1 = e_2 : T_{s,s'}$.
+
+\begin{theorem}[Soundness and Completeness of Normalization]
+  Assuming $E\vdash D_1 : \cD(s,s')$, $E\vdash D_2 : \cD(s,s')$, 
+  and no variables of $\DType(\cdot,\cdot)$ in $D_1,D_2$.
+  Let $e_1 = e_2$ be obtained by above normalization procedure on $D_1 = D_2$. Then:
+  \begin{itemize}
+    \item (Soundness) $E\vdash e_1 = e_2 : T_{s,s'}$ implies $E\vDash D_1 = D_2$;
+    \item (Completeness) $E\vDash D_1 = D_2$ implies $E\vDash e_1 = e_2$
+  \end{itemize}
+  %All rewriting rules for labelled Dirac notations listed here and in Appendix are sound, i.e., for any interpretation $\sem{\cdot}$, $D\reduce D'$ implies $\sem{D} = \sem{D'}$.
 \end{theorem}
 \begin{proof}
-  By checking each rules and its semantics.
+  Notice that all rewriting rules and ordering perserve the types, so the final step eliminating labels is both sound and complete. 
+  It is routinely to check that each rewriting rules and ordering step are sound based on the semantics. This directly leads to the soundness. For completeness, we need further check if the normalization procedure always provide $e_1 = e_2$, i.e., it never gets stuck and terminates. Step 1 is trivial. For step 2, it can be further checked that 1. there is no circular rules and thus terminates, and 2. if it is not in form (\ref{eqn:Labelled normal}), there must exists one of the rules can be further applied. For step 3, ordering is always applicable. This completes the proof.
 \end{proof}
 
-\begin{theorem}[Completeness for Dealing with Labels]
-  Above normalization procedure translates every well-typed equality of labelled Dirac notations to equality of plain Dirac notation.
-\end{theorem}
-\begin{proof}
-  It is sufficient to check if each step achieves its goal. Step 1 is trivial. For step 2, it can be further checked that if it is not in form (\ref{eqn:Labelled normal}), there must exists one of the rules can be further applied.
-  For step 3, realize that all rewriting rules perserve the types, i.e., $D\reduce D'$ then $E\vdash D : \cD(s,s')$ and $E\vdash D : \cD(s,s')$ for some $s,s'\subseteq \cR$, which ensure the same shape of every subterm after sorting. 
-\end{proof}
+% \begin{theorem}[Completeness of normalization]
+%   $E\vDash D_1 = D_2$ only if $E\vDash e_1 = e_2$, assuming that $E\vdash D_1 : \cD(s,s')$, $E\vdash D_2 : \cD(s,s')$, and $e_1 = e_2$ are obtained by above normalization procedure on $D_1 = D_2$.
+% \end{theorem}
+% \begin{proof}
+%   It is sufficient to check if each step achieves its goal. Step 1 is trivial. For step 2, it can be further checked that if it is not in form (\ref{eqn:Labelled normal}), there must exists one of the rules can be further applied.
+%   For step 3, realize that all rewriting rules perserve the types, i.e., $D\reduce D'$ then $E\vdash D : \cD(s,s')$ and $E\vdash D : \cD(s,s')$ for some $s,s'\subseteq \cR$, which ensure the same shape of every subterm after sorting. 
+% \end{proof}
 % , we claim that tensor of labelled basis in every sum body of Eqn. (\ref{eqn:Labelled normal}) are of the same type. As a consequence, by sort the labelled tensors according to a default order of variables, they 
 
 % In this stage, we only need to check the scalars to decide the equivalence of labelled Dirac notation.
