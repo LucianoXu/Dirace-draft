@@ -72,10 +72,12 @@ notation. D-Hammer benefits from an optimized implementation in
 \CC\ and a tight integration with Mathematica to reason about a broad
 range of mathematical functions, including trigonometric and
 exponential functions, that are commonly used in quantum physics.
-There are three important directions for future work. The first
-direction is to enhance D-Hammer with support for big tensor notation,
-i.e.\, to support expressions of the form $\bigotimes_{i\in I}
-e_i$. The second direction is to extend D-Hammer with a mechanism to
+There are two important directions for future work. 
+% The first
+% direction is to enhance D-Hammer with support for big tensor notation,
+% i.e.\, to support expressions of the form $\bigotimes_{i\in I}
+% e_i$. 
+The first direction is to extend D-Hammer with a mechanism to
 generate independently verifiable certificates.  There is a large body
 of work on producing certificates for automated tools, in particular
 SMT solvers; see e.g.~\cite{DBLP:journals/cacm/BarbosaBCDKLNNOPRTZ23}
@@ -84,7 +86,7 @@ D-Hammer with the Coq or Lean proof assistants; in the first case, one
 would benefit from the formalization of labelled Dirac notation in
 CoqQ~\cite{Zhou2023}, whereas in the second case, one would benefit
 from powerful mechanisms to integrate rewriting procedures into the
-Lean proof assistant. Finally, the third direction is to connect
+Lean proof assistant. The second direction is to connect
 D-Hammer with quantum program verifiers. Two potential applications
 are automating equational proofs for tools that already use Dirac
 notation, and to substitute numerical methods for tools that use

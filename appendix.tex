@@ -13,72 +13,72 @@ This section includes the full list of typing rules.
     \]
     \[
         \textbf{W-Assum-Index} \qquad
-        \frac{\WF(E) \qquad}{\WF(E; x : \Index)}
+        \frac{\WF(\Gamma) \qquad}{\WF(\Gamma; x : \Index)}
     \]
     \[
         \textbf{W-Assum-Term} \qquad
-        \frac{E \vdash T : \Type}{\WF(E; x:T)}
+        \frac{\Gamma \vdash T : \Type}{\WF(\Gamma; x:T)}
     \]
     \[
         \textbf{W-Def-Term} \qquad
-        \frac{E \vdash t:T \qquad x \notin E}{\WF(E; x:=t:T)}
+        \frac{\Gamma \vdash t:T \qquad x \notin \Gamma}{\WF(\Gamma; x:=t:T)}
     \]
 
     \item Rules for type indices.
     \[
         \textbf{Index-Var} \qquad
-        \frac{\WF(E) \qquad x : \Index \in E}{E \vdash x : \Index}
+        \frac{\WF(\Gamma) \qquad x : \Index \in \Gamma}{\Gamma \vdash x : \Index}
     \]
     \[
         \textbf{Index-Prod} \qquad
-        \frac{E \vdash \sigma : \Index \qquad E \vdash \tau : \Index}{E \vdash \sigma \times \tau : \Index}
+        \frac{\Gamma \vdash \sigma : \Index \qquad \Gamma \vdash \tau : \Index}{\Gamma \vdash \sigma \times \tau : \Index}
     \]
     \[
         \textbf{Index-Qudit} \qquad
-        \frac{\WF(E)}{E \vdash \mathsf{bool} : \Index}
+        \frac{\WF(\Gamma)}{\Gamma \vdash \mathsf{bool} : \Index}
     \]
 
 
     \item Rules for types.
     \[
         \textbf{Type-Lam} \qquad
-        \frac{E \vdash T : \Type \qquad E \vdash U : \Type}{E \vdash T \to U : \Type}
+        \frac{\Gamma \vdash T : \Type \qquad \Gamma \vdash U : \Type}{\Gamma \vdash T \to U : \Type}
     \]
     \[
         \textbf{Type-Index} \qquad
-        \frac{E; x : \Index \vdash U : \Type}{E \vdash \forall x.U : \Type}
+        \frac{\Gamma; x : \Index \vdash U : \Type}{\Gamma \vdash \forall x.U : \Type}
     \]
     \[
         \textbf{Type-Basis} \qquad
-        \frac{E \vdash \sigma : \Index}{E \vdash \Basis(\sigma) : \Type}
+        \frac{\Gamma \vdash \sigma : \Index}{\Gamma \vdash \Basis(\sigma) : \Type}
     \]
     \[
         \textbf{Type-Ket} \qquad
-        \frac{E \vdash \sigma : \Index}{E \vdash \KType(\sigma) : \Type}
+        \frac{\Gamma \vdash \sigma : \Index}{\Gamma \vdash \KType(\sigma) : \Type}
     \]
     \[
         \textbf{Type-Bra} \qquad
-        \frac{E \vdash \sigma : \Index}{E \vdash \BType(\sigma) : \Type}
+        \frac{\Gamma \vdash \sigma : \Index}{\Gamma \vdash \BType(\sigma) : \Type}
     \]
     \[
         \textbf{Type-Opt} \qquad
-        \frac{E \vdash \sigma : \Index \qquad E \vdash \tau : \Index}{E \vdash \OType(\sigma, \tau) : \Type}
+        \frac{\Gamma \vdash \sigma : \Index \qquad \Gamma \vdash \tau : \Index}{\Gamma \vdash \OType(\sigma, \tau) : \Type}
     \]
     \[
         \textbf{Type-Scalar} \qquad
-        \frac{\WF(E)}{E \vdash \SType : \Type}
+        \frac{\WF(\Gamma)}{\Gamma \vdash \SType : \Type}
     \]
     \[
         \textbf{Type-Set} \qquad
-        \frac{E \vdash \sigma : \Index}{E \vdash \SET(\sigma) : \Type}
+        \frac{\Gamma \vdash \sigma : \Index}{\Gamma \vdash \SET(\sigma) : \Type}
     \]
     \[
         \textbf{Type-Register} \qquad
-        \frac{E \vdash  \sigma : \Index}{E \vdash \reg(\sigma) : \Type}
+        \frac{\Gamma \vdash  \sigma : \Index}{\Gamma \vdash \reg(\sigma) : \Type}
     \]
     \[
         \textbf{Type-Labelled} \qquad
-        \frac{E \vdash r : \reg(\sigma_r) \text{ for all $r$ in $s_1$ and $s_2$} }{E \vdash \DType(s_1, s_2) : \textsf{Type}} 
+        \frac{\Gamma \vdash r : \reg(\sigma_r) \text{ for all $r$ in $s_1$ and $s_2$} }{\Gamma \vdash \DType(s_1, s_2) : \textsf{Type}} 
     \]
 
     \item Rules for variable and function typings. Here $U\{x/u\}$ means replacing the bound variable $x$ with $u$ in $U$.
@@ -86,91 +86,91 @@ This section includes the full list of typing rules.
         \textbf{Term-Var} \qquad
         \frac{
             \begin{aligned}
-                & \WF(E) \\
-                & (x:T) \in E \text{ or } (x := t : T) \in E \text{ for some $t$}
+                & \WF(\Gamma) \\
+                & (x:T) \in \Gamma \text{ or } (x := t : T) \in \Gamma \text{ for some $t$}
             \end{aligned}
         }
-        {E \vdash x : T}
+        {\Gamma \vdash x : T}
     \]
     \[
         \textbf{Lam} \qquad
-        \frac{E; x : T \vdash t : U}{E \vdash (\lambda x : T . t) : T \to U}
+        \frac{\Gamma; x : T \vdash t : U}{\Gamma \vdash (\lambda x : T . t) : T \to U}
     \]
     \[
         \textbf{Index} \qquad
-        \frac{E; x : \Index \vdash t : U}{E \vdash (\lambda x : T.t) : \forall x.U}
+        \frac{\Gamma; x : \Index \vdash t : U}{\Gamma \vdash (\lambda x : T.t) : \forall x.U}
     \]
     \[
         \textbf{App-Lam} \qquad
-        \frac{E \vdash t:U \to T \qquad E \vdash u:U}{E \vdash (t\ u):T}
+        \frac{\Gamma \vdash t:U \to T \qquad \Gamma \vdash u:U}{\Gamma \vdash (t\ u):T}
     \]
     \[
         \textbf{App-Index} \qquad
-        \frac{E \vdash t:\forall x.U \qquad E \vdash u : \Index}{E \vdash (t\ u):U\{x/u\}}
+        \frac{\Gamma \vdash t:\forall x.U \qquad \Gamma \vdash u : \Index}{\Gamma \vdash (t\ u):U\{x/u\}}
     \]
     
     \item Basis term typing rules. 
     \[  \textbf{Basis-0} \qquad
-        \frac{\WF(E)}{E \vdash 0 : \Basis(\mathsf{bool})}
+        \frac{\WF(\Gamma)}{\Gamma \vdash 0 : \Basis(\mathsf{bool})}
     \]
     \[  \textbf{Basis-1} \qquad
-        \frac{\WF(E)}{E \vdash 1 : \Basis(\mathsf{bool})}
+        \frac{\WF(\Gamma)}{\Gamma \vdash 1 : \Basis(\mathsf{bool})}
     \]
     \[
         \textbf{Basis-Pair} \qquad
-        \frac{E\vdash s : \Basis(\sigma) \qquad E\vdash t : \Basis(\tau)} {E\vdash (s, t) : \Basis(\sigma \times \tau)}
+        \frac{\Gamma\vdash s : \Basis(\sigma) \qquad \Gamma\vdash t : \Basis(\tau)} {\Gamma\vdash (s, t) : \Basis(\sigma \times \tau)}
     \]
 
 
     \item Composition typing rules. 
     \[  \textbf{Compo-SS} \qquad
-        \frac{E \vdash x : \SType \qquad E \vdash y : \SType}{E \vdash x \circ y : \SType}
+        \frac{\Gamma \vdash x : \SType \qquad \Gamma \vdash y : \SType}{\Gamma \vdash x \circ y : \SType}
     \]
     \[  \textbf{Compo-SK} \qquad
-        \frac{E \vdash x : \SType \qquad E \vdash y : \KType(\sigma)}{E \vdash x \circ y : \KType(\sigma)}
+        \frac{\Gamma \vdash x : \SType \qquad \Gamma \vdash y : \KType(\sigma)}{\Gamma \vdash x \circ y : \KType(\sigma)}
     \]
     \[  \textbf{Compo-SB} \qquad
-        \frac{E \vdash x : \SType \qquad E \vdash y : \BType(\sigma)}{E \vdash x \circ y : \BType(\sigma)}
+        \frac{\Gamma \vdash x : \SType \qquad \Gamma \vdash y : \BType(\sigma)}{\Gamma \vdash x \circ y : \BType(\sigma)}
     \]
     \[  \textbf{Compo-SO} \qquad
-        \frac{E \vdash x : \SType \qquad E \vdash y : \OType(\sigma, \tau)}{E \vdash x \circ y : \OType(\sigma, \tau)}
+        \frac{\Gamma \vdash x : \SType \qquad \Gamma \vdash y : \OType(\sigma, \tau)}{\Gamma \vdash x \circ y : \OType(\sigma, \tau)}
     \]
     \[  \textbf{Compo-KS} \qquad
-        \frac{E \vdash x : \KType(\sigma) \qquad E \vdash y : \SType}{E \vdash x \circ y : \KType(\sigma)}
+        \frac{\Gamma \vdash x : \KType(\sigma) \qquad \Gamma \vdash y : \SType}{\Gamma \vdash x \circ y : \KType(\sigma)}
     \]
     \[  \textbf{Compo-KK} \qquad
-        \frac{E \vdash x : \KType(\sigma) \qquad E \vdash y : \KType(\tau)}{E \vdash x \circ y : \KType(\sigma \times \tau)}
+        \frac{\Gamma \vdash x : \KType(\sigma) \qquad \Gamma \vdash y : \KType(\tau)}{\Gamma \vdash x \circ y : \KType(\sigma \times \tau)}
     \]
     \[  \textbf{Compo-KB} \qquad
-        \frac{E \vdash x : \KType(\sigma) \qquad E \vdash y : \BType(\tau)}{E \vdash x \circ y : \OType(\sigma, \tau)}
+        \frac{\Gamma \vdash x : \KType(\sigma) \qquad \Gamma \vdash y : \BType(\tau)}{\Gamma \vdash x \circ y : \OType(\sigma, \tau)}
     \]
     \[  \textbf{Compo-BS} \qquad
-        \frac{E \vdash x : \BType(\sigma) \qquad E \vdash y : \SType}{E \vdash x \circ y : \BType(\sigma)}
+        \frac{\Gamma \vdash x : \BType(\sigma) \qquad \Gamma \vdash y : \SType}{\Gamma \vdash x \circ y : \BType(\sigma)}
     \]
     \[  \textbf{Compo-BK} \qquad
-        \frac{E \vdash x : \BType(\sigma) \qquad E \vdash y : \KType(\sigma)}{E \vdash x \circ y : \SType}
+        \frac{\Gamma \vdash x : \BType(\sigma) \qquad \Gamma \vdash y : \KType(\sigma)}{\Gamma \vdash x \circ y : \SType}
     \]
     \[  \textbf{Compo-BB} \qquad
-        \frac{E \vdash x : \BType(\sigma) \qquad E \vdash y : \BType(\tau)}{E \vdash x \circ y : \BType(\sigma \times \tau)}
+        \frac{\Gamma \vdash x : \BType(\sigma) \qquad \Gamma \vdash y : \BType(\tau)}{\Gamma \vdash x \circ y : \BType(\sigma \times \tau)}
     \]
     \[  \textbf{Compo-BO} \qquad
-        \frac{E \vdash x : \BType(\sigma) \qquad E \vdash y : \OType(\sigma, \tau)}{E \vdash x \circ y : \BType(\tau)}
+        \frac{\Gamma \vdash x : \BType(\sigma) \qquad \Gamma \vdash y : \OType(\sigma, \tau)}{\Gamma \vdash x \circ y : \BType(\tau)}
     \]
     \[  \textbf{Compo-OS} \qquad
-        \frac{E \vdash x : \OType(\sigma, \tau) \qquad E \vdash y : \SType}{E \vdash x \circ y : \OType(\sigma, \tau)}
+        \frac{\Gamma \vdash x : \OType(\sigma, \tau) \qquad \Gamma \vdash y : \SType}{\Gamma \vdash x \circ y : \OType(\sigma, \tau)}
     \]
     \[  \textbf{Compo-OK} \qquad
-        \frac{E \vdash x : \OType(\sigma, \tau) \qquad E \vdash y : \KType(\tau)}{E \vdash x \circ y : \KType(\sigma)}
+        \frac{\Gamma \vdash x : \OType(\sigma, \tau) \qquad \Gamma \vdash y : \KType(\tau)}{\Gamma \vdash x \circ y : \KType(\sigma)}
     \]
     \[  \textbf{Compo-OO} \qquad
-        \frac{E \vdash x : \OType(\sigma, \tau) \qquad E \vdash y : \OType(\sigma', \tau')}{E \vdash x \circ y : \OType(\sigma \times \sigma', \tau \times \tau')}
+        \frac{\Gamma \vdash x : \OType(\sigma, \tau) \qquad \Gamma \vdash y : \OType(\sigma', \tau')}{\Gamma \vdash x \circ y : \OType(\sigma \times \sigma', \tau \times \tau')}
     \]
     \[
         \textbf{Compo-DD} \qquad
         \frac{
             \begin{aligned}
-                E \vdash x : \DType(s_1,s_1') \\
-                E \vdash y : \DType(s_2,s_2')
+                \Gamma \vdash x : \DType(s_1,s_1') \\
+                \Gamma \vdash y : \DType(s_2,s_2')
             \end{aligned}
             \qquad 
             \begin{aligned}
@@ -178,233 +178,233 @@ This section includes the full list of typing rules.
                 s_2' \cap s_1' \backslash s_2 = \emptyset
             \end{aligned}
         }
-        {E \vdash x\circ y : \DType(s_1 \cup (s_2\backslash s_1'), s_2' \cup (s_1'\backslash s_2))}
+        {\Gamma \vdash x\circ y : \DType(s_1 \cup (s_2\backslash s_1'), s_2' \cup (s_1'\backslash s_2))}
     \]
 
 
     \item Scalar term typing rules.
     \[
         \textbf{Sca-0} \qquad
-        \frac{\WF(E)}{E \vdash 0 : \SType}
+        \frac{\WF(\Gamma)}{\Gamma \vdash 0 : \SType}
     \]
     \[
         \textbf{Sca-1} \qquad
-        \frac{\WF(E)}{E \vdash 1 : \SType}
+        \frac{\WF(\Gamma)}{\Gamma \vdash 1 : \SType}
     \]
     \[
         \textbf{Sca-Delta} \qquad
-        \frac{ E\vdash s : \Basis(\sigma) \qquad E\vdash t : \Basis(\sigma) } {E \vdash \delta_{s, t} : \SType}
+        \frac{ \Gamma\vdash s : \Basis(\sigma) \qquad \Gamma\vdash t : \Basis(\sigma) } {\Gamma \vdash \delta_{s, t} : \SType}
     \]
     \[
         \textbf{Sca-Add} \qquad
-        \frac{E\vdash a_i : \SType \text{ for all $i$}}{E\vdash a_1 + \cdots + a_n : \SType}
+        \frac{\Gamma\vdash a_i : \SType \text{ for all $i$}}{\Gamma\vdash a_1 + \cdots + a_n : \SType}
     \]
     \[
         \textbf{Sca-Mul} \qquad
-        \frac{E\vdash a_i : \SType \text{ for all $i$}}{E\vdash a_1 \times \cdots \times a_n : \SType}
+        \frac{\Gamma\vdash a_i : \SType \text{ for all $i$}}{\Gamma\vdash a_1 \times \cdots \times a_n : \SType}
     \]
     \[
         \textbf{Sca-Conj} \qquad
-        \frac{E \vdash a : \SType}{E \vdash a^*:\SType}
+        \frac{\Gamma \vdash a : \SType}{\Gamma \vdash a^*:\SType}
     \]
     \[
         \textbf{Sca-Dot} \qquad
-        \frac{E\vdash B : \BType(\sigma) \qquad E\vdash K : \KType(\sigma)}{E \vdash B \cdot K : \SType}
+        \frac{\Gamma\vdash B : \BType(\sigma) \qquad \Gamma\vdash K : \KType(\sigma)}{\Gamma \vdash B \cdot K : \SType}
     \]
     \[
         \textbf{Sca-Sum} \qquad
-        \frac{E \vdash s : \SET(\sigma) \qquad E \vdash f : \Basis(\sigma) \to \SType}{E \vdash \sum_{s} f : \SType}
+        \frac{\Gamma \vdash s : \SET(\sigma) \qquad \Gamma \vdash f : \Basis(\sigma) \to \SType}{\Gamma \vdash \sum_{s} f : \SType}
     \]
 
     \item Ket term typing rules.
     \[
         \textbf{Ket-0} \qquad
-        \frac{E \vdash \sigma : \Index}{E \vdash \ZEROK(\sigma) : \KType(\sigma)}
+        \frac{\Gamma \vdash \sigma : \Index}{\Gamma \vdash \ZEROK(\sigma) : \KType(\sigma)}
     \]
     \[
         \textbf{Ket-Basis} \qquad
-        \frac{E\vdash t : \Basis(\sigma)}{E \vdash \ket{t} : \KType(\sigma)}
+        \frac{\Gamma\vdash t : \Basis(\sigma)}{\Gamma \vdash \ket{t} : \KType(\sigma)}
     \]
     \[
         \textbf{Ket-Adj} \qquad
-        \frac{E \vdash B : \BType(\sigma)}{E \vdash B^\dagger : \KType(\sigma)}
+        \frac{\Gamma \vdash B : \BType(\sigma)}{\Gamma \vdash B^\dagger : \KType(\sigma)}
     \]
     \[
         \textbf{Ket-Scr} \qquad
-        \frac{E \vdash a : \SType \qquad E \vdash K : \KType(\sigma)}{E \vdash a.K : \KType(\sigma)}
+        \frac{\Gamma \vdash a : \SType \qquad \Gamma \vdash K : \KType(\sigma)}{\Gamma \vdash a.K : \KType(\sigma)}
     \]
     \[
         \textbf{Ket-Add} \qquad
-        \frac{E \vdash K_i : \KType(\sigma) \text{ for all $i$}}{E \vdash K_1 + \cdots + K_n : \KType(\sigma)}
+        \frac{\Gamma \vdash K_i : \KType(\sigma) \text{ for all $i$}}{\Gamma \vdash K_1 + \cdots + K_n : \KType(\sigma)}
     \]
     \[
         \textbf{Ket-MulK} \qquad
-        \frac{E \vdash O : \OType(\sigma, \tau) \qquad E \vdash K : \KType(\tau)}{E \vdash O \cdot K : \KType(\sigma)}
+        \frac{\Gamma \vdash O : \OType(\sigma, \tau) \qquad \Gamma \vdash K : \KType(\tau)}{\Gamma \vdash O \cdot K : \KType(\sigma)}
     \]
     \[
         \textbf{Ket-Tsr} \qquad
-        \frac{E \vdash K_1 : \KType(\sigma) \qquad E \vdash K_2 : \KType(\tau)} {E \vdash K_1 \otimes K_2 : \KType(\sigma \times \tau)}
+        \frac{\Gamma \vdash K_1 : \KType(\sigma) \qquad \Gamma \vdash K_2 : \KType(\tau)} {\Gamma \vdash K_1 \otimes K_2 : \KType(\sigma \times \tau)}
     \]
     \[
         \textbf{Ket-Sum} \qquad
-        \frac{E \vdash s : \SET(\sigma) \qquad E \vdash f : \Basis(\sigma) \to \KType(\tau)}{E \vdash \sum_{s} f : \KType(\tau)}
+        \frac{\Gamma \vdash s : \SET(\sigma) \qquad \Gamma \vdash f : \Basis(\sigma) \to \KType(\tau)}{\Gamma \vdash \sum_{s} f : \KType(\tau)}
     \]
 
     \item Bra term typing rules.
     \[
         \textbf{Bra-0} \qquad
-        \frac{E \vdash \sigma : \Index}{E \vdash \ZEROB(\sigma) : \BType(\sigma)}
+        \frac{\Gamma \vdash \sigma : \Index}{\Gamma \vdash \ZEROB(\sigma) : \BType(\sigma)}
     \]
     \[
         \textbf{Bra-Basis} \qquad
-        \frac{E\vdash t : \Basis(\sigma)}{E \vdash \bra{t} : \BType(\sigma)}
+        \frac{\Gamma\vdash t : \Basis(\sigma)}{\Gamma \vdash \bra{t} : \BType(\sigma)}
     \]
     \[
         \textbf{Bra-Adj} \qquad
-        \frac{E \vdash K : \KType(\sigma)}{E \vdash K^\dagger : \BType(\sigma)}
+        \frac{\Gamma \vdash K : \KType(\sigma)}{\Gamma \vdash K^\dagger : \BType(\sigma)}
     \]
     \[
         \textbf{Bra-Scr} \qquad
-        \frac{E \vdash a : \SType \qquad E \vdash B : \BType(\sigma)}{E \vdash a.B : \BType(\sigma)}
+        \frac{\Gamma \vdash a : \SType \qquad \Gamma \vdash B : \BType(\sigma)}{\Gamma \vdash a.B : \BType(\sigma)}
     \]
     \[
         \textbf{Bra-Add} \qquad
-        \frac{E \vdash B_i : \BType(\sigma) \text{ for all $i$}}{E \vdash B_1 + \cdots + B_n : \BType(\sigma)}
+        \frac{\Gamma \vdash B_i : \BType(\sigma) \text{ for all $i$}}{\Gamma \vdash B_1 + \cdots + B_n : \BType(\sigma)}
     \]
     \[
         \textbf{Bra-MulB} \qquad
-        \frac{E \vdash B : \KType(\sigma) \qquad E \vdash O : \OType(\sigma, \tau)}{E \vdash B \cdot O : \BType(\tau)}
+        \frac{\Gamma \vdash B : \KType(\sigma) \qquad \Gamma \vdash O : \OType(\sigma, \tau)}{\Gamma \vdash B \cdot O : \BType(\tau)}
     \]
     \[
         \textbf{Bra-Tsr} \qquad
-        \frac{E \vdash B_1 : \BType(\sigma) \qquad E \vdash B_2 : \BType(\tau)} {E \vdash B_1 \otimes B_2 : \BType(\sigma \times \tau)}
+        \frac{\Gamma \vdash B_1 : \BType(\sigma) \qquad \Gamma \vdash B_2 : \BType(\tau)} {\Gamma \vdash B_1 \otimes B_2 : \BType(\sigma \times \tau)}
     \]
     \[
         \textbf{Bra-Sum} \qquad
-        \frac{E \vdash s : \SET(\sigma) \qquad E \vdash f : \Basis(\sigma) \to \BType(\tau)}{E \vdash \sum_{s} f : \BType(\tau)}
+        \frac{\Gamma \vdash s : \SET(\sigma) \qquad \Gamma \vdash f : \Basis(\sigma) \to \BType(\tau)}{\Gamma \vdash \sum_{s} f : \BType(\tau)}
     \]
 
     \item Operator term typing rules.
     \[
         \textbf{Opt-0} \qquad
-        \frac{E \vdash \sigma : \Index \qquad E \vdash \tau : \Index}{E \vdash \ZEROO(\sigma, \tau) : \OType(\sigma, \tau)}
+        \frac{\Gamma \vdash \sigma : \Index \qquad \Gamma \vdash \tau : \Index}{\Gamma \vdash \ZEROO(\sigma, \tau) : \OType(\sigma, \tau)}
     \]
     \[
         \textbf{Opt-1} \qquad
-        \frac{E \vdash \sigma : \Index}{E \vdash \ONEO(\sigma) : \OType(\sigma, \sigma)}
+        \frac{\Gamma \vdash \sigma : \Index}{\Gamma \vdash \ONEO(\sigma) : \OType(\sigma, \sigma)}
     \]
     \[
         \textbf{Opt-Adj} \qquad
-        \frac{E \vdash O : \OType(\sigma, \tau)}{E \vdash O^\dagger : \OType(\tau, \sigma)}
+        \frac{\Gamma \vdash O : \OType(\sigma, \tau)}{\Gamma \vdash O^\dagger : \OType(\tau, \sigma)}
     \]
     \[
         \textbf{Opt-Scr} \qquad
-        \frac{E \vdash a : \SType \qquad E \vdash O : \OType(\sigma, \tau)}{E \vdash a.O : \OType(\sigma, \tau)}
+        \frac{\Gamma \vdash a : \SType \qquad \Gamma \vdash O : \OType(\sigma, \tau)}{\Gamma \vdash a.O : \OType(\sigma, \tau)}
     \]
     \[
         \textbf{Opt-Add} \qquad
-        \frac{E \vdash O_i : \OType(\sigma, \tau) \text{ for all $i$}}{E \vdash O_1 + \cdots + O_n : \OType(\sigma, \tau)}
+        \frac{\Gamma \vdash O_i : \OType(\sigma, \tau) \text{ for all $i$}}{\Gamma \vdash O_1 + \cdots + O_n : \OType(\sigma, \tau)}
     \]
     \[
         \textbf{Opt-Outer} \qquad
-        \frac{E\vdash K : \KType(\sigma) \qquad E\vdash B : \BType(\tau)}{E\vdash K \cdot B : \OType(\sigma, \tau)}
+        \frac{\Gamma\vdash K : \KType(\sigma) \qquad \Gamma\vdash B : \BType(\tau)}{\Gamma\vdash K \cdot B : \OType(\sigma, \tau)}
     \]
     \[
         \textbf{Opt-Mulo} \qquad
-        \frac{E \vdash O_1 : \OType(\sigma, \tau) \qquad E \vdash O_2 : \OType(\tau, \rho)}{E \vdash O_1 \cdot O_2 : \OType(\sigma, \rho)}
+        \frac{\Gamma \vdash O_1 : \OType(\sigma, \tau) \qquad \Gamma \vdash O_2 : \OType(\tau, \rho)}{\Gamma \vdash O_1 \cdot O_2 : \OType(\sigma, \rho)}
     \]
     \[
         \textbf{Opt-Tsr} \qquad
-        \frac{E \vdash O_1 : \OType(\sigma_1, \tau_1) \qquad E \vdash O_2 : \OType(\sigma_2, \tau_2)} {E \vdash O_1 \otimes O_2 : \OType(\sigma_1 \times \sigma_2, \tau_1 \times \tau_2)}
+        \frac{\Gamma \vdash O_1 : \OType(\sigma_1, \tau_1) \qquad \Gamma \vdash O_2 : \OType(\sigma_2, \tau_2)} {\Gamma \vdash O_1 \otimes O_2 : \OType(\sigma_1 \times \sigma_2, \tau_1 \times \tau_2)}
     \]
     \[
         \textbf{Opt-Sum} \qquad
-        \frac{E \vdash s : \SET(\sigma) \qquad E \vdash f : \Basis(\sigma) \to \OType(\tau, \rho)}{E \vdash \sum_{s} f : \OType(\tau, \rho)}
+        \frac{\Gamma \vdash s : \SET(\sigma) \qquad \Gamma \vdash f : \Basis(\sigma) \to \OType(\tau, \rho)}{\Gamma \vdash \sum_{s} f : \OType(\tau, \rho)}
     \]
 
     \item Set term typing rules.
     \[
         \textbf{Set-U} \qquad
-        \frac{E \vdash \sigma : \Index}{E \vdash \mathbf{U}(\sigma) : \SET(\sigma)}
+        \frac{\Gamma \vdash \sigma : \Index}{\Gamma \vdash \mathbf{U}(\sigma) : \SET(\sigma)}
     \]
     \[
         \textbf{Set-Prod} \qquad
-        \frac{E \vdash A : \SET(\sigma) \qquad E \vdash B : \SET(\tau)}{E \vdash A \star B : \SET(\sigma \times \tau)}
+        \frac{\Gamma \vdash A : \SET(\sigma) \qquad \Gamma \vdash B : \SET(\tau)}{\Gamma \vdash A \star B : \SET(\sigma \times \tau)}
     \]
 
 
     \item Register term typing rules.
     \[
         \textbf{Reg-Var} \qquad
-        \frac{\WF(E) \qquad r : \reg(\sigma) \in E}{E \vdash r : \reg(\sigma)}
+        \frac{\WF(\Gamma) \qquad r : \reg(\sigma) \in \Gamma}{\Gamma \vdash r : \reg(\sigma)}
     \]
     \[
         \textbf{Reg-Pair}\qquad
         \frac{
             \begin{aligned}
-                E \vdash R : \reg(\sigma) \\
-                E \vdash Q : \reg(\tau)
+                \Gamma \vdash R : \reg(\sigma) \\
+                \Gamma \vdash Q : \reg(\tau)
             \end{aligned}
             \qquad \var(R) \cap \var(Q) = \emptyset
-        }{E \vdash (R,Q) : \reg(\sigma \times \tau)}
+        }{\Gamma \vdash (R,Q) : \reg(\sigma \times \tau)}
     \]
 
     \item Typing rules for labelled Dirac notation.
     \[
         \textbf{L-Basis-Ket}\qquad 
-        \frac{r : \reg(\sigma) \in E\qquad E \vdash i : \Basis(\sigma)}{E \vdash |i\>_r : \DType(\{r\}, \emptyset)}
+        \frac{r : \reg(\sigma) \in \Gamma\qquad \Gamma \vdash i : \Basis(\sigma)}{\Gamma \vdash |i\>_r : \DType(\{r\}, \emptyset)}
     \]
     \[
         \textbf{L-Basis-Bra}\qquad 
-        \frac{r : \reg(\sigma) \in E \qquad E \vdash i : \Basis(\sigma)}{E \vdash {}_r\<i| : \DType(\emptyset, \{r\})}
+        \frac{r : \reg(\sigma) \in \Gamma \qquad \Gamma \vdash i : \Basis(\sigma)}{\Gamma \vdash {}_r\<i| : \DType(\emptyset, \{r\})}
     \]
     \[
         \textbf{L-Ket}\qquad 
-        \frac{E \vdash R : \reg(\sigma)\qquad E \vdash K : \KType(\sigma)}{E \vdash K_R : \DType(\var R, \emptyset)}
+        \frac{\Gamma \vdash R : \reg(\sigma)\qquad \Gamma \vdash K : \KType(\sigma)}{\Gamma \vdash K_R : \DType(\var R, \emptyset)}
     \]
     \[
         \textbf{L-Bra}\qquad 
-        \frac{E \vdash R : \reg(\sigma)\qquad E \vdash B : \BType(\sigma)}{E \vdash B_R : \DType(\emptyset, \var R)}
+        \frac{\Gamma \vdash R : \reg(\sigma)\qquad \Gamma \vdash B : \BType(\sigma)}{\Gamma \vdash B_R : \DType(\emptyset, \var R)}
     \]
     \[
         \textbf{L-Opt}\qquad 
         \frac{
             \begin{aligned}
-                E \vdash R_1 : \reg (\sigma_1) \\
-                E \vdash R_2 : \reg (\sigma_2)
+                \Gamma \vdash R_1 : \reg (\sigma_1) \\
+                \Gamma \vdash R_2 : \reg (\sigma_2)
             \end{aligned}
             \qquad
-            E \vdash O : \OType(\sigma_1, \sigma_2)
+            \Gamma \vdash O : \OType(\sigma_1, \sigma_2)
         }
-        {E \vdash O_{R_1;R_2} : \DType(\var R_1, \var R_2)}
+        {\Gamma \vdash O_{R_1;R_2} : \DType(\var R_1, \var R_2)}
     \]
     \[
         \textbf{L-Conj}\qquad 
-        \frac{E \vdash D : \DType(s_1,s_2)}{E \vdash D^\dagger : \DType(s_2,s_1)}
+        \frac{\Gamma \vdash D : \DType(s_1,s_2)}{\Gamma \vdash D^\dagger : \DType(s_2,s_1)}
     \]
     \[
         \textbf{L-Scl}\qquad 
-        \frac{E \vdash S : \SType\qquad E \vdash D : \DType(s_1,s_2)}{E \vdash S.D : \DType(s_1,s_2)}
+        \frac{\Gamma \vdash S : \SType\qquad \Gamma \vdash D : \DType(s_1,s_2)}{\Gamma \vdash S.D : \DType(s_1,s_2)}
     \]
     \[
         \textbf{L-Add}\qquad
-        \frac{E \vdash D_i : \DType(s_1,s_2)\quad \text{forall } i}{E \vdash D_1+\cdots+D_n : \DType(s_1,s_2)}
+        \frac{\Gamma \vdash D_i : \DType(s_1,s_2)\quad \text{forall } i}{\Gamma \vdash D_1+\cdots+D_n : \DType(s_1,s_2)}
     \]
     \[
         \textbf{L-Tsr}\qquad
         \frac{
-            E \vdash D_i : \DType(s_i,s_i') \qquad
+            \Gamma \vdash D_i : \DType(s_i,s_i') \qquad
             \bigcap_i s_i = \emptyset \qquad
             \bigcap_i s_i' = \emptyset
         }
-        {E \vdash D_1 \otimes \cdots \otimes D_i : \DType(\bigcup_i s_i, \bigcup_i s_i')}
+        {\Gamma \vdash D_1 \otimes \cdots \otimes D_i : \DType(\bigcup_i s_i, \bigcup_i s_i')}
     \]
     \[
         \textbf{L-Dot}\qquad
         \frac{
             \begin{aligned}
-                E \vdash D_1 : \DType(s_1,s_1') \\
-                E \vdash D_2 : \DType(s_2,s_2')
+                \Gamma \vdash D_1 : \DType(s_1,s_1') \\
+                \Gamma \vdash D_2 : \DType(s_2,s_2')
             \end{aligned}
             \qquad 
             \begin{aligned}
@@ -412,11 +412,11 @@ This section includes the full list of typing rules.
                 s_2' \cap s_1' \backslash s_2 = \emptyset
             \end{aligned}
         }
-        {E \vdash D_1\cdot D_2 : \DType(s_1 \cup (s_2\backslash s_1'), s_2' \cup (s_1'\backslash s_2))}
+        {\Gamma \vdash D_1\cdot D_2 : \DType(s_1 \cup (s_2\backslash s_1'), s_2' \cup (s_1'\backslash s_2))}
     \]
     \[
         \textbf{L-Sum}\qquad
-        \frac{E \vdash s : \SET(\sigma) \qquad E \vdash f : \Basis(\sigma) \to \DType(s_1, s_2)}{E \vdash \sum_{s} f : \DType(s_1, s_2)}
+        \frac{\Gamma \vdash s : \SET(\sigma) \qquad \Gamma \vdash f : \Basis(\sigma) \to \DType(s_1, s_2)}{\Gamma \vdash \sum_{s} f : \DType(s_1, s_2)}
     \]
 
 \end{itemize}
@@ -685,7 +685,7 @@ This section includes all the rewriting rules used in the system. Related rules 
     & $((\lambda x : T.t)\ u)\ \reduce\ t\{x/u\}$ \\
     %
     DELTA
-    & $(c:=t:T) \in E \Rightarrow c\ \reduce\ t$
+    & $(c:=t:T) \in \Gamma \Rightarrow c\ \reduce\ t$
 \end{ruletable}
 
 \begin{ruletable}{The special to flatten all AC symbols within one call.}
@@ -1319,21 +1319,21 @@ This section includes all the rewriting rules used in the system. Related rules 
 
 \section{Efficient Algorithm for Deciding the equivalence}
 \label{sec: decide}
-The equivalence of Dirac notations are decided by normalization, which transforms equivalent expressions under a set of axioms into the same syntax. For the entire axiom set $R \cup F$ of Dirac notation, the previous algorithm conducts normalization partially on $R$ by term rewriting modulo $F$, and axioms in $F$ are checked by iterating through all permutations. This direct solution has factorial compleixty on maximum number of AC symbol arguemnts, and is observed to be critical to the low efficiency. Here we propose an efficient algorithm to perform total nomralization on $R \cup F$, and their comparison are illustrated below.
+The equivalence of Dirac notations are decided by normalization, which transforms equivalent expressions under a set of axioms into the same syntax. For the entire axiom set $R \cup E$ of Dirac notation, the previous algorithm conducts normalization partially on $R$ by term rewriting modulo $E$, and axioms in $E$ are checked by iterating through all permutations. This direct solution has factorial compleixty on maximum number of AC symbol arguemnts, and is observed to be critical to the low efficiency. Here we propose an efficient algorithm to perform total nomralization on $R \cup E$, and their comparison are illustrated below.
 \[
-\text{(partial)}\qquad e_1 \mathop{\twoheadrightarrow}^R e_1' \mathop{=}^F e_2' \mathop{\twoheadleftarrow}^R e_2
+\text{(partial)}\qquad e_1 \mathop{\twoheadrightarrow}^R e_1' \mathop{=}^E e_2' \mathop{\twoheadleftarrow}^R e_2
 \qquad
-\text{(total)}\qquad e_1 \mathop{\twoheadrightarrow}^{R \cup F} e \equiv e \mathop{\twoheadleftarrow}^{R \cup F} e_2
+\text{(total)}\qquad e_1 \mathop{\twoheadrightarrow}^{R \cup E} e \equiv e \mathop{\twoheadleftarrow}^{R \cup E} e_2
 \]
 
-% The problem is that, the axiom set $F$ in~\Cref{def: axiom F} cannot be decided through term rewriting. A direct solution is to decide \( E \) by examining all possible permutations in the rewriting result, which has high complexity. 
+% The problem is that, the axiom set $\Gamma$ in~\Cref{def: axiom \Gamma} cannot be decided through term rewriting. A direct solution is to decide \( \Gamma \) by examining all possible permutations in the rewriting result, which has high complexity. 
 % In this work, we introduce a more efficient approach by incorporating sorting algorithms into the normalization procedure. 
 
-The normalization procedure consists of the following steps. Steps 1 - 3 are term rewriting steps for $R$, and steps 4 - 6 are our algorithm to further normalize the axiom set $F$.
+The normalization procedure consists of the following steps. Steps 1 - 3 are term rewriting steps for $R$, and steps 4 - 6 are our algorithm to further normalize the axiom set $E$.
 \begin{enumerate}
     \item \textbf{First Rewritings}: Expand definitions and simplify expressions.
     \item \textbf{Variable Expansion}: Convert to scalar expressions for better decidability.
-    \item \textbf{Second Rewritings}: Normalize terms on \( R \) modulo \( F \).
+    \item \textbf{Second Rewritings}: Normalize terms on \( R \) modulo \( E \).
     \item \textbf{Sorting Without Bound Variables}: Normalize AC-equivalence.
     \item \textbf{Swap Successive Summations}: Normalize SUM-SWAP equivalences.
     \item \textbf{De Bruijn Normalization}: Normalize \( \alpha \)-equivalence.
@@ -1369,17 +1369,17 @@ The normalization procedure consists of the following steps. Steps 1 - 3 are ter
 % \subsubsection{Variable Expansion}
 % One important technique, revealed in the DiracDec work, is the expansion of variables, which is critical for proofs involving summation. For example:
 % \[
-% \frac{E[\Gamma] \vdash K : \KType(\sigma)}{E[\Gamma] \vdash K \ \reduce\ \sum_{i \in \mathbf{U}(\sigma)}(\bra{i} \cdot K).\ket{i}} \quad \quad
-% \frac{E[\Gamma] \vdash B : \BType(\sigma)}{E[\Gamma] \vdash B \ \reduce\ \sum_{i \in \mathbf{U}(\sigma)}(B \cdot \ket{i}).\bra{i}},
+% \frac{\Gamma[\Gamma] \vdash K : \KType(\sigma)}{\Gamma[\Gamma] \vdash K \ \reduce\ \sum_{i \in \mathbf{U}(\sigma)}(\bra{i} \cdot K).\ket{i}} \quad \quad
+% \frac{\Gamma[\Gamma] \vdash B : \BType(\sigma)}{\Gamma[\Gamma] \vdash B \ \reduce\ \sum_{i \in \mathbf{U}(\sigma)}(B \cdot \ket{i}).\bra{i}},
 % \]
 % \[
-% \frac{E[\Gamma] \vdash O : \OType(\sigma, \tau)}{E[\Gamma] \vdash O \ \reduce\ \sum_{i \in \mathbf{U}(\sigma)} \sum_{j \in \mathbf{U}(\tau)}(\bra{i} \cdot O \cdot \ket{j}).(\ket{i} \cdot \bra{j})}.
+% \frac{\Gamma[\Gamma] \vdash O : \OType(\sigma, \tau)}{\Gamma[\Gamma] \vdash O \ \reduce\ \sum_{i \in \mathbf{U}(\sigma)} \sum_{j \in \mathbf{U}(\tau)}(\bra{i} \cdot O \cdot \ket{j}).(\ket{i} \cdot \bra{j})}.
 % \]
 % These rules transform variables into their symbolic summations based on their decomposition over the basis. 
 % The rules are not terminating, therefore is applied recrusively once in the second step called \textit{variable expansion}.
 % Nevertheless, we have found that applying the expansion only once for all variables is sufficient for normalization.
 % \begin{lemma}
-%     Let \( \textrm{expand}(e) \) denote the result of expanding all variables in \( e \) once. For all well-typed terms \( e \) in \( E[\Gamma] \), \( \textrm{expand}(\textrm{expand}(e)) \) and \( \textrm{expand}(e) \) have the same normal form.
+%     Let \( \textrm{expand}(e) \) denote the result of expanding all variables in \( e \) once. For all well-typed terms \( e \) in \( \Gamma[\Gamma] \), \( \textrm{expand}(\textrm{expand}(e)) \) and \( \textrm{expand}(e) \) have the same normal form.
 % \end{lemma}
 % \begin{proof}
 %     Expanding a ket variable twice, for example, results in the following transformation:
@@ -1391,7 +1391,7 @@ The normalization procedure consists of the following steps. Steps 1 - 3 are ter
 
 
 
-Now we analyse the axioms in $F$ to understand the difficulty and solution for normalization. 
+Now we analyse the axioms in $E$ to understand the difficulty and solution for normalization. 
 For $\alpha$-equivalence, we want to rule out the influence of bound variable names. Therefore we use de Bruijn notation~\cite{deBruijn1972lambda}, which replaces the name with the distance from the lambda abstraction to the variable. For instance, the nominal lambda abstraction \( \lambda x. x \) is transformed into \( \lambda . \$0 \), while \( \lambda x. \lambda y. (x\ (y\ x)) \) is transformed into \( \lambda.\lambda. (\$1\ (\$0\ \$1)) \).
 
 The remaining axioms, such as AC-equivalence and SUM-SWAP, assert equivalence under permutations. A standard approach for deciding such equivalences is to normalize terms by sorting in a predefined order. For example, given the dictionary order \( a < b < c \), the term \( b + c + a \) (and any other AC-equivalent term) is normalized into \( a + b + c \). However, in our setting, two intertwined difficulties arise: how to assign an order to all terms in the language, and how to simultaneously sort for both axioms.
@@ -1476,12 +1476,12 @@ Take the term $\sum_{i \in s_2} \sum_{j \in s_1} \bra{i} B \ket{j} \times \bra{j
 Lastly, we can prove that the equivalence established by this normalization procedure is sound with respect to the semantics.
 
 \begin{theorem}[Soundness]
-    For any well-formed context \( E \) and well-typed expressions \( e_1 \) and \( e_2 \), if  $e_1$ and $e_2$ have the same normal form, then \( \sem{e_1} = \sem{e_2} \).
+    For any well-formed context \( \Gamma \) and well-typed expressions \( e_1 \) and \( e_2 \), if  $e_1$ and $e_2$ have the same normal form, then \( \sem{e_1} = \sem{e_2} \).
 \end{theorem}
 
-\begin{proof}
-    The soundness of the term rewriting procedure follows from the fact that each rewriting rule preserves equivalence. Furthermore, the operations in the sort and swap transformations respect the AC-equivalence and SUM-SWAP axioms. Finally, the de Bruijn normalization ensures soundness for \( \alpha \)-equivalence.
-\end{proof}
+% \begin{proof}
+%     The soundness of the term rewriting procedure follows from the fact that each rewriting rule preserves equivalence. Furthermore, the operations in the sort and swap transformations respect the AC-equivalence and SUM-SWAP axioms. Finally, the de Bruijn normalization ensures soundness for \( \alpha \)-equivalence.
+% \end{proof}
 
 
 

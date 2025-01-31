@@ -34,7 +34,8 @@ bunched logics support compositional reasoning about mutable states.
 
 Labelled Dirac notation is also commonly used to express assertions
 about quantum programs. Specifically, many quantum Hoare logics use
-labelled Dirac notation and its variants to express program assertions (see for example~\cite{DBLP:conf/lics/ZhouBHYY21,Zhou2023,qRHL_unruh2019,QSL_Le_2022,Zhong2024-np,incorrectness_2022,qafny2024}). These logics also use
+labelled Dirac notation and its variants to express program assertions (see for example \cite{DBLP:conf/lics/ZhouBHYY21} \cite{Zhou2023} \cite{qRHL_unruh2019} \cite{QSL_Le_2022} \cite{Zhong2024-np} \cite{incorrectness_2022} \cite{qafny2024}). 
+These logics also use
 implicitly equational reasoning between labelled Dirac expressions, to
 glue applications of proof rules--similar to the use of the rule of
 consequence in the setting of classical program. Therefore, it is
@@ -175,8 +176,8 @@ $\cnot$ on $r,q$).
 
 
 
-Roughly speaking, encoding in plain Dirac notation needs to
-tensoring identity operators and employing additional $\Swap$ gates
+Roughly speaking, encoding in plain Dirac notation requires
+tensoring identity operators and employing additional $\Swap$ gates,
 since generally the conventional order cannot guarantee 1. the order
 of all local operations is consistent with it, 2. the local operations
 involve only adjacent qubits in the conventional order.

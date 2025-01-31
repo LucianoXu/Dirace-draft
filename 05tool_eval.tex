@@ -1,23 +1,24 @@
 
 \section{Implementation and Case Study}
-The improvement and extensions above concludes in our implementation called D-Hammer, a solver written in \CC. It has a parser built by ANTLR4, and scalar reasonings are powered by a Mathematica kernel. The user can use commands to make definitions and assumptions in the maintained context, conduct the normalization and equivalence checking, and obtain the rewriting trace output. 
+The improvement and extensions above concludes in our implementation called D-Hammer, a solver written in \CC. It has a parser built by ANTLR4, and scalar reasonings are powered by Mathematica Engine. The user can use commands to make definitions and assumptions in the maintained context, conduct the normalization and equivalence checking, and obtain the rewriting trace output. 
 It can be used from the command line interactively, or can be integrated into other \CC\ projects as a library.
 This implementation is tested on the benchmark of the previous work and new examples for labelled Dirac notation, demonstrating significant improvement in expressivity and efficiency. 
-The tool and example encodings will be open-source and public available.
+The tool and example encodings will be open-source and publicly available.
 
-\subsubsection{Project Structure}
-The project structure is illustrated in~\Cref{fig: dhammer structure}.
-\texttt{ualg} is the module for universal algebra, defining basic concepts like terms and substitutions. It serves as the library for \texttt{dhammer}, which are then utilized in the example benchmarks and the toplevel command line application. The components of \texttt{dhammer} are as follows:
+\subsubsection{Structure and Mechanism} 
+The project consists of the following components:
 \begin{itemize}
-    \item \texttt{symbols.cpp}: the reserved symbols and AC symbols;
-    \item \texttt{syntax\_theory.cpp}: syntax related algorithms, such as de Bruijn normalization and freeness of variables;
-    \item \texttt{calculus.cpp}: type checker and intergration with Mathematica;
-    \item \texttt{reduction.cpp}: all the rewriting rules and transformations;
-    \item \texttt{dirac\_parser.cpp}: parser for Dirac notation and D-Hammer commands;
-    \item \texttt{prover.cpp}: the prover that maintains the context and process commands like definition or equivalence checking.
+    \item \texttt{antlr4}: the third-party library for building the parser.
+    \item \texttt{WSTP interface}: the wrapper to link with Mathematica Engine.
+    \item \texttt{ualg}: the framework module for universal algebra, defining basic concepts like terms and substitutions.
+    \item \texttt{dhammer}: the main module containing symbols definitions, type checking, rewriting rules, normalization algorithm and the prover.
+    \item \texttt{example}: an example benchmark for evaluation.
+    \item \texttt{toplevel}: the command line application.
 \end{itemize}
+% The project structure is illustrated in~\Cref{fig: dhammer structure}.
+% \texttt{ualg} is the module for universal algebra, defining basic concepts like terms and substitutions. It serves as the library for \texttt{dhammer}, which are then utilized in the example benchmarks and the toplevel command line application. Important components of \texttt{dhammer} are:
 
-\input{fig/proj_structure.tex}
+% \input{fig/proj_structure.tex}
 
 The internal data structure for terms is a pointer-based syntax tree following the function application style:
 \[
@@ -35,7 +36,7 @@ The syntax tree can be an identifier, or an application with an identifier as th
     & \sum_{i \in \mathbf{U}(T)} \ket{i} \bra{i} && \texttt{SUM[USET[T], FUN[i, BASIS[T], OUTER[KET[i], BRA[i]]]]}
 \end{align*}
 }
-The syntax tree structure is also compatible with the datatype of Mathematica. This improves the interoperability between D-Hammer and the Mathematica system, enabling them to work interleavingly.
+% The syntax tree structure is also compatible with the datatype of Mathematica. This improves the interoperability between D-Hammer and the Mathematica system, enabling them to work interleavingly.
 To improve usability, D-Hammer also supports many special notations for terms,  and most Dirac notation terms will be encoded in the natural way.
 Here are some examples for the parsing syntax.
 
@@ -54,7 +55,7 @@ Here are some examples for the parsing syntax.
 \end{tabular}
 \end{figure}
 
-Finally, D-Hammer uses a prover to host the computation. The prover maintains a well-formed context $E$, and processes commands to modify the context and conduct calculations. The commands are listed below.
+Finally, D-Hammer uses a prover to host the computation. The prover maintains a well-formed context $\Gamma$, and processes commands to modify the context and conduct calculations. The commands are listed below.
 \begin{itemize}
     \item \texttt{\textcolor{NavyBlue}{Def} ID := term.} It defines the \texttt{ID} as the \texttt{term}, using the \textbf{W-Def} typing rule.
     \item \texttt{\textcolor{NavyBlue}{Var} ID := term.} It make an assumption of \texttt{ID} with the \texttt{term} as type, using the \textbf{W-Assume} typing rules.
@@ -126,9 +127,9 @@ The experiments are carried out using a MacBook Pro with M3 Max chip. Results ar
 The 18 examples of QCQI textbook equations from DiracDec are all encoded and solved. The running time are short and close because these examples are simple and direct.
 
 
-\begin{figure}[h]
+\begin{figure}
     \centering
-    \includegraphics[width=0.8\textwidth]{fig/coqq.pdf}
+    \includegraphics[width=0.65\textwidth]{fig/coqq.pdf}
     \caption{Time comparison between DiracDec and D-Hammer on the CoqQ benchmark.}
     \label{fig: CoqQ plot}
 \end{figure}
@@ -152,10 +153,11 @@ We find that examples with great efficiency improvement, e.g. COQQ-129 and COQQ-
 
 
 \subsubsection{Labelled Dirac Notation}
-We present a new set of examples for labelled Dirac notation (LDN), as detailed in~\Cref{sec: examples for labelled}. These examples, illustrated in~\Cref{fig: labelled examples}, include six representative cases drawn from a variety of sources, such as well-established theorems, research paper results, quantum circuit equivalence, and quantum program verification.
+We present a new set of examples for labelled Dirac notation (LDN). These examples, illustrated in~\Cref{fig: labelled examples}, include six representative cases drawn from a variety of sources, such as well-established theorems, research paper results, quantum circuit equivalence, and quantum program verification.
 D-Hammer normalizes them and successfully checks their equivalence using the algorithm in~\Cref{sec: labelled}.
 Among the examples, LDN-12 shows the flexibility in combining labelled Dirac notations.
-Example LDN-14 and LDN-18 are about circuits or programs on qubits. LDN-14 shows how to calculate controlled-not gate in different ways. In LDN-18, $q, q_1$ and $q_2$ represent variables for quantum programs, and the equation shows the change of the state after applying $X$ gate on $q_2$. Experiments show that our algorithm is relatively inefficient for labelled Dirac notations based on qubits.
+Example LDN-14 and LDN-18 are about circuits or programs on qubits. LDN-14 shows how to calculate controlled-not gate in different ways. In LDN-18, $q, q_1$ and $q_2$ represent variables for quantum programs, and the equation shows the change of the state after applying $X$ gate on $q_2$. 
+% Experiments show that our algorithm is relatively inefficient for labelled Dirac notations based on qubits.
 
 It is a noteworthy result that D-Hammer solved LDN-10, a highly complex and lengthy example. It is a theorem on quantum separation logic from~\cite{DBLP:conf/lics/ZhouBHYY21}, and is challenging to prove even for experts. Notice that 7 registers are involved here, and it would be impractical to organize and referring to the subsystems without using labels.
 
@@ -177,6 +179,6 @@ It is a noteworthy result that D-Hammer solved LDN-10, a highly complex and leng
         LDN-18 & program & 1.01 & \( -\ket{0}_q\ket{+-}_{q_1, q_2} = X_{q_2} \ket{0}_q\ket{+-}_{q_1, q_2} \) \\
         \hline
     \end{tabular}
-    \caption{Part of examples for labelled Dirac notations.}
+    \caption{Part of examples for labelled Dirac notations. See~\Cref{sec: examples for labelled} for the full list.}
     \label{fig: labelled examples}
 \end{figure}
