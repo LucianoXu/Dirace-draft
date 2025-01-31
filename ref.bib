@@ -266,7 +266,7 @@ abstract="We present a specification language and a fully automated tool named A
 isbn="978-3-031-37709-9"
 }
 
-@article{AutoQ_popl_2023,
+@article{AutoQ_pldi_2023,
 author = {Chen, Yu-Fang and Chung, Kai-Min and Leng\'{a}l, Ond\v{r}ej and Lin, Jyun-Ao and Tsai, Wei-Lun and Yen, Di-De},
 title = {An Automata-Based Framework for Verification and Bug Hunting in Quantum Circuits},
 year = {2023},
@@ -302,4 +302,115 @@ month = jan,
 articleno = {32},
 numpages = {31},
 keywords = {quantum circuits, tree automata, verification}
+}
+
+@article{qRHL_unruh2019,
+author = {Unruh, Dominique},
+title = {Quantum relational Hoare logic},
+year = {2019},
+issue_date = {January 2019},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {3},
+number = {POPL},
+url = {https://doi.org/10.1145/3290346},
+doi = {10.1145/3290346},
+abstract = {We present a logic for reasoning about pairs of interactive quantum programs – quantum relational Hoare logic (qRHL). This logic follows the spirit of probabilistic relational Hoare logic (Barthe et al. 2009) and allows us to formulate how the outputs of two quantum programs relate given the relationship of their inputs. Probabilistic RHL was used extensively for computer-verified security proofs of classical cryptographic protocols. Since pRHL is not suitable for analyzing quantum cryptography, we present qRHL as a replacement, suitable for the security analysis of post-quantum cryptography and quantum protocols. The design of qRHL poses some challenges unique to the quantum setting, e.g., the definition of equality on quantum registers. Finally, we implemented a tool for verifying proofs in qRHL and developed several example security proofs in it.},
+journal = {Proc. ACM Program. Lang.},
+month = jan,
+articleno = {33},
+numpages = {31},
+keywords = {Hoare logics, Quantum cryptography, formal verification}
+}
+
+@article{QSL_Le_2022,
+author = {Le, Xuan-Bach and Lin, Shang-Wei and Sun, Jun and Sanan, David},
+title = {A Quantum interpretation of separating conjunction for local reasoning of Quantum programs based on separation logic},
+year = {2022},
+issue_date = {January 2022},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {6},
+number = {POPL},
+url = {https://doi.org/10.1145/3498697},
+doi = {10.1145/3498697},
+abstract = {It is well-known that quantum programs are not only complicated to design but also challenging to verify because the quantum states can have exponential size and require sophisticated mathematics to encode and manipulate. To tackle the state-space explosion problem for quantum reasoning, we propose a Hoare-style inference framework that supports local reasoning for quantum programs. By providing a quantum interpretation of the separating conjunction, we are able to infuse separation logic into our framework and apply local reasoning using a quantum frame rule that is similar to the classical frame rule. For evaluation, we apply our framework to verify various quantum programs including Deutsch–Jozsa’s algorithm and Grover's algorithm.},
+journal = {Proc. ACM Program. Lang.},
+month = jan,
+articleno = {36},
+numpages = {27},
+keywords = {Formal Semantics, Quantum Computing, Verification}
+}
+
+@ARTICLE{Zhong2024-np,
+  title    = "Birkhoff-von Neumann quantum logic enriched with entanglement
+              quantifiers: coincidence theorem and semantic consequence",
+  author   = "Zhong, Shengyang",
+  abstract = "In this paper, we investigate a slightly simplified version of
+              Birkhoff--von Neumann quantum logic enriched with entanglement
+              quantifiers which is proposed in Ying (Birkhoff--von Neumann
+              quantum logic as an assertion language for quantum programs,
+              2022. arXiv:2205.01959). The main result is a coincidence
+              theorem, which says that every formula is interpreted by a closed
+              subspace in the Hilbert space corresponding to the free variables
+              of the formula. We also prove that many instances of semantic
+              consequence, which are used in the proof of the prenex normal
+              form theorem in first-order logic, also hold in this logic. The
+              technical work is about the interplay among the three operations
+              on density operators, namely, tensor product, support and partial
+              trace.",
+  journal  = "Acta Informatica",
+  volume   =  62,
+  number   =  1,
+  pages    = "7",
+  month    =  dec,
+  year     =  2024
+}
+
+@article{robustness_2019,
+author = {Hung, Shih-Han and Hietala, Kesha and Zhu, Shaopeng and Ying, Mingsheng and Hicks, Michael and Wu, Xiaodi},
+title = {Quantitative robustness analysis of quantum programs},
+year = {2019},
+issue_date = {January 2019},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {3},
+number = {POPL},
+url = {https://doi.org/10.1145/3290344},
+doi = {10.1145/3290344},
+abstract = {Quantum computation is a topic of significant recent interest, with practical advances coming from both research and industry. A major challenge in quantum programming is dealing with errors (quantum noise) during execution. Because quantum resources (e.g., qubits) are scarce, classical error correction techniques applied at the level of the architecture are currently cost-prohibitive. But while this reality means that quantum programs are almost certain to have errors, there as yet exists no principled means to reason about erroneous behavior. This paper attempts to fill this gap by developing a semantics for erroneous quantum while-programs, as well as a logic for reasoning about them. This logic permits proving a property we have identified, called є-robustness, which characterizes possible “distance” between an ideal program and an erroneous one. We have proved the logic sound, and showed its utility on several case studies, notably: (1) analyzing the robustness of noisy versions of the quantum Bernoulli factory (QBF) and quantum walk (QW); (2) demonstrating the (in)effectiveness of different error correction schemes on single-qubit errors; and (3) analyzing the robustness of a fault-tolerant version of QBF.},
+journal = {Proc. ACM Program. Lang.},
+month = jan,
+articleno = {31},
+numpages = {29},
+keywords = {approximate computing, quantum noise, quantum programming}
+}
+
+@article{incorrectness_2022,
+author = {Yan, Peng and Jiang, Hanru and Yu, Nengkun},
+title = {On incorrectness logic for Quantum programs},
+year = {2022},
+issue_date = {April 2022},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {6},
+number = {OOPSLA1},
+url = {https://doi.org/10.1145/3527316},
+doi = {10.1145/3527316},
+abstract = {Bug-catching is important for developing quantum programs. Motivated by the incorrectness logic for classical programs, we propose an incorrectness logic towards a logical foundation for static bug-catching in quantum programming. The validity of formulas in this logic is dual to that of quantum Hoare logics. We justify the formulation of validity by an intuitive explanation from a reachability point of view and a comparison against several alternative formulations. Compared with existing works focusing on dynamic analysis, our logic provides sound and complete arguments. We further demonstrate the usefulness of the logic by reasoning several examples, including Grover's search, quantum teleportation, and a repeat-until-success program. We also automate the reasoning procedure by a prototyped static analyzer built on top of the logic rules.},
+journal = {Proc. ACM Program. Lang.},
+month = apr,
+articleno = {72},
+numpages = {28},
+keywords = {Quantum Programming Languages, Projective Quantum Predicates, Incorrectness Logic}
+}
+
+@misc{qafny2024,
+      title={Qafny: A Quantum-Program Verifier}, 
+      author={Liyi Li and Mingwei Zhu and Rance Cleaveland and Alexander Nicolellis and Yi Lee and Le Chang and Xiaodi Wu},
+      year={2024},
+      eprint={2211.06411},
+      archivePrefix={arXiv},
+      primaryClass={quant-ph},
+      url={https://arxiv.org/abs/2211.06411}, 
 }
