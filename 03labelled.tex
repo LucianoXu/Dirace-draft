@@ -96,6 +96,7 @@ There are various rules for computing types and checking vadility of registers a
 The first rule says that a paired register is of the product type and its components should be disjoint.
 To lift a plain Dirac notation into the labelled one (line 2), we enforce that the term and register are of the same indices, reflecting the fact the state should be consistant to the corresponding subsystems.
 The third line gives the typing of labelled tensoring with a check whether the component subsystems are disjoint with each other.
+Since $\cR$ is given, let $\sigma_r : \Index$ denote type of $r$, i.e.,  $\Gamma\vdash r : \reg(\sigma_r)$, for simplicity.
 
 % \[
 %     \frac{
@@ -156,10 +157,15 @@ The third line gives the typing of labelled tensoring with a check whether the c
 \begin{definition}[Cylindrical Extension]
   For any $D : \cD(s_1,s_2)$ and $s$ that disjoint with both $s_1$ and $s_2$, we define $\cl(D,s) \triangleq D\otimes \mathbf{1}_{s}$ of type $\cD(s_1\cup s, s_2\cup s)$.
 \end{definition}
-Formally, we equip $\cR$ with a default order, say for example the alphabetical order of names. For any valid register $R$, there exists the operator $\Swap_R$ that sorts $R$; for example, if $\Gamma\vdash p : \reg(\sigma_p)$ and $\Gamma\vdash q : \reg(\sigma_q)$, then $\Swap_{(q,p)} \triangleq \sum_{i\in \bU(\sigma_p)}\sum_{j\in \bU(\sigma_q)}|i\>\<j|\otimes |j\>\<i|$. We can further define $\Swap_{s_1,s_2,\cdots}$ for merging disjoint sets orderly.
+Formally, we equip $\cR$ with a default order, say for example the alphabetical order of names. For any valid register $R$, there exists the operator $\Swap_R$ that sorts $R$; for example, $\Swap_{(q,p)} \triangleq \sum_{i\in \bU(\sigma_p)}\sum_{j\in \bU(\sigma_q)}|i\>\<j|\otimes |j\>\<i|$. We can further define $\Swap_{s_1,s_2,\cdots}$ for merging disjoint sets orderly.
 
-For given context $\Gamma$ and set $s = \{r_1,\cdots,r_n\}\subseteq\cR$ ($r_i$ is sorted) with $\Gamma\vdash r_i : \sigma_i$, we define $\sigma_s\triangleq \sigma_1\times\cdots\times\sigma_n$ if $s$ is non-empty. \label{context: sigma s}
-For any valuation $v$, we further write $\cH_{\sem{s}_v} \triangleq \bigotimes_{i}\cH_{\sem{\sigma_i}_v}$ which equals to $\cH_{\sem{\sigma_s}_v}$ for non-empty $s$.
+For given context $\Gamma$ and any valuation $v$,
+we interpret 
+$$\mbox{$\sem{\cD(s,s')} \triangleq \mathcal{L}(\bigotimes_{j}\cH_{\sem{\sigma_{r'_j}}_v}, \bigotimes_{i}\cH_{\sem{\sigma_{r_i}}_v})$}$$ where $\mathcal{L}$ denotes the set of linear maps, 
+the sets $s = \{r_1,\cdots,r_n\}$ and $s' = \{r'_1,\cdots,r'_m\}$ ($r_i$ and $r'_j$ are sorted).
+% we define $\sigma_s\triangleq \sigma_1\times\cdots\times\sigma_n$ if $s$ is non-empty. \label{context: sigma s}
+% For any valuation $v$, we further write $\cH_{\sem{s}_v} \triangleq \bigotimes_{i}\cH_{\sem{\sigma_i}_v}$ which equals to $\cH_{\sem{\sigma_s}_v}$ for non-empty $s$.
+% We interpret $\sem{\cD(s,s')} \triangleq \mathcal{L}(\cH_{\sem{s'}_v}, \cH_{\sem{s}_v})$ where $\mathcal{L}$ denotes the set of linear maps.
 % for any $s\subseteq \cR$, where $\Gamma\vdash r : \reg(\sigma_r)$ for all $r\in\cR$. 
 We interpret labelled Dirac notations inductively as (assume $\Gamma\vdash D_i : \cD(s_i,s'_i)$) :
 \begin{itemize}
@@ -171,7 +177,7 @@ We interpret labelled Dirac notations inductively as (assume $\Gamma\vdash D_i :
   \item $\sem{D_1\otimes \cdots \otimes D_n}_v = \sem{\Swap_{s_1,\cdot,s_n}}_v\cdot (\sem{D_1}_v\otimes \cdots \otimes \sem{D_1}_v)\cdot \sem{\Swap_{s'_1,\cdot,s'_n}}_v$;
   \item $\sem{D_1\cdot D_2}_v = \sem{\cl(D_1, s_2\backslash s'_1)}_v\cdot \sem{\cl(D_2, s'_1\backslash s_2)}_v$. Note that $s_2\backslash s'_1$ and $s'_1\backslash s_2$ are the minimal extension that make it interpretable. E.g., to interpret ${}_p\<i|\cdot |j\>_{p,q}$, we at least need to extend ${}_p\<i|$ to ${}_p\<i|\otimes I_{q}$.
 \end{itemize}
-Thus, $\sem{D}_v$ is a linear map from $\cH_{\sem{s'}_v}$ to $\cH_{\sem{s}_v}$ given $\Gamma\vdash D : \cD(s,s')$. Following the semantics, labelled tensor is independent of its order, i.e., $\sem{D_1\otimes D_2}_v = \sem{D_2\otimes D_1}_v$ and $\sem{D_1\otimes (D_2\otimes D_3)}_v = \sem{(D_1\otimes D_2)\otimes D_3}_v$, which ensures the soundness of treating labelled tensor as an AC symbol.
+It can be shown that Lemma \ref{lemma:sound type system} also holds for labelled terms, i.e., $\sem{D}_v \in \sem{\cD(s,s')}_v$ given $\Gamma\vdash D : \cD(s,s')$. Following the semantics, labelled tensor is independent of its order, i.e., $\sem{D_1\otimes D_2}_v = \sem{D_2\otimes D_1}_v$ and $\sem{D_1\otimes (D_2\otimes D_3)}_v = \sem{(D_1\otimes D_2)\otimes D_3}_v$, which ensures the soundness of treating labelled tensor as an AC symbol.
 
 \subsection{Normalization}
 The normalization procedure of labelled Dirac notation allows us to eliminate all labels and thus translate the equality of labelled terms to the equality of plain Dirac terms. This is achieved by the following three steps: 
@@ -239,17 +245,14 @@ and thus it is equivalent to decide the equivalence of additions of subterms of:
 \end{equation*}
 which do not involve any labels. 
 
-Define $T_{s,s'}$ as $\SType$ if $s=s'=\emptyset$, $\KType(\sigma_s)$ if $s'=\emptyset$, $\BType(\sigma_{s'})$ if $s=\emptyset$ and $\OType(\sigma_s,\sigma_{s'})$ otherwise (see Sec. \ref{context: sigma s}). We claim the soundness of our normalization as:
+%Define $T_{s,s'}$ as $\SType$ if $s=s'=\emptyset$, $\KType(\sigma_s)$ if $s'=\emptyset$, $\BType(\sigma_{s'})$ if $s=\emptyset$ and $\OType(\sigma_s,\sigma_{s'})$ otherwise (see Sec. \ref{context: sigma s}). We claim the soundness of our normalization as:
 % Then if the original equality is $\Gamma\vdash D_1 = D_2 : \cD(s,s')$, what remains to be check $\Gamma\vdash e_1 = e_2 : T_{s,s'}$.
 
+By routinely showing that Lemma \ref{lem: axiom sound} holds for the extra rules mentioned above and in Appendix, we further claim:
 \begin{theorem}[Soundness and Completeness of Normalization]
   Assuming $\Gamma\vdash D_1 : \cD(s,s')$, $\Gamma\vdash D_2 : \cD(s,s')$, 
   and no variables of $\DType(\cdot,\cdot)$ in $D_1,D_2$.
-  Let $e_1 = e_2$ be obtained by above normalization procedure on $D_1 = D_2$. Then:
-  \begin{itemize}
-    \item (Soundness) $\Gamma\vdash e_1 = e_2 : T_{s,s'}$ implies $\Gamma\vDash D_1 = D_2$;
-    \item (Completeness) $\Gamma\vDash D_1 = D_2$ implies $\Gamma\vDash e_1 = e_2$
-  \end{itemize}
+  Let $e_1 = e_2$ be obtained by above normalization procedure on $D_1 = D_2$. Then $\Gamma\vDash D_1 = D_2$ if and only if $\Gamma\vDash e_1 = e_2$.
   %All rewriting rules for labelled Dirac notations listed here and in Appendix are sound, i.e., for any interpretation $\sem{\cdot}$, $D\reduce D'$ implies $\sem{D} = \sem{D'}$.
 \end{theorem}
 % \begin{proof}
