@@ -79,13 +79,13 @@ The first three lines use the \texttt{\textcolor{NavyBlue}{Var}} and \texttt{\te
 \texttt{T} is a type index, representing arbitrary Hilbert space types. \texttt{M} is assume to be an operator in the Hilbert space with type \texttt{T}. \texttt{phi} is defined as the maximally entangled state, depending on the bound variable \texttt{T} as index.
 \texttt{r1} and \texttt{r2} are register names for the two subsystems.
 
-In the left hand side of \texttt{\textcolor{NavyBlue}{CheckEq}} command, \texttt{M\_r1} denotes the labelled notation $M_{r_1}$, and \texttt{(phi T)\_(r1, r2)} denotes the entangled state $\ket{\Phi}_{(r_1, r_2)}$. They are connected by a white space, which is parsed into the composition of Dirac notation, and will be reduced into the operator-ket multiplication after typing. The right hand side is interpreted similarly, except the defined symbol \texttt{TPO} in the environment:
+In the left hand side of \texttt{\textcolor{NavyBlue}{CheckEq}} command, \texttt{M\_r1} denotes the labelled notation $M_{r_1}$, and \texttt{(phi T)\_(r1, r2)} denotes the entangled state $\ket{\Phi}_{(r_1, r_2)}$. They are connected by a white space, which is parsed into the composition of Dirac notation, and will be reduced into the operator-ket multiplication after typing. The right hand side is interpreted similarly, except the defined symbol \texttt{TPO} in the context:
 
 \begin{lstlisting}[style=dhammer]
 Def TPO := idx sigma => idx tau => fun O : OTYPE[sigma, tau] => Sum i in USET[sigma], Sum j in USET[tau], (<i| O |j>).(|j> <i|).
 \end{lstlisting}
 
-The \texttt{TPO} symbol represents the transpose of operators, and encodes the formalization in~\Cref{ex: formalizing motivating}. Thanks to the design of environment and functions, many other commonly used symbols in Dirac notation are encoded and provided as defined symbols in D-Hammer.
+The \texttt{TPO} symbol represents the transpose of operators, and encodes the formalization in~\Cref{ex: formalizing motivating}. Other commonly used concepts in Dirac notation are encoded and provided as defined symbols in D-Hammer.
 
 Within one second, the prover reports the result of equivalence with their common normal form:
     \begin{lstlisting}[style=dhammer]

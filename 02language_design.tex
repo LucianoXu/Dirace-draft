@@ -2,7 +2,7 @@
 \section{Dirac notation}
 This section introduces the language of Dirac notation, its
 denotational and axiomatic semantics, and describes D-Hammer approach
-to equational reasoning. Two main ingredients of our language are:
+to equational reasoning. Three main ingredients of our language are:
 \begin{itemize}
 \item a rich typing discipline that distinguishes between scalars,
   kets, bras and operators, but supports sufficient overloading to
@@ -165,10 +165,11 @@ During equivalence checking, most of the axioms are decided by term rewriting, w
 \begin{definition}[axiom set F]
 \label{def: axiom F}
 \begin{align*}
-    \text{AC-equivalence} &\quad \text{e.g.,} \quad X + Y = Y + X, \quad (X + Y) + Z = X + (Y + Z), \\
-    \alpha\text{-equivalence} &\quad \lambda x . A = \lambda y . A\{x/y\}, \\
-    \text{SUM-SWAP} &\quad \sum_{i \in s_1} \sum_{j \in s_2} A = \sum_{j \in s_2} \sum_{i \in s_1} A, \\
-    \text{scalar theories} &\quad \text{e.g.,} \quad a + 0 = a, \quad a \times (b + c) = a \times b + a \times c.
+    \textup{(AC-equivalence)} &\ \text{e.g.,} \quad X + Y = Y + X, \quad (X + Y) + Z = X + (Y + Z), \\
+    \textup{($\alpha$-equivalence)} &\ \lambda x . A = \lambda y . A\{x/y\},
+    \quad
+    \textup{(SUM-SWAP)} \ \sum_{i \in s_1} \sum_{j \in s_2} A = \sum_{j \in s_2} \sum_{i \in s_1} A, \\
+    \textup{(scalar theories)} &\ \text{e.g.,} \quad a + 0 = a, \quad a \times (b + c) = a \times b + a \times c.
 \end{align*}
 \end{definition}
 
@@ -229,18 +230,9 @@ Steps 4 - 6 are special algorithms to further normalize the axiom set $F$.
 Here the main difficulty is the coexistence of AC-equivalence and SUM-SWAP, so that naive sorting will not convert equivalent terms to the same form.
 For step 4 and 5, the key observation is that in a successive sum expression \( \sum_{i \in s_1} \cdots \sum_{j \in s_n} A \), the names and order of the bound variables \( i, \dots, j \) can be freely permuted. Therefore we first ignore bound variables and normalize AC-equivalence by sorting. Then the order of summation can be decided accordingly. The last step converts functions to de Bruijn indices~\cite{deBruijn1972lambda} to decide $\alpha$-equivalence. For detailed descriptions, see~\Cref{sec: decide}.
 
-As a comparison, the previous work conducts normalization paritally on $R$, and decide axioms in $F$ by iterating through all possible permutations.
-Our algorithm totally normalize the term, as is illustrated below.
-\[
-\text{(partial)}\qquad e_1 \mathop{\twoheadrightarrow}^R e_1' \mathop{=}^F e_2' \mathop{\twoheadleftarrow}^R e_2
-\qquad
-\text{(total)}\qquad e_1 \mathop{\twoheadrightarrow}^{R \cup F} e \equiv e \mathop{\twoheadleftarrow}^{R \cup F} e_2
-\]
-While the permutation checking algorithm has factorial complexity on the number of AC symbol arguments, our algorithm uses normalization by sorting, and the complexity is polynomial on the term size. This improvement in efficiency is also confirmed by experiments.
 
 \Cref{fig: normalization demo} shows the normalization outline for $(M \otimes \mathbf{1}_\mathcal{O}(T)) \cdot (\text{phi}\ T)$.
-
-\begin{figure}
+\begin{figure}[h]
     \scriptsize
     \begin{align*}
         & (\eqnmarkbox[blue]{mvar}{M} \otimes \eqnmarkbox[red]{identity}{\mathbf{1}_\mathcal{O}(T)})(\eqnmarkbox[red]{phi-definition}{\textrm{phi}\ T})
@@ -271,6 +263,15 @@ While the permutation checking algorithm has factorial complexity on the number 
     \caption{A nomralization outline for the left-hand side of~\Cref{eq: motivating plain}. Matched subterms are marked with colors. Blue marking represents variable expansion, red marking represents rule applications, and brown marking represents normalization step 4-6.}
     \label{fig: normalization demo}
 \end{figure}
+
+As a comparison, the previous work conducts normalization paritally on $R$, and decide axioms in $F$ by iterating through all possible permutations.
+Our algorithm totally normalize the term, as is illustrated below.
+\[
+\text{(partial)}\qquad e_1 \mathop{\twoheadrightarrow}^R e_1' \mathop{=}^F e_2' \mathop{\twoheadleftarrow}^R e_2
+\qquad
+\text{(total)}\qquad e_1 \mathop{\twoheadrightarrow}^{R \cup F} e \equiv e \mathop{\twoheadleftarrow}^{R \cup F} e_2
+\]
+While the permutation checking algorithm has factorial complexity on the number of AC symbol arguments, our algorithm uses normalization by sorting, and the complexity is polynomial on the term size. This improvement in efficiency is also confirmed by experiments.
 
 % \begin{gather*}
 %     \eqnmarkbox[blue]{node1}{GEBV} = \sum_{i}^{n} \eqnmarkbox[red]{node2}{X_{i}} b_{i} \\

@@ -22,7 +22,7 @@
 
 
 In this section, we extend the language by allowing quantum variables to indicate the quantum system of vectors and operators it act. 
-As discussed, this allows us to express and reason aboud the states and operations locally, without referring to the whole system. 
+As discussed, this allows us to express and reason about the states and operations locally, without referring to the whole system. 
 We further demonstrate how to transform the equivalence problem into that for the plain Dirac notation studied above.
 
 \subsection{Syntax, Typing and Semantics}
@@ -149,7 +149,7 @@ The third line gives the typing of labelled tensoring with a check whether the c
 %     {E \vdash D_1\cdot D_2 : \DType(s_1 \cup (s_2\backslash s_1'), s_2' \cup (s_1'\backslash s_2))}.
 % \]
 
-\paragraph*{Semantics.} While the labelled Dirac notation avoids unnecessary lifting and ordering, its semantics faithfully capture these details. The key points are 1. cylindrical extension that lift a ket or bra or operator to larger domain and codomain; 2. general composition further employs cylindrical extension that obeys the principle of ``localizing objects as much as possible''~\cite{Zhou2023}.
+\paragraph*{Semantics.} The labelled Dirac notation handles lifting and ordering for us, and its semantics faithfully capture these details. The key points are 1. cylindrical extension that lift a ket or bra or operator to larger domain and codomain; 2. general composition further employs cylindrical extension that obeys the principle of ``localizing objects as much as possible''~\cite{Zhou2023}.
 
 \begin{definition}[Cylindrical Extension]
   For any $D : \cD(s_1,s_2)$ and $s$ that disjoint with both $s_1$ and $s_2$, we define $\cl(D,s) \triangleq D\otimes \mathbf{1}_{s}$ of type $\cD(s_1\cup s, s_2\cup s)$.

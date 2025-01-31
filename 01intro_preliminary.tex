@@ -57,7 +57,7 @@ soundness with respect to our denotational semantics. Finally, we
 define an efficient normalization procedure to prove equivalence of
 two expressions. We then evaluate our procedure with respect to
 examples from the literature. Our evaluation covers examples based on
-(vanilla, unlabelled) Dirac notation, as well as examples based on
+plain Dirac notation, as well as examples based on
 labelled Dirac notation. The main conclusions are that our approach
 outperforms prior work by~\cite{diracdec} and is able to prove complex
 examples of reasoning with labelled Dirac notation from the
@@ -113,8 +113,7 @@ of quantum mechanics:
 
 \subsection{Labelled Dirac Notation and Motivating Example}
 Labelled Dirac notation is a generalization of Dirac notation for
-describing many-body quantum systems. The need for labelled Dirac
-notation is motivated by the following example:
+describing many-body quantum systems. The following example shows the necessity of labels:
 
 % \begin{figure}[t]
 % \begin{quantikz}
@@ -194,8 +193,8 @@ yields:
 \end{align*}
 This formalization avoids determining and maintaining the conventional
 order of qubits, nor lifting using additional $I$ and $\Swap$s. In
-this setting, the tensor products become an associative and
-commutative (AC) symbol, so we can rearrange qubits as needed to
+this setting, the tensor products become associative and
+commutative, so we can rearrange qubits as needed to
 perform calculations. For our example, we can perform the calculation as
 follows:
 \begin{align*}
@@ -232,8 +231,7 @@ Following the explanation on labels, we can consider the global system $(q,r)$ a
     (M \otimes I) \ket{\Phi} = (I \otimes M^T) \ket{\Phi}.
     \label{eq: motivating plain}
 \end{align}
-The next sections introduce the formal language, labelled Dirac notation and the systematical way to reduce labels.
-We show how an automated system is built and used to solve equalities likewise.
+The next sections introduce the formal language, labelled Dirac notation and the systematical way to reduce labels, showing how an automated system is built and used to solve equalities likewise.
 
 % We will use the following
 % generalization of Example \ref{example1} as motivating example:
