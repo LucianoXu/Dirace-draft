@@ -1251,15 +1251,15 @@ This section includes all the rewriting rules used in the system. Related rules 
     R-SUM-FACTOR
     & $X_1 + \cdots + (\sum_{k_1 \in s_1}\cdots\sum_{k_n \in s_n}A) $ \\
     & $ + (\sum_{k_1 \in s_1}\cdots\sum_{k_n \in s_n}A) + \cdots +X_n$ \\
-    & $X_1 + \cdots + (\sum_{k_1 \in s_1}\cdots\sum_{k_n \in s_n}(1+1).A) + \cdots +X_n$ \\
+    & $\reduce\ X_1 + \cdots + (\sum_{k_1 \in s_1}\cdots\sum_{k_n \in s_n}(1+1).A) + \cdots +X_n$ \\
     \\
     & $X_1 + \cdots + (\sum_{k_1 \in s_1}\cdots\sum_{k_n \in s_n}a.A) $ \\
     & $ + (\sum_{k_1 \in s_1}\cdots\sum_{k_n \in s_n}A) + \cdots +X_n$ \\
-    & $X_1 + \cdots + (\sum_{k_1 \in s_1}\cdots\sum_{k_n \in s_n}(a+1).A) + \cdots +X_n$ \\
+    & $\reduce\ X_1 + \cdots + (\sum_{k_1 \in s_1}\cdots\sum_{k_n \in s_n}(a+1).A) + \cdots +X_n$ \\
     \\
     & $X_1 + \cdots + (\sum_{k_1 \in s_1}\cdots\sum_{k_n \in s_n}a.A) $ \\
     & $ + (\sum_{k_1 \in s_1}\cdots\sum_{k_n \in s_n}b.A) + \cdots +X_n$ \\
-    & $X_1 + \cdots + (\sum_{k_1 \in s_1}\cdots\sum_{k_n \in s_n}(a+b).A) + \cdots +X_n$ \\
+    & $\reduce\ X_1 + \cdots + (\sum_{k_1 \in s_1}\cdots\sum_{k_n \in s_n}(a+b).A) + \cdots +X_n$ \\
 \end{ruletable}
 
 \begin{ruletable}{Rules to eliminate labels in Dirac notation.}
