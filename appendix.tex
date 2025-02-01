@@ -452,16 +452,33 @@ The interpretation $\sem{T}$ of a type is defined inductively as follows:
     % \qquad
     % \sem{\forall x.T} \equiv \sem{T}^I \\
     & \text{(Set types)} &&
-    \sem{\SET(\sigma)} = \mathcal{P}(\sem{\sigma})
+    \sem{\SET(\sigma)} = \mathcal{P}(\sem{\sigma}) \\
+    & \text{(Labelled Dirac types)} &&
+    \sem{\cD(s,s')} = \mathcal{L}(\bigotimes_{j}\cH_{\sem{\sigma_{r'_j}}_v}, \bigotimes_{i}\cH_{\sem{\sigma_{r_i}}_v})
 \end{align*}
+where the sets $s = \{r_1,\cdots,r_n\}$ and $s' = \{r'_1,\cdots,r'_m\}$ ($r_i$ and $r'_j$ are sorted) and $\Gamma \vdash r_i : \reg(\sigma_{r_i})$, $\Gamma \vdash r'_j : \reg(\sigma_{r'_j})$.
 \end{definition}
 % \gb{did we already explain the notations?}\lz{not ready. the paragraph explains this has been removed.}\gb{please add it back somewhere if space}
 
 We now turn to the interpretation of expressions. As usual, the interpretation is parametrized by a valuation \(v\), which maps all variables $x$ to their value $v(x)$. 
 
+For any set $s = \{r_1,r_2,\cdots,r_n\}$ ($r_i$ is ordered) with $\Gamma \vdash r_i : \reg(\sigma_{r_i})$, we define 
+$$\mathbf{1}_s \triangleq (\mathbf{1}_{\mathcal{O}}(\sigma_{r_1}))_{r_1}\otimes\cdots(\mathbf{1}_{\mathcal{O}}(\sigma_{r_n}))_{r_n}.$$
+For any register $R$ s.t. $\Gamma\vdash R : \reg(\sigma)$, suppose $\var(R) = \{r_1,r_2,\cdots,r_n\}$ ($r_i$ is ordered), 
+we introduce variables $i_{r_k} : \Basis(\sigma_{r_k})$ with $\Gamma \vdash r_k : \reg(\sigma_{r_k})$ for $k = 1,\cdots, n$. 
+We reconstruct the basis $|i_R\>$ (which is of type $\KType(\sigma)$) and $\<i_R|$ (which is of type $\BType(\sigma)$) of $R$ by:
+\begin{itemize}
+  \item $R = r_k$, $|i_R\> \triangleq |i_{r_k}\>$ and $\<i_R| \triangleq \<i_{r_k}|$;
+  \item $R = (R_1,R_2)$: $|i_R\> \triangleq |i_{R_1}\> \otimes |i_{R_2}\>$ and $\<i_R| \triangleq \<i_{R_1}| \otimes \<i_{R_2}|$.
+\end{itemize}
+Now, we can define the operator $\Swap_R$ that sorts $R$ as: 
+$$\Swap_R = \sum_{i_{r_1}}\cdots\sum_{i_{r_n}} (|i_{r_1}\>\otimes\cdots|i_{r_n}\>)\cdot(\<i_R|).$$
+Similarly, we define $\Swap_{s_1,s_2,\cdots,s_n}$ for merging disjoint sets orderly. Suppose $s_i = \{r_{i1},\cdots r_{im_i}\}$ (ordered enumerated), and sorted $\bigcup_i\{r_{i1},\cdots r_{im_i}\}$ as $\{r_1,\cdots,r_k\}$, then  
+$$\Swap_R = \sum_{i_{r_1}}\cdots\sum_{i_{r_k}} (|i_{r_1}\>\otimes\cdots|i_{r_n}\>)\cdot(\bigotimes_i(\<i_{r_{i1}}|\otimes\cdots \<i_{r_{im_i}}|)).$$
 
 \begin{definition}[Semantics of expressions]
 The interpretation of $e$ under valuation $v$, written as $\sem{e}_v$, is defined by the clauses of 
+{\allowdisplaybreaks
  \begin{align*}
     & \text{(Scalars)} && 
  \sem{0} \equiv 0, 
@@ -506,24 +523,36 @@ The interpretation of $e$ under valuation $v$, written as $\sem{e}_v$, is define
     & &&
  \sem{D_1 \cdot D_2} \equiv \sem{D_1} \cdot \sem{D_2},
  \qquad
- \sem{D_1 \otimes D_2} \equiv \sem{D_1} \otimes \sem{D_2}. \\
-       & \text{(set terms)} && \begin{aligned}
+ \sem{D_1 \otimes D_2} \equiv \sem{D_1} \otimes \sem{D_2}. \\[0.2cm]
+       & \text{(set terms)} && 
     \sem{\mathbf{U}(\sigma)} \equiv \sem{\sigma},
     \qquad
     \sem{M_1 \times M_2} \equiv \sem{M_1} \times \sem{M_2},
-    \end{aligned} \\
-       \\
+    \\[0.2cm]
        & \text{(sum)} &&
-    \llbracket \sum_{i \in M} X \rrbracket_v \equiv \sum_{m \in \sem{M}} \sem{X}_{v[i\mapsto m]}.   
+    \llbracket \sum_{i \in M} X \rrbracket_v \equiv \sum_{m \in \sem{M}} \sem{X}_{v[i\mapsto m]} \\[0.2cm]
+    & \text{(Labelled basis)} &&
+      \sem{|i\>_r} = |\sem{i}\>,\qquad \sem{\<i|_r} = \<\sem{i}| \\[0.2cm]
+    & \text{(Labelled lifting)} &&
+    \sem{K_R} = \sem{\Swap_R} \cdot \sem{K}
+ \qquad
+ \sem{B_R} = \sem{B}\cdot \sem{\Swap_R} \\
+ & && \sem{O_{R_1,R_2}} = \sem{\Swap_{R_1}}\cdot \sem{O}\cdot \sem{\Swap_{R_2}} \\[0.2cm]
+ & \text{(Labelled tensor)} &&
+ \sem{D_1\otimes \cdots \otimes D_n} = \sem{\Swap_{s_1,\cdot,s_n}}\cdot (\sem{D_1}\otimes \cdots \otimes \sem{D_1})\cdot \sem{\Swap_{s'_1,\cdot,s'_n}} \\[0.2cm]
+ & \text{(Generalized dot)} &&
+  \sem{D_1\cdot D_2} = \sem{\cl(D_1, s_2\backslash s'_1)}\cdot \sem{\cl(D_2, s'_1\backslash s_2)}
 \end{align*}
+}
+where we assume $\Gamma\vdash D_i : \cD(s_i,s'_i)$.
 \end{definition}
 Denotational semantics of expressions. Symbol $D$ represents appropriate terms from the ket, bra, or operator sorts. States in $\mathcal{H}$ are represented by column vector, co-states in $\mathcal{H}^*$ by row vector, then all $\cdot$ above are interpreted as matrix multiplications, while $\otimes$ as Kronecker products.
 We omit the semantics of functions.
 
-
 \section{Axiomatic Semantics}
 \label{sec: full axioms}
 The full list of equational axioms are provided below.
+{\allowdisplaybreaks
     \begin{align*}
         & \textsc{(Ax-Scalar)} &&
         (B \cdot K)^* = K^\dagger \cdot B^\dagger
@@ -636,9 +665,7 @@ The full list of equational axioms are provided below.
         & && i \text{ free in } t \Rightarrow \sum_{i \in \mathbf{U}(\sigma)} \delta_{i, t} = 1 \\
         & && i \text{ free in } t \Rightarrow \sum_{i \in \mathbf{U}(\sigma)} \delta_{i, t}.A = A\{i/t\} \\
         & && \sum_{i \in M} \sum_{j \in M} \delta_{i, j} = \sum_{j \in M} 1 \\
-        & && \sum_{i \in M} \sum_{j \in M} \delta_{i, j}.A = \sum_{j \in M} A\{i/j\}
-    \end{align*}
-    \begin{align*}
+        & && \sum_{i \in M} \sum_{j \in M} \delta_{i, j}.A = \sum_{j \in M} A\{i/j\} \\
         & &&  b_1 \times \cdots \times (\sum_{i \in M} a) \times \cdots \times b_n 
         \reduce\ \sum_{i \in M} (b_1 \times \cdots \times a \times \cdots \times b_n) \\
         & && (\sum_{i \in M}a)^* = \sum_{i \in M} a^*
@@ -665,6 +692,7 @@ The full list of equational axioms are provided below.
         & \textsc{(Sum-Swap)}
         && \sum_{i \in s_1} \sum_{j \in s_2} A = \sum_{j \in s_2} \sum_{i \in s_1} A
     \end{align*}
+}
 
 
 

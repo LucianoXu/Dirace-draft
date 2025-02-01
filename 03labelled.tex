@@ -157,11 +157,11 @@ Since $\cR$ is given, let $\sigma_r : \Index$ denote type of $r$, i.e.,  $\Gamma
 \begin{definition}[Cylindrical Extension]
   For any $D : \cD(s_1,s_2)$ and $s$ that disjoint with both $s_1$ and $s_2$, we define $\cl(D,s) \triangleq D\otimes \mathbf{1}_{s}$ of type $\cD(s_1\cup s, s_2\cup s)$.
 \end{definition}
-Formally, we equip $\cR$ with a default order, say for example the alphabetical order of names. For any valid register $R$, there exists the operator $\Swap_R$ that sorts $R$; for example, $\Swap_{(q,p)} \triangleq \sum_{i\in \bU(\sigma_p)}\sum_{j\in \bU(\sigma_q)}|i\>\<j|\otimes |j\>\<i|$. We can further define $\Swap_{s_1,s_2,\cdots}$ for merging disjoint sets orderly.
+Formally, we equip $\cR$ with a default order, say for example the alphabetical order of names. For any valid register $R$, there exists the operator $\Swap_R$ that sorts $R$; for example, $\Swap_{(q,p)} \triangleq \sum_{i\in \bU(\sigma_p)}\sum_{j\in \bU(\sigma_q)}|i\>\<j|\otimes |j\>\<i|$. We can further define $\Swap_{s_1,s_2,\cdots}$ for merging disjoint sets orderly. See Appendix \ref{sec: full denotational sem} for details.
 
 For given context $\Gamma$ and any valuation $v$,
 we interpret 
-$$\mbox{$\sem{\cD(s,s')} \triangleq \mathcal{L}(\bigotimes_{j}\cH_{\sem{\sigma_{r'_j}}_v}, \bigotimes_{i}\cH_{\sem{\sigma_{r_i}}_v})$}$$ where $\mathcal{L}$ denotes the set of linear maps, 
+$$\mbox{$\sem{\cD(s,s')}_v \triangleq \mathcal{L}(\bigotimes_{j}\cH_{\sem{\sigma_{r'_j}}_v}, \bigotimes_{i}\cH_{\sem{\sigma_{r_i}}_v})$}$$ where $\mathcal{L}$ denotes the set of linear maps, 
 the sets $s = \{r_1,\cdots,r_n\}$ and $s' = \{r'_1,\cdots,r'_m\}$ ($r_i$ and $r'_j$ are sorted).
 % we define $\sigma_s\triangleq \sigma_1\times\cdots\times\sigma_n$ if $s$ is non-empty. \label{context: sigma s}
 % For any valuation $v$, we further write $\cH_{\sem{s}_v} \triangleq \bigotimes_{i}\cH_{\sem{\sigma_i}_v}$ which equals to $\cH_{\sem{\sigma_s}_v}$ for non-empty $s$.
@@ -173,7 +173,7 @@ We interpret labelled Dirac notations inductively as (assume $\Gamma\vdash D_i :
         $\sem{\<i|_r}_v = \<\sem{i}_v|$;\quad  
         $\sem{K_R}_v = \sem{\Swap_R}_v \cdot \sem{K}_v$; \\
         $\sem{B_R}_v = \sem{B}_v\cdot \sem{\Swap_R}_v$;\quad
-        $\sem{O_{R_1,R_2}} = \sem{\Swap_{R_1}}_v\cdot \sem{O}_v\cdot \sem{\Swap_{R_2}}_v$;
+        $\sem{O_{R_1,R_2}}_v = \sem{\Swap_{R_1}}_v\cdot \sem{O}_v\cdot \sem{\Swap_{R_2}}_v$;
   \item $\sem{D_1\otimes \cdots \otimes D_n}_v = \sem{\Swap_{s_1,\cdot,s_n}}_v\cdot (\sem{D_1}_v\otimes \cdots \otimes \sem{D_1}_v)\cdot \sem{\Swap_{s'_1,\cdot,s'_n}}_v$;
   \item $\sem{D_1\cdot D_2}_v = \sem{\cl(D_1, s_2\backslash s'_1)}_v\cdot \sem{\cl(D_2, s'_1\backslash s_2)}_v$. Note that $s_2\backslash s'_1$ and $s'_1\backslash s_2$ are the minimal extension that make it interpretable. E.g., to interpret ${}_p\<i|\cdot |j\>_{p,q}$, we at least need to extend ${}_p\<i|$ to ${}_p\<i|\otimes I_{q}$.
 \end{itemize}
@@ -191,7 +191,7 @@ Take operator as an example:
     \sum_{i_{r'_1}\in\bU(\sigma_{r'_1})}\cdots \sum_{i_{r'_{n'}}\in\bU(\sigma_{r'_{n'}})} \\
     & \qquad (\<i_R|\cdot O\cdot |i_{R'}\>).(|i_{r_1}\>_{r_1}\otimes\cdots\otimes|i_{r_n}\>_{r_n} \otimes {}_{r'_1}\<i_{r'_1}|\otimes\cdots\otimes{}_{r'_{n'}}\<i_{r'_{n'}}|).
 \end{align*}
-where $|i_R\>$ and $\<i_{R'}|$ is constructed by tensoring the basis according to the structure of $R$. The rules for $e_R$ (ket and bra) are similar.
+where $|i_R\>$ and $\<i_{R'}|$ are constructed by tensoring the basis according to the structure of $R$ (see Appendix \ref{sec: full denotational sem}). The rules for $e_R$ (ket and bra) are similar.
 %This step reduces all labelled terms $e_R$ or $e_{R;R}$.
 
 \paragraph*{2. Rewriting to the normal form.}
@@ -247,8 +247,8 @@ which do not involve any labels.
 
 %Define $T_{s,s'}$ as $\SType$ if $s=s'=\emptyset$, $\KType(\sigma_s)$ if $s'=\emptyset$, $\BType(\sigma_{s'})$ if $s=\emptyset$ and $\OType(\sigma_s,\sigma_{s'})$ otherwise (see Sec. \ref{context: sigma s}). We claim the soundness of our normalization as:
 % Then if the original equality is $\Gamma\vdash D_1 = D_2 : \cD(s,s')$, what remains to be check $\Gamma\vdash e_1 = e_2 : T_{s,s'}$.
-
-By routinely showing that Lemma \ref{lem: axiom sound} holds for the extra rules mentioned above and in Appendix, we further claim:
+\paragraph*{}
+By routinely showing that Lemma \ref{lem: axiom sound} holds for the extra rules mentioned above and in Appendix \ref{sec: rewriting rules}, we further claim:
 \begin{theorem}[Soundness and Completeness of Normalization]
   Assuming $\Gamma\vdash D_1 : \cD(s,s')$, $\Gamma\vdash D_2 : \cD(s,s')$, 
   and no variables of $\DType(\cdot,\cdot)$ in $D_1,D_2$.
