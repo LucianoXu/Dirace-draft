@@ -1339,8 +1339,17 @@ This section includes all the rewriting rules used in the system. Related rules 
     & $\reduce\ \delta_{i,j}.(X_1 \otimes \cdots \otimes X_n) \cdot (Y_1 \otimes \cdots \otimes Y_m)$
 \end{ruletable}
 
-
-
+\subsection{Proof of Theorem \ref{thm: normalization}}
+As Lemma \ref{lem: axiom sound} holds for all rewriting rules, it is then sufficient to check: 1. the termination of normalization step; 2. the normalization step will not get stuck; and 3. the final step that discard variables is sound and complete, i.e., deciding labelled Dirac equality with subterms in form Eqn. (\ref{eqn:Labelled normal1}) is equivalent to deciding plain Dirac equality with subterms in Eqn. (\ref{eqn:Labelled normal1}). 1 and 2 ensures that the normalization procedure always provides $e_1 = e_2$.
+\begin{enumerate}
+  \item By checking there is no circular rules, and ordering in step 3 always terminates.
+  \item We can show that if the equality is not in form (\ref{eqn:Labelled normal}), there must exists one of the rules can be further applied. Besids, ordering is always applicable.
+  \item Since all tensors in Eqn. (\ref{eqn:Labelled normal1}) are ordered, so the denotational semantics of LHS and RHS of Eqn. (\ref{eqn:Labelled normal1}) are exactly the semantics of LHS and RHS of Eqn. (\ref{eqn:Labelled normal2}).
+\end{enumerate}
+% \begin{proof}
+%   Notice that all rewriting rules and ordering perserve the types, so the final step eliminating labels is both sound and complete. 
+%   It is routinely to check that each rewriting rules and ordering step are sound based on the semantics. This directly leads to the soundness. For completeness, we need further check if the normalization procedure always provide $e_1 = e_2$, i.e., it never gets stuck and terminates. Step 1 is trivial. For step 2, it can be further checked that 1. there is no circular rules and thus terminates, and 2. if it is not in form (\ref{eqn:Labelled normal}), there must exists one of the rules can be further applied. For step 3, ordering is always applicable. This completes the proof.
+% \end{proof}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -235,14 +235,15 @@ repeating the application of the above rules yield the normal form of both sides
 where each sum body is a tensor of labelled basis with scalar coefficients in plain Dirac notation.
 \paragraph*{3. Ordering and elimination of quantum variables.} 
 We further sort tensors of labelled basis in every sum body of Eqn. (\ref{eqn:Labelled normal}) by 1. ket first and 2. the default order of variables. This yield the same shape of every subterm on both sides of the equality, e.g., 
-\begin{equation*}
-  % \label{eqn:Labelled normal}
+\begin{equation}
+  \label{eqn:Labelled normal1}
   \sum_{i}\cdots\sum_{j}\cdots \sum_{i'}\cdots\sum_{j'} a_1 . ((\ket{i}_p \otimes \cdots \otimes \ket{j}_q) \otimes (\bra{i'}_{p'}\otimes\cdots\otimes \bra{j'}_{q'}))
-\end{equation*}
+\end{equation}
 and thus it is equivalent to decide the equivalence of additions of subterms of:
-\begin{equation*}
-  \sum_{i}\cdots\sum_{j}\cdots \sum_{i'}\cdots\sum_{j'} a_1 . ((\ket{i} \otimes \cdots \otimes \ket{j}) \otimes (\bra{i'}\otimes\cdots\otimes \bra{j'}))
-\end{equation*}
+\begin{equation}
+  \label{eqn:Labelled normal2}
+  \sum_{i}\cdots\sum_{j}\cdots \sum_{i'}\cdots\sum_{j'} a_1 . ((\ket{i} \otimes \cdots \otimes \ket{j}) \cdot (\bra{i'}\otimes\cdots\otimes \bra{j'}))
+\end{equation}
 which do not involve any labels. 
 
 %Define $T_{s,s'}$ as $\SType$ if $s=s'=\emptyset$, $\KType(\sigma_s)$ if $s'=\emptyset$, $\BType(\sigma_{s'})$ if $s=\emptyset$ and $\OType(\sigma_s,\sigma_{s'})$ otherwise (see Sec. \ref{context: sigma s}). We claim the soundness of our normalization as:
@@ -250,6 +251,7 @@ which do not involve any labels.
 \paragraph*{}
 By routinely showing that Lemma \ref{lem: axiom sound} holds for the extra rules mentioned above and in Appendix \ref{sec: rewriting rules}, we further claim:
 \begin{theorem}[Soundness and Completeness of Normalization]
+  \label{thm: normalization}
   Assuming $\Gamma\vdash D_1 : \cD(s,s')$, $\Gamma\vdash D_2 : \cD(s,s')$, 
   and no variables of $\DType(\cdot,\cdot)$ in $D_1,D_2$.
   Let $e_1 = e_2$ be obtained by above normalization procedure on $D_1 = D_2$. Then $\Gamma\vDash D_1 = D_2$ if and only if $\Gamma\vDash e_1 = e_2$.
