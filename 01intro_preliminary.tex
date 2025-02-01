@@ -16,7 +16,7 @@ Dirac notation.
 
 \subsubsection*{Contributions}
 This paper presents D-Hammer, an automated tool for reasoning about labelled Dirac notation. D-Hammer uses a rich, dependently typed language to formalize labelled Dirac notation and supports common idioms for describing quantum systems, including big operators of the form \( \sum_{i \in I} a_i \ket{\phi_i}_S \) to represent indexed superpositions of states. The semantics of typable expressions are given in terms of Hilbert spaces, tailored to interpret the tensor product as an AC symbol. We leverage this interpretation to define a rich equational theory for labelled Dirac notation and prove its soundness with respect to our denotational semantics. Finally, we define an efficient normalization procedure to prove equivalence between two expressions. We then evaluate our procedure with respect to examples from the literature. Our evaluation covers examples based on plain Dirac notation, as well as examples based on
-labelled Dirac notation. The main conclusions are that our approach outperforms prior work by~\cite{diracdec} and is capable of proving complex examples from the literature, including those from prior work on quantum separation logic~\cite{DBLP:conf/lics/ZhouBHYY21}.
+labelled Dirac notation. The main conclusions are that our approach outperforms DiracDec~\cite{diracdec} to reason about plain Dirac notation and is able of proving complex examples from the literature on labelled Dirac notation, including examples from prior work on quantum separation logic~\cite{DBLP:conf/lics/ZhouBHYY21}.
 
 
 
