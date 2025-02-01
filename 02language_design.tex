@@ -240,10 +240,10 @@ plain Dirac notation.
 
 
 
-\subsection{Algorithm to Decide Equivalence}
+\subsection{Algorithm to Prove Equivalence}
 % \gb{I still think that the names first rewritings, second rewriting and de bruijn normalization are not good, in particular, de bruijn normalization is non-standard terminology that will make people familiar with the field cringe.}
 
-The equivalence of Dirac notations are decided by normalization, which transforms equivalent expressions under a set of axioms into the same syntax. We use an efficient algorithm to perform the normalization totally on $R \cup E$.
+The equivalence of Dirac notations are proved by normalization, which transforms equivalent expressions under a set of axioms into the same syntax. We use an efficient algorithm to perform the normalization totally on $R \cup E$.
 
 \begin{enumerate}
     \item \textbf{Rule based term rewriting}: Expand definitions and simplify expressions.
@@ -299,7 +299,7 @@ For step 4 and 5, the key observation is that in a successive sum expression \( 
     \label{fig: normalization demo}
 \end{figure}
 
-As a comparison, the previous work conducts normalization paritally on $R$, and decide axioms in $E$ by iterating through all possible permutations.
+As a comparison, the previous work conducts normalization paritally on $R$, and equivalence by $E$ is proved through checking all possible permutations.
 Our algorithm totally normalize the term, as is illustrated below.
 \[
 \text{(partial)}\qquad e_1 \mathop{\twoheadrightarrow}^R e_1' \mathop{=}^E e_2' \mathop{\twoheadleftarrow}^R e_2

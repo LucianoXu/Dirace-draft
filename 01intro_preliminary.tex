@@ -2,68 +2,21 @@
 \section{Introduction}
 
 
-Dirac notation~\cite{dirac1939new}, a.k.a.\, bra-ket notation, is a
-mathematical formalism for representing quantum states using linear
-algebra notation: for instance, Dirac notation uses the linear
-combination \( a\ket{\psi} + b\ket{\phi} \) to represent the
-superposition of the two quantum states \( \ket{\psi} \) and
-\( \ket{\phi} \). Another essential ingredient of Dirac notation
-is the tensor product $\otimes$, which is used to describe composite
-states: for instance, Dirac notation uses the tensor expression
-\( \ket{\psi} \otimes \ket{\phi} \) to denote the composition of
-the two quantum states \( \ket{\psi} \) and \( \ket{\phi} \). It is
-also common to use a variant of Dirac notation, called labelled Dirac
-notation, to describe composite quantum states. In labelled Dirac
-notation, bras and kets are tagged with labels that identify the
-subsystems on which they operate. For instance, the labelled tensor
-expression
-\( \ket{\psi}_{S'} \otimes \ket{\phi}_{S} \)
-states that $\ket{\psi}_S$ and $\ket{\psi}_{S'}$ describe two quantum
-states over some subsystem $S$ and $S'$ respectively. By considering
-the relationship between $S$ and $S'$, one can obtain identities for
-free, e.g.\, 
+Dirac notation~\cite{dirac1939new}, also known as bra-ket notation, is a mathematical formalism for representing quantum states using linear algebra notation. For example, Dirac notation uses the linear combination \( a\ket{\psi} + b\ket{\phi} \) to represent the superposition of the quantum states \( \ket{\psi} \) and \( \ket{\phi} \). Another essential ingredient of Dirac notation is the tensor product $\otimes$, which is used to describe composite states. For instance, the tensor expression \( \ket{\psi} \otimes \ket{\phi} \) denotes the composition of the two quantum states \( \ket{\psi} \) and \( \ket{\phi} \). A variant of Dirac notation, called labelled Dirac notation, is often used to describe composite quantum states. In labelled Dirac notation, bras and kets are tagged with labels to identify the subsystems they operate on. For example, the labelled tensor expression \( \ket{\psi}_{S'} \otimes \ket{\phi}_{S} \) indicates that \( \ket{\psi}_{S} \) and \( \ket{\phi}_{S'} \) describe two quantum states over some subsystem $S$ and $S'$, respectively. By considering the relationship between $S$ and $S'$, one can obtain identities for free, e.g.\, 
 %
-$$\ket{\phi}_S \otimes \ket{\psi}_{T} = \ket{\psi}_{T} \otimes \ket{\phi}_S
-\mbox{if}~S\cap S'=\emptyset$$
+$$\ket{\phi}_S \otimes \ket{\psi}_{T} = \ket{\psi}_{T} \otimes \ket{\phi}_S \quad \text{if}~S \cap S' = \emptyset$$
 %
 In turn, commutativity of the tensor product ensures that one can
-reason locally about quantum systems, and contributes to making
-labelled Dirac notation a convenient, compositional formalism to
-reason about quantum states--in a way that is similar to the way
-bunched logics support compositional reasoning about mutable states.
+reason locally about quantum systems, and contributes to making labelled Dirac notation a convenient, compositional formalism for reasoning about quantum states, akin to how bunched logics support compositional reasoning about mutable states.
 
-Labelled Dirac notation is also commonly used to express assertions
-about quantum programs. Specifically, many quantum Hoare logics use
-labelled Dirac notation and its variants to express program assertions (see for example \cite{DBLP:conf/lics/ZhouBHYY21} \cite{Zhou2023} \cite{qRHL_unruh2019} \cite{QSL_Le_2022} \cite{Zhong2024-np} \cite{incorrectness_2022} \cite{qafny2024}). 
-These logics also use
-implicitly equational reasoning between labelled Dirac expressions, to
-glue applications of proof rules--similar to the use of the rule of
-consequence in the setting of classical program. Therefore, it is
+Labelled Dirac notation is also widely used to express assertions in quantum programs. Specifically, many quantum Hoare logics rely on labelled Dirac notation and its variants to express program assertions (see, for example, \cite{DBLP:conf/lics/ZhouBHYY21} \cite{Zhou2023} \cite{qRHL_unruh2019} \cite{QSL_Le_2022} \cite{Zhong2024-np} \cite{incorrectness_2022} \cite{qafny2024}). These logics also employ implicit equational reasoning between labelled Dirac expressions to glue applications of proof rule--similar to the rule of consequence in the setting of classical program verification. Consequently, it is
 essential for the verification of quantum programs to have automated
 means of proving equality of two complex expressions based on labelled
 Dirac notation.
 
-
 \subsubsection*{Contributions}
-This paper presents an automated tool, called D-Hammer, for reasoning
-about labelled Dirac notation. D-Hammer uses a rich, dependently typed
-language, to formalize labelled Dirac notation, and supports common
-idioms used to describe quantum systems, including big operators of
-the form $\sum_{i\in I} a_i \ket{\phi_i}_S$ to represent indexed
-superpositions of states. The semantics of typable expressions is
-given in terms of Hilbert spaces, tailored to interpreting tensor
-product as an AC symbol. We leverage this interpretation to define a
-rich equational theory for labelled Dirac notation, and prove its
-soundness with respect to our denotational semantics. Finally, we
-define an efficient normalization procedure to prove equivalence of
-two expressions. We then evaluate our procedure with respect to
-examples from the literature. Our evaluation covers examples based on
-plain Dirac notation, as well as examples based on
-labelled Dirac notation. The main conclusions are that our approach
-outperforms DiracDec~\cite{diracdec} and is able to prove complex
-examples of reasoning with labelled Dirac notation from the
-literature, including examples from prior work on quantum separation
-logic~\cite{DBLP:conf/lics/ZhouBHYY21}.
+This paper presents D-Hammer, an automated tool for reasoning about labelled Dirac notation. D-Hammer uses a rich, dependently typed language to formalize labelled Dirac notation and supports common idioms for describing quantum systems, including big operators of the form \( \sum_{i \in I} a_i \ket{\phi_i}_S \) to represent indexed superpositions of states. The semantics of typable expressions are given in terms of Hilbert spaces, tailored to interpret the tensor product as an AC symbol. We leverage this interpretation to define a rich equational theory for labelled Dirac notation and prove its soundness with respect to our denotational semantics. Finally, we define an efficient normalization procedure to prove equivalence between two expressions. We then evaluate our procedure with respect to examples from the literature. Our evaluation covers examples based on plain Dirac notation, as well as examples based on
+labelled Dirac notation. The main conclusions are that our approach outperforms DiracDec~\cite{diracdec} to reason about plain Dirac notation and is able of proving complex examples from the literature on labelled Dirac notation, including examples from prior work on quantum separation logic~\cite{DBLP:conf/lics/ZhouBHYY21}.
 
 
 
@@ -116,17 +69,6 @@ of quantum mechanics:
 Labelled Dirac notation is a generalization of Dirac notation for
 describing many-body quantum systems. The following example shows the necessity of labels:
 
-% \begin{figure}[t]
-% \begin{quantikz}
-%   & \gate{X} & \ctrl{1} & \\
-%   & & \targ{} &
-%   \end{quantikz}
-%   =\begin{quantikz}
-%   & \ctrl{1} & \gate{X} & \\
-%   & \targ{} & \gate{X} &
-%   \end{quantikz}
-%   \end{figure}
-
 
 \begin{example}
   \label{example1}
@@ -138,7 +80,7 @@ describing many-body quantum systems. The following example shows the necessity 
   Using Dirac notation, the identity is written as:
 \begin{align*}
   \ccnot|\ghz\rangle &= (I\otimes \cnot)|\ghz\rangle \\
-  &= (\Swap\otimes I)(I\otimes \cnot)(\Swap\otimes I)|\ghz\rangle
+  &= (\Swap\otimes I)(I\otimes \cnot)(\Swap\otimes I)|\ghz\rangle,
 \end{align*}
 which might be illustrated by the following circuit models.
 \begin{figure}[h]
@@ -162,31 +104,32 @@ which might be illustrated by the following circuit models.
       % \label{fig:addition}
   %  \end{minipage}
   \end{figure}
+\end{example}
+
 Formalizing the statement in Dirac notation requires the following
-steps: 1. Arrange qubits in the conventional order, here we choose
+steps: 1. Arrange the qubits in a conventional order, here we choose
 $p,r,q$ to simplify the representation of $\ccnot$; 2. Lift the local
-operation $\cnot$ to the global system. For $\cnot$ acting on $r,q$ is
-easier, since $r,q$ consistent with the chosen order, and we only need
-to tensoring it by an identity operator $I$ on $p$, i.e., $(I\otimes
-\cnot)$.  For $\cnot$ acting on $p,q$, realize that $p,q$ are not
-adjacent in the chosen order, we additionally need to use $\Swap$ to
-temporarily exchange the qubits $p$ and $r$, i.e., globally, the
-$(\Swap\otimes I)$ before and after $(I\otimes \cnot)$ (lifting of
-$\cnot$ on $r,q$).
+operation $\cnot$ to the global system. When $\cnot$ acts on $r,q$, it is
+straightforward, as $r,q$ consistent with the chosen order. We only need
+to tensor it with an identity operator $I$ on $p$, i.e., $(I\otimes
+\cnot)$.  For $\cnot$ acting on $p,q$, note that $p,q$ are not
+adjacent in the chosen order. Thus, we additionally need the $\Swap$ gate to
+temporarily exchange the qubits $p$ and $r$, i.e., globally, we apply
+$(\Swap\otimes I)$ before and after $(I\otimes \cnot)$ to lift $\cnot$ on $r,q$.
 
 
 
 Roughly speaking, encoding in plain Dirac notation requires
-tensoring identity operators and employing additional $\Swap$ gates,
-since generally the conventional order cannot guarantee 1. the order
+tensoring identity operators and using additional $\Swap$ gates,
+since the conventional order does not generally guarantee the following: 1. the order
 of all local operations is consistent with it, 2. the local operations
-involve only adjacent qubits in the conventional order.
-\end{example}
+only involve adjacent qubits in the conventional order.
+
 To address the limitations of Dirac notations, physicists routinely
 use labels (or subscripts) to indicate the systems on which quantum
 states or operations are applied, thereby avoiding unnecessary lifting
-and swap gates. For example, rewriting the above example using labels
-yields:
+and swap gates. For example, rewriting the previous example using labels,
+we obtain:
 \begin{align*}
   \ccnot_{prq}|\ghz\rangle_{pqr} = 
   \cnot_{rq}|\ghz\rangle_{pqr}
@@ -195,8 +138,8 @@ yields:
 This formalization avoids determining and maintaining the conventional
 order of qubits, nor lifting using additional $I$ and $\Swap$s. In
 this setting, the tensor products become associative and
-commutative, so we can rearrange qubits as needed to
-perform calculations. For our example, we can perform the calculation as
+commutative, allowing us to rearrange qubits as needed for
+calculations. For our example, we can perform the calculation as
 follows:
 \begin{align*}
   &\ccnot_{prq}|\ghz\rangle_{pqr}

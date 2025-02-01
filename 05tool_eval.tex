@@ -170,14 +170,14 @@ It is a noteworthy result that D-Hammer solved LDN-10, a highly complex and leng
         \hline
         example & source & time(s) & equation \\
         \hline
-        LDN-4 & theorem & 0.03 & \( \bra{\Phi}_{(x, y)} M_y \cdot N_x \ket{\Phi}_{(x, y)} = \mathrm{tr}(M^T N) \) \\
+        LDN-4 & theorem & 0.03 & \( M_{r_1}\sum_{i}\ket{(i,i)}_{(r_1,r_2)} = M^T_{r_2}\sum_{i}\ket{(i,i)}_{(r_1, r_2)} \)\\
         LDN-10 & paper~\cite{DBLP:conf/lics/ZhouBHYY21} & 5.17 & \( \mathrm{tr}_{((a',(b,b')),c')}\Big[\mathrm{tr}_{r}\Big(U_{(r,(a,b))} \cdot\Big(|s\>_r\<s|\otimes 
         \Big[V_{((a',(b,b')),c')} \cdots \)\\
         LDN-11 & paper~\cite{PALSBERG2024206} & 0.12 & \( U_{(a,b)}\cdot W_{(b,c)}\cdot V_{(a,c)} = 
         \sum_i |i\>_a\<i|\otimes \big((P_i)_c\cdot W_{(b,c)}\cdot (Q_i)_c\big)\) \\
         LDN-12 & circuit & 0.07 & \( \ket{i}_{a;b}\bra{j} \cdot C_{(b,c)} \cdot D_{(c,d)} = {}_b\bra{j} \cdot C_{(b,c)} \cdot D_{(c,d)} \cdot \ket{i}_{a}\) \\
         LDN-14 & circuit & 7.37 & \scriptsize{\( \textsf{CNOT}_{rq}\ket{\textrm{GHZ}}_{pqr} = (\textsf{CNOT}\ket{00})_{rq}\ket{0}_p + (\textsf{CNOT}\ket{11})_{rq}\ket{1}_p \)} \\
-        LDN-18 & program & 1.01 & \( -\ket{0}_q\ket{+-}_{q_1, q_2} = X_{q_2} \ket{0}_q\ket{+-}_{q_1, q_2} \) \\
+        LDN-16 & circuit & 0.08 & \scriptsize{\( M_{prq}\ket{\textrm{GHZ}}_{prq} = N_{rq} \ket{\textrm{GHZ}}_{pqr}, M \triangleq \sum_{ij}\ket{ij}\bra{ij}\otimes U_{ij} \cdots \)} \\
         \hline
     \end{tabular}
     \caption{Part of examples for labelled Dirac notations. See~\Cref{sec: examples for labelled} for the full list.}
