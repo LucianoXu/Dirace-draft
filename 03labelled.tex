@@ -36,7 +36,7 @@ Let $\cR$ be the set of quantum variables.
 \end{definition}
 For simplicity, we only allow pairing the registers, which corresponds to the structure of tensor product, i.e., $\cH_{(R_1,R_2)}$ is isomorphic to $\cH_{R_1}\otimes \cH_{R_2}$, which allows us to view the tensor product space as the space of paired registers.
 
-The no-cloning theorem, a fundamental property of quantum computing, prevents us from copying an unknown quantum state. This requires an additional check on the valid registers--they should not include repeated quantum variables--which is often handled in programming languages via linear types. As such, we define the \emph{order-free} variable set of a register as all quantum variables appearing in the register.
+The no-cloning theorem, a fundamental property of quantum computing, prevents us from copying an unknown quantum state. This requires an additional check on the valid registers--they should not include repeated quantum variables--which is often handled in programming languages via linear types. As such, we define the \emph{order-free} variable set of a register as all quantum variables appearing in the register; we let $\var(R)$ denote the variable set of register $R$.
 We use the variable set to establish side conditions of typing valid registers and employ it as the type parameter for annotating labelled Dirac terms.
 
 % \begin{definition}
