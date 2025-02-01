@@ -125,13 +125,13 @@ Especially, the big operator sum is modeled by folding a function over a set, wi
 The semantics of a language define the meaning of its expressions. In this context, the objective of our algorithm is to determine whether two expressions are semantically equivalent. We define the semantics in a denotational manner, mapping syntax to set-theoretic objects.
 
 \subsubsection{Denotational Semantics}
-The denotational semantics maps types to sets, and expressions and
-indices to values in the interpretation of types and indices
-respectively. As for other dependently typed systems, all
+Denotational semantics maps types to sets, and expressions and
+indices to values in the interpretation of types and indices,
+respectively. As in other dependently typed systems, all
 interpretations are parametrized by a valuation mapping \( v \), which
 assigns values to variables and indices. We let \( \sem{e}_v \) denote
-the interpretation of an expression $e$ w.r.t.\, a valuation \( v \);
-we use similar notations for types and indices. As usual, we say that
+the interpretation of an expression $e$ w.r.t.\, a valuation \( v \),
+and use similar notations for types and indices. As usual, we say that
 a valuation \( v \) is valid w.r.t.\, a context $\Gamma$ if for every
 variable declaration $x:T$, we have \( \sem{x}_v \in\sem{T}_v \) and
 for every definition $x:= t: T$, we have  \( \sem{x}_v=\sem{t}_v \).
@@ -191,8 +191,8 @@ and the bilinearity of the dot product:
 (a.X) \cdot Y = a \cdot (X \cdot Y), \quad X \cdot (Y_1 + Y_2) = X \cdot Y_1 + X \cdot Y_2, \\
 X \cdot (a.Y) = a \cdot (X \cdot Y), \quad (X_1 + X_2) \cdot Y = X_1 \cdot Y + X_2 \cdot Y.
 \end{align*}
-The entire axioms are separated into  two sets $R$ and $E$.
-$R$ contains the axioms normalized by term rewriting. There are axioms requiring special algorithms, which are collected in the set $E$.
+The entire axioms are separated into two sets $R$ and $E$.
+$R$ contains the axioms normalized by term rewriting. Other axioms requiring special algorithms, which are collected in the set $E$.
 \begin{definition}[axiom set E]
 \label{def: axiom E}
 \begin{align*}
@@ -207,8 +207,8 @@ $R$ contains the axioms normalized by term rewriting. There are axioms requiring
 % These equational axioms provide an operable theory for the proof automation algorithm. Denotational semantics can be seen as one model for this theory, meaning that equivalences derived from the axioms always imply equivalence in the interpretations.
 
 
-We say an equation $e_1 = e_2$ is provable, written as $\Gamma \vdash e_1 = e_2 : T$, if $\Gamma \vdash e_1 : T$ and $\Gamma \vdash e_2 : T$ are provable, and $e_1 = e_2$ can be deduced in $\Gamma$ using the axioms and equational logic.
-An equation \( e_1 = e_2 \) is valid in context $\Gamma$, written \(
+We say an equation $e_1 = e_2$ is provable, denoted as $\Gamma \vdash e_1 = e_2 : T$, if $\Gamma \vdash e_1 : T$ and $\Gamma \vdash e_2 : T$ are provable, and $e_1 = e_2$ can be deduced in $\Gamma$ using the axioms and equational logic.
+An equation \( e_1 = e_2 \) is valid in context $\Gamma$, written as \(
 \Gamma \vDash e_1 = e_2 \), if \( \sem{e_1}_v = \sem{e_2}_v \) for
 all valuations \( v \) that are valid w.r.t.\, \( \Gamma \).
 
@@ -241,9 +241,8 @@ plain Dirac notation.
 
 
 \subsection{Algorithm to Prove Equivalence}
-% \gb{I still think that the names first rewritings, second rewriting and de bruijn normalization are not good, in particular, de bruijn normalization is non-standard terminology that will make people familiar with the field cringe.}
 
-The equivalence of Dirac notations are proved by normalization, which transforms equivalent expressions under a set of axioms into the same syntax. We use an efficient algorithm to perform the normalization totally on $R \cup E$.
+The equivalence of Dirac notations is established through normalization, which transforms equivalent expressions into the same syntax under a set of axioms. We employ an efficient algorithm to perform the normalization fully on $R \cup E$.
 
 \begin{enumerate}
     \item \textbf{Rule based term rewriting}: Expand definitions and simplify expressions.
@@ -254,16 +253,16 @@ The equivalence of Dirac notations are proved by normalization, which transforms
     \item \textbf{Use de Bruijn index}: Normalize \( \alpha \)-equivalence.
 \end{enumerate}
 
-Here steps 1 - 3 are term rewriting for $R$. 
-Term rewriting reduces a term repeatedly using a set of rules in the form of $l\ \reduce\ r$. The reduction proceeds by matching the subterms with the left-hand side, and replacing it with the right-hand side. 
+Step 1 through 3 involve term rewriting for $R$. 
+Term rewriting is the process of repeatedly reducing a term using a set of rules in the form of $l\ \reduce\ r$. The reduction works by matching the subterms with the left-hand side of a rule and replacing it with the right-hand side. 
 For example, the term $(x\times y) . \ket{t} + \ket{t}$ is matched by the rule $a.K + K\ \reduce\ (a + 1).K$, and is rewritten into $(x\times y + 1) . \ket{t}$.
-Step 1 and 3 uses the same set of rewriting rules in~\Cref{sec: rewriting rules}.
-Step 2 expands variables to their abstract element-wise representation, e.g., $K \ \reduce\ \sum_{i} (\bra{i} \cdot K). \ket{i}$. It improves the decidability with sum. 
+Step 1 and 3 use the same set of rewriting rules in~\Cref{sec: rewriting rules}.
+Step 2 expands variables to their abstract element-wise representation, e.g., $K \ \reduce\ \sum_{i} (\bra{i} \cdot K). \ket{i}$, which improves the decidability when dealing with sum. 
 
 
-Steps 4 - 6 are special algorithms to further normalize the axiom set $E$.
-Here the main difficulty is the coexistence of AC-equivalence and SUM-SWAP, so that naive sorting will not convert equivalent terms to the same form.
-For step 4 and 5, the key observation is that in a successive sum expression \( \sum_{i \in s_1} \cdots \sum_{j \in s_n} A \), the names and order of the bound variables \( i, \dots, j \) can be freely permuted. Therefore we first ignore bound variables and normalize AC-equivalence by sorting. Then the order of summation can be decided accordingly. The last step converts functions to de Bruijn indices~\cite{deBruijn1972lambda} to decide $\alpha$-equivalence. For detailed descriptions, see~\Cref{sec: decide}.
+Steps 4 through 6 are specialized algorithms designed to further normalize the axiom set $E$.
+The main challenge here is the coexistence of AC-equivalence and SUM-SWAP, which means that naive sorting cannot alwasy convert equivalent terms into the same form.
+For step 4 and 5, the key observation is that in a successive sum expression \( \sum_{i \in s_1} \cdots \sum_{j \in s_n} A \), the names and order of the bound variables \( i, \dots, j \) can be freely permuted. Therefore we first ignore bound variables and normalize AC-equivalence by sorting. Afterward, the order of summation can be decided accordingly. The final step uses de Bruijn indices~\cite{deBruijn1972lambda} to resolve $\alpha$-equivalence. For further details, refer to~\Cref{sec: decide}.
 
 
 \Cref{fig: normalization demo} shows the normalization outline for $(M \otimes \mathbf{1}_\mathcal{O}(T)) \cdot (\text{phi}\ T)$.
@@ -299,12 +298,12 @@ For step 4 and 5, the key observation is that in a successive sum expression \( 
     \label{fig: normalization demo}
 \end{figure}
 
-As a comparison, the previous work conducts normalization paritally on $R$, and equivalence by $E$ is proved through checking all possible permutations.
-Our algorithm totally normalize the term, as is illustrated below.
+In contrast, previous work performs normalization only partially on $R$, and proves equivalence by checking all possible permutations according to $E$.
+Our algorithm fully normalize the term, as illustrated below, and is more efficient as a result.
 \[
 \text{(partial)}\qquad e_1 \mathop{\twoheadrightarrow}^R e_1' \mathop{=}^E e_2' \mathop{\twoheadleftarrow}^R e_2
 \qquad
-\text{(total)}\qquad e_1 \mathop{\twoheadrightarrow}^{R \cup E} e \equiv e \mathop{\twoheadleftarrow}^{R \cup E} e_2
+\text{(full)}\qquad e_1 \mathop{\twoheadrightarrow}^{R \cup E} e \equiv e \mathop{\twoheadleftarrow}^{R \cup E} e_2
 \]
 % While the permutation checking algorithm has factorial complexity on the number of AC symbol arguments, our algorithm uses normalization by sorting, and the complexity is polynomial on the term size. 
 % This improvement in efficiency is also confirmed by experiments.

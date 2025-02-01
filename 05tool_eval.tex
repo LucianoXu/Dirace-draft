@@ -1,32 +1,33 @@
 
 \section{Implementation and Case Study}
-The improvement and extensions above concludes in our implementation called D-Hammer, a solver written in \CC. It has a parser built by ANTLR4, and scalar reasonings are powered by Mathematica Engine. The user can use commands to make definitions and assumptions in the maintained context, conduct the normalization and equivalence checking, and obtain the rewriting trace output. 
-It can be used from the command line interactively, or can be integrated into other \CC\ projects as a library.
-This implementation is tested on the benchmark of the previous work and new examples for labelled Dirac notation, demonstrating significant improvement in expressivity and efficiency. 
-The tool and example encodings will be open-source and publicly available.
+The improvement and extensions discussed above culminate in our implementation, called \textbf{D-Hammer}, a solver written in \CC. 
+It features a parser built using ANTLR4, and scalar reasoning is powered by the Mathematica Engine. Users can use commands to make definitions and assumptions in the maintained context, conduct the normalization and equivalence checking, and obtain the rewriting trace output. 
+D-Hammer can be run interactively from the command line or integrated into other \CC\ projects as a library.
+This tool has been tested on benchmarks from previous work and new examples for labelled Dirac notation, showing significant improvements in expressivity and efficiency. 
+The tool, along with example encodings, will be made open-source and publicly available.
 
 \subsubsection{Structure and Mechanism} 
 The project consists of the following components:
 \begin{itemize}
-    \item \texttt{antlr4}: the third-party library for building the parser.
-    \item \texttt{WSTP interface}: the wrapper to link with Mathematica Engine.
-    \item \texttt{ualg}: the framework module for universal algebra, defining basic concepts like terms and substitutions.
-    \item \texttt{dhammer}: the main module containing symbols definitions, type checking, rewriting rules, normalization algorithm and the prover.
-    \item \texttt{example}: an example benchmark for evaluation.
-    \item \texttt{toplevel}: the command line application.
+    \item \texttt{antlr4}: A third-party library for building the parser.
+    \item \texttt{WSTP interface}: A wrapper to link with Mathematica Engine.
+    \item \texttt{ualg}: The framework module for universal algebra, defining basic concepts like terms and substitutions.
+    \item \texttt{dhammer}: The main module containing symbols definitions, type checking, rewriting rules, normalization algorithm and the prover.
+    \item \texttt{example}: An example benchmark for evaluation.
+    \item \texttt{toplevel}: The command line application.
 \end{itemize}
 % The project structure is illustrated in~\Cref{fig: dhammer structure}.
 % \texttt{ualg} is the module for universal algebra, defining basic concepts like terms and substitutions. It serves as the library for \texttt{dhammer}, which are then utilized in the example benchmarks and the toplevel command line application. Important components of \texttt{dhammer} are:
 
 % \input{fig/proj_structure.tex}
 
-The internal data structure for terms is a pointer-based syntax tree following the function application style:
+The internal data structure for terms follows a pointer-based syntax tree, using the function application style:
 \[
     \texttt{
         term ::= ID | ID [term (, term)*].
     }
 \]
-The syntax tree can be an identifier, or an application with an identifier as the function head, and several syntax trees as arguments. There are several Dirac notation terms and their corresponding syntax trees.
+The syntax tree can either be an identifier, or an application with an identifier as the function head, and several syntax trees as arguments. Below are several examples of Dirac notation terms and their corresponding syntax trees.
 \footnotesize{
 \begin{align*}
     & X_1 + X_2 + X_3 && \texttt{ADD[X1, X2, X3]} 
@@ -37,7 +38,7 @@ The syntax tree can be an identifier, or an application with an identifier as th
 \end{align*}
 }
 % The syntax tree structure is also compatible with the datatype of Mathematica. This improves the interoperability between D-Hammer and the Mathematica system, enabling them to work interleavingly.
-To improve usability, D-Hammer also supports many special notations for terms,  and most Dirac notation terms will be encoded in the natural way.
+To improve usability, D-Hammer also supports many special notations for terms, and most Dirac notation terms is encoded in the natural, intuitive way.
 Here are some examples for the parsing syntax.
 
 \begin{figure}
@@ -80,7 +81,7 @@ The first three lines use the \texttt{\textcolor{NavyBlue}{Var}} and \texttt{\te
 \texttt{T} is a type index, representing arbitrary Hilbert space types. \texttt{M} is assumed to be an operator in the Hilbert space with type \texttt{T}. \texttt{phi} is defined as the maximally entangled state, depending on the bound variable \texttt{T} as index.
 \texttt{r1} and \texttt{r2} are register names for the two subsystems.
 
-In the left hand side of \texttt{\textcolor{NavyBlue}{CheckEq}} command, \texttt{M\_r1} denotes the labelled notation $M_{r_1}$, and \texttt{(phi T)\_(r1, r2)} denotes the entangled state $\ket{\Phi}_{(r_1, r_2)}$. They are connected by a white space, which is parsed into the composition of Dirac notation, and will be reduced into the operator-ket multiplication after typing. The right hand side is interpreted similarly, except the defined symbol \texttt{TPO} in the context:
+In the left-hand side of \texttt{\textcolor{NavyBlue}{CheckEq}} command, \texttt{M\_r1} denotes the labelled notation $M_{r_1}$, and \texttt{(phi T)\_(r1, r2)} denotes the entangled state $\ket{\Phi}_{(r_1, r_2)}$. They are connected by a white space, which is parsed into the composition of Dirac notation, and will be reduced into the operator-ket multiplication after typing. The right hand side is interpreted similarly, except the defined symbol \texttt{TPO} in the context:
 
 \begin{lstlisting}[style=dhammer]
 Def TPO := idx sigma => idx tau => fun O : OTYPE[sigma, tau] => Sum i in USET[sigma], Sum j in USET[tau], (<i| O |j>).(|j> <i|).
@@ -135,12 +136,12 @@ The 18 examples of QCQI textbook equations from DiracDec are all encoded and sol
 \end{figure}
 
 \subsubsection{CoqQ}
-As to expressibility, D-Hammer encodes 158 examples for the CoqQ part, 4 less than DiracDec. This is because the language for DiracDec has the support for projectors $\texttt{fst}$ and $\texttt{snd}$ on basis pairs, satisfying $\texttt{fst} (s, t) = s$ and $\texttt{snd} (s, t) = t$. We found this feature is almost not used and removed the support. For decidability, we improved the rewriting rules about sum for D-Hammer, and proved several more examples failed by DiracDec. 
+In terms of expressibility, D-Hammer encodes 158 examples for the CoqQ part, which is 4 fewer than DiracDec. This discrepancy arises because DiracDec supports projectors $\texttt{fst}$ and $\texttt{snd}$ on basis pairs, where $\texttt{fst} (s, t) = s$ and $\texttt{snd} (s, t) = t$. However, we found that this feature is rarely used and removed the support in D-Hammer. Regarding decidability, we improved the rewriting rules for sums in D-Hammer, and proved several more examples failed by DiracDec. 
 \Cref{fig: CoqQ plot} shows a direct comparison of their time efficiency.
-We can observe that for small examples, D-Hammer is slower because of the marginal overhead. 
-When the running time goes up, D-Hammer provides 2 to 40 times of acceleration in average.
-The relationship between efficiency improvement and example characteristics further supports the necessity of our algorithm. 
-We find that examples with great efficiency improvement, e.g. COQQ-129 and COQQ-148 shown in~\Cref{fig: CoqQ plot}, tend to use deeply nested summations, where our algorithm has an effect.
+For small examples, D-Hammer is slower due to the marginal overhead. 
+However, as running time increases, D-Hammer accelerates by an average factor of 2 to 40 times.
+The relationship between efficiency improvement and example characteristics further highlights the necessity of our algorithm. 
+Notably, examples with great efficiency improvement, e.g. COQQ-129 and COQQ-148 shown in~\Cref{fig: CoqQ plot}, tend to use deeply nested sums, where our algorithm has a more pronounced effect.
 
 % \subsubsection{Others}
 % Other examples are taken from quantum circuits and one recent paper [TODO]. Because these examples involve decomposition on concrete $\ket{0}$ and $\ket{1}$ qubit basis, resulting a lot of addition elements, our algorithm dealing with AC symbols brings along significant improvement.
@@ -153,14 +154,12 @@ We find that examples with great efficiency improvement, e.g. COQQ-129 and COQQ-
 
 
 \subsubsection{Labelled Dirac Notation}
-We present a new set of examples for labelled Dirac notation (LDN). These examples, illustrated in~\Cref{fig: labelled examples}, include six representative cases drawn from a variety of sources, such as well-established theorems, research paper results, quantum circuit equivalence, and quantum program verification.
-D-Hammer normalizes them and successfully checks their equivalence using the algorithm in~\Cref{sec: labelled}.
+We present a new set of examples for labelled Dirac notation (LDN), as illustrated in~\Cref{fig: labelled examples}. These examples include six representative cases drawn from various sources, such as well-established theorems, research paper results and quantum circuit equivalence.
+D-Hammer successfully normalizes these examples and checks their equivalence using the algorithm outlined in~\Cref{sec: labelled}.
 Among the examples, LDN-12 shows the flexibility in combining labelled Dirac notations.
 LDN-14 shows how to calculate controlled-not gate in different ways. 
-%In LDN-18, $q, q_1$ and $q_2$ represent variables for quantum programs, and the equation shows the change of the state after applying $X$ gate on $q_2$. 
-% Experiments show that our algorithm is relatively inefficient for labelled Dirac notations based on qubits.
 
-It is a noteworthy result that D-Hammer solved LDN-10, a highly complex and lengthy example. It is a theorem on quantum separation logic from~\cite{DBLP:conf/lics/ZhouBHYY21}, and is challenging to prove even for experts. Notice that 7 registers are involved here, and it would be impractical to organize and referring to the subsystems without using labels.
+A particularly noteworthy result is D-Hammer's solution to LDN-10, a highly complex and lengthy example. It is a theorem on quantum separation logic from~\cite{DBLP:conf/lics/ZhouBHYY21}, and proving it is challenging even for experts. Notably, it involves 7 registers, making it practically impossible to organize and referring to the subsystems without using labels.
 
 \begin{figure}[h]
     \center

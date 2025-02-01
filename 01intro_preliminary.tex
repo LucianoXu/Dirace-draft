@@ -152,17 +152,13 @@ follows:
   = (\cnot|00\rangle)_{pq}|0\rangle_r + (\cnot|11\rangle)_{pq}|1\rangle_r
   = (|000\rangle + |101\rangle)_{pqr}
 \end{align*}
-where the RHS of each line is equivalent.  In addition, labelled
-Dirac notation can conveniently describe local measurements, partial
-traces (the state or evolution of subsystems in many-body systems),
-and partial inner products (the representation of partial traces in
-pure states), which are sufficient to handle the mathematical formulas
-of quantum mechanics in many-body systems.
+The right-hand side (RHS) of each line is equivalent, as shown.  
+In addition, labelled
+Dirac notation can conveniently describe local measurements, partial traces (representing the state or evolution of subsystems in many-body systems), and partial inner products (which correspond to partial traces in pure states). These capabilities are sufficient for handling the mathematical formulas of quantum mechanics in many-body systems.
 
-Labelled Dirac notation is not only ubiquitous in the description of many-body systems, but also plays an important role in program logics. Just as in classical program logic, variable names are used to construct logical formulas instead of describing them as global memory functions, in quantum program logic, variable names are used to label the subsystems on which quantum gates act, rather than lifting them to the global system. Indeed, the latter would cause exponential length of the formula w.r.t the number of variables, as discussed in \cite{QSL_Le_2022}.
+Labelled Dirac notation is not only pervasive in the description of many-body systems but also plays a crucial role in quantum program logic. Just as classical program logic uses variable names to construct logical formulas, avoiding the need for global memory functions, quantum program logic similarly uses variable names to label the subsystems on which quantum gates act, rather than lifting them to the global system. Actually, lifting operations would lead to an exponential increase in formula length relative to the number of variables, as discussed in \cite{QSL_Le_2022}.
 
-In the following,we use the motivating example as the main role in our demonstrations.
-Instead of GHZ states, it is a similar but simpler example on Bell states:
+In the following, we will use this motivating example as the primary focus in our demonstrations. Instead of GHZ states, we use a simpler example involving Bell states:
 \begin{example}
     \label{ex: motivating}
     Let \( q \) and \( r \) represent two quantum systems in the Hilbert space \( \mathcal{H}_T \). Let \( M \) be a quantum operation acting on \( \mathcal{H}_T \), and let \( \ket{\Phi} = \sum_{i \in T} \ket{i} \otimes \ket{i} \) be the maximally entangled state. Then, it holds that
@@ -170,12 +166,12 @@ Instead of GHZ states, it is a similar but simpler example on Bell states:
     M_q \ket{\Phi}_{(q, r)} = M_r^T \ket{\Phi}_{(q, r)}.
     \]
 \end{example}
-Following the explanation on labels, we can consider the global system $(q,r)$ and transform the equation above into the plain Dirac notation:
+As explained earlier regarding labels, we can consider the global system $(q,r)$ and transform the equation above into the plain Dirac notation:
 \begin{align}
     (M \otimes I) \ket{\Phi} = (I \otimes M^T) \ket{\Phi}.
     \label{eq: motivating plain}
 \end{align}
-The next sections introduce the formal language, labelled Dirac notation and the systematical way to reduce labels, showing how an automated system is built and used to solve equalities likewise.
+The following sections introduce the formal language and labelled Dirac notation, and present a systematic approach for reducing labels. We will also demonstrate how an automated system can be built and used to solve similar equalities.
 
 % We will use the following
 % generalization of Example \ref{example1} as motivating example:
