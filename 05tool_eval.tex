@@ -133,6 +133,7 @@ The 18 examples of QCQI textbook equations from DiracDec are all encoded and sol
     \includegraphics[width=0.65\textwidth]{fig/coqq.pdf}
     \caption{Time comparison between DiracDec and D-Hammer on the CoqQ benchmark.}
     \label{fig: CoqQ plot}
+    \vspace{-0.4cm}
 \end{figure}
 
 \subsubsection{CoqQ}
@@ -156,7 +157,7 @@ Notably, examples with great efficiency improvement, e.g. COQQ-129 and COQQ-148 
 \subsubsection{Labelled Dirac Notation}
 We present a new set of examples for labelled Dirac notation (LDN), as illustrated in~\Cref{fig: labelled examples}. These examples include six representative cases drawn from various sources, such as well-established theorems, research paper results and quantum circuit equivalence.
 D-Hammer successfully normalizes these examples and checks their equivalence using the algorithm outlined in~\Cref{sec: labelled}.
-Among the examples, LDN-12 shows the flexibility in combining labelled Dirac notations.
+Among the examples, LDN-16 is a generalization of Example \ref{example1} and LDN-4 for Example \ref{ex: motivating}. LDN-12 shows the flexibility in combining labelled Dirac notations.
 LDN-14 shows how to calculate controlled-not gate in different ways. 
 
 A particularly noteworthy result is D-Hammer's solution to LDN-10, a highly complex and lengthy example. It is a theorem on quantum separation logic from~\cite{DBLP:conf/lics/ZhouBHYY21}, and proving it is challenging even for experts. Notably, it involves 7 registers, making it practically impossible to organize and referring to the subsystems without using labels.
@@ -176,9 +177,10 @@ A particularly noteworthy result is D-Hammer's solution to LDN-10, a highly comp
         \sum_i |i\>_a\<i|\otimes \big((P_i)_c\cdot W_{(b,c)}\cdot (Q_i)_c\big)\) \\
         LDN-12 & circuit & 0.07 & \( \ket{i}_{a;b}\bra{j} \cdot C_{(b,c)} \cdot D_{(c,d)} = {}_b\bra{j} \cdot C_{(b,c)} \cdot D_{(c,d)} \cdot \ket{i}_{a}\) \\
         LDN-14 & circuit & 7.37 & \scriptsize{\( \textsf{CNOT}_{rq}\ket{\textrm{GHZ}}_{pqr} = (\textsf{CNOT}\ket{00})_{rq}\ket{0}_p + (\textsf{CNOT}\ket{11})_{rq}\ket{1}_p \)} \\
-        LDN-16 & circuit & 0.08 & \scriptsize{\( M_{prq}\ket{\textrm{GHZ}}_{prq} = N_{rq} \ket{\textrm{GHZ}}_{pqr}, M \triangleq \sum_{ij}\ket{ij}\bra{ij}\otimes U_{ij} \cdots \)} \\
+        LDN-16 & theorem & 0.08 & \scriptsize{\( M_{prq}\ket{\textrm{GHZ}}_{prq} = N_{rq} \ket{\textrm{GHZ}}_{pqr}, M \triangleq \sum_{ij}\ket{ij}\bra{ij}\otimes U_{ij} \cdots \)} \\
         \hline
     \end{tabular}
     \caption{Part of examples for labelled Dirac notations. See~\Cref{sec: examples for labelled} for the full list.}
+    \vspace{-0.2cm}
     \label{fig: labelled examples}
 \end{figure}
