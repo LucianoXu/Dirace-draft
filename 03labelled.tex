@@ -158,9 +158,9 @@ We interpret labelled Dirac notations inductively as (assume $\Gamma\vdash D_i :
   \item $\sem{|i\>_r}_v = |\sem{i}_v\>$;\quad 
         $\sem{\<i|_r}_v = \<\sem{i}_v|$;\quad  
         $\sem{K_R}_v = \sem{\Swap_R}_v \cdot \sem{K}_v$; \\
-        $\sem{B_R}_v = \sem{B}_v\cdot \sem{\Swap_R}_v$;\quad
-        $\sem{O_{R_1,R_2}}_v = \sem{\Swap_{R_1}}_v\cdot \sem{O}_v\cdot \sem{\Swap_{R_2}}_v$;
-  \item $\sem{D_1\otimes \cdots \otimes D_n}_v = \sem{\Swap_{s_1,\cdot,s_n}}_v\cdot (\sem{D_1}_v\otimes \cdots \otimes \sem{D_1}_v)\cdot \sem{\Swap_{s'_1,\cdot,s'_n}}_v$;
+        $\sem{B_R}_v = \sem{B}_v\cdot \sem{\Swap_R}_v^\dagger$;\quad
+        $\sem{O_{R_1,R_2}}_v = \sem{\Swap_{R_1}}_v\cdot \sem{O}_v\cdot \sem{\Swap_{R_2}}_v^\dagger$;
+  \item $\sem{D_1\otimes \cdots \otimes D_n}_v = \sem{\Swap_{s_1,\cdot,s_n}}_v\cdot (\sem{D_1}_v\otimes \cdots \otimes \sem{D_1}_v)\cdot \sem{\Swap_{s'_1,\cdot,s'_n}}_v^\dagger$;
   \item $\sem{D_1\cdot D_2}_v = \sem{\cl(D_1, s_2\backslash s'_1)}_v\cdot \sem{\cl(D_2, s'_1\backslash s_2)}_v$. Note that $s_2\backslash s'_1$ and $s'_1\backslash s_2$ are the minimal extension that make it interpretable. E.g., to interpret ${}_p\<i|\cdot |j\>_{p,q}$, we at least need to extend ${}_p\<i|$ to ${}_p\<i|\otimes I_{q}$.
 \end{itemize}
 It can be shown that Lemma \ref{lemma:sound type system} also holds for labelled terms, i.e., $\sem{D}_v \in \sem{\cD(s,s')}_v$ given $\Gamma\vdash D : \cD(s,s')$. Following the semantics, labelled tensor is independent of its order, i.e., $\sem{D_1\otimes D_2}_v = \sem{D_2\otimes D_1}_v$ and $\sem{D_1\otimes (D_2\otimes D_3)}_v = \sem{(D_1\otimes D_2)\otimes D_3}_v$, which ensures the soundness of treating labelled tensor as an AC symbol.

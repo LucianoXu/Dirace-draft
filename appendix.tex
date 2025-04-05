@@ -164,7 +164,7 @@ This section includes the full list of typing rules.
         \frac{\Gamma \vdash x : \OType(\sigma, \tau) \qquad \Gamma \vdash y : \KType(\tau)}{\Gamma \vdash x \circ y : \KType(\sigma)}
     \]
     \[  \textbf{Compo-OO} \qquad
-        \frac{\Gamma \vdash x : \OType(\sigma, \tau) \qquad \Gamma \vdash y : \OType(\sigma', \tau')}{\Gamma \vdash x \circ y : \OType(\sigma \times \sigma', \tau \times \tau')}
+        \frac{\Gamma \vdash x : \OType(\sigma, \tau) \qquad \Gamma \vdash y : \OType(\tau, \rho)}{\Gamma \vdash x \circ y : \OType(\sigma, \rho)}
     \]
     \[
         \textbf{Compo-DD} \qquad
