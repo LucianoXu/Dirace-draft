@@ -1,19 +1,4 @@
 \section{Related Work}
-Categorical quantum mechanics (CQM)~\cite{DBLP:conf/lics/AbramskyC04}
-is a category-theoretic foundation for quantum mechanics. CQM is the
-basis of the ZX calculus~\cite{DBLP:conf/icalp/CoeckeD08}, a popular
-graphical calculus for quantum states~\cite{vandewetering2020zx}. A
-key aspect of the ZX calculus and related graphical calculi is that
-they can be equipped with powerful rewriting systems. These systems
-support a form of graph rewriting, i.e.\, they exploit the graph
-representation of quantum states. There exists several completeness
-results for ZX-like rewriting systems, as well as some practical
-tools, such as PyZX~\cite{kissinger2019pyzx}. Similarly, there exist
-completeness results and tools for the sum-over-paths representation
-of quantum states~\cite{amy2018towards,amy2023complete}.
-
-Automata-based approaches has also been successfully applied for reasoning about quantum circuit~\cite{AutoQ_pldi_2023}. Instead of representing a set of  $n$-qubit states in exponential size, \cite{AutoQ_pldi_2023} encode it as (finite) tree automata with much less (often $\mathit{poly}(n)$) transitions.  They further established transformers to implement the semantics of quantum gates over this representation, providing better scalability compared to other approaches. It is developed as a practical tool \textsc{autoq} with the capabilities for symbolic reasoning~\cite{AutoQ2023}. More recently, \cite{AutoQ_popl2025} further explore level-synchronized tree automata to encoding state, a promising model for parameterized verification.
-
 
 \paragraph*{Comparison with DiracDec~\cite{diracdec}}
 Xu \emph{et al}~\cite{diracdec} define a language and an associate and
@@ -29,25 +14,86 @@ mentioned, the use of labelled Dirac notation is essential in many
 applications; in particular, labelled Dirac notation can simplify
 notation and proofs, and is in general better suited for writing and
 reasoning about complex, many-body, quantum states. However, there are
-several other important differences. First, our language leverages the
-power of higher-order dependent type theory. In particular, we
-leverage higher-order functions to provide a compact and expressive
+several other important differences. First, our language leverages
+higher-order functions to provide a compact and expressive
 representation of big operators. Second, our language adopts AC
 symbols with indefinite arities, which leads to compact representation
 of terms, and eases AC reasoning. Third, the relation with Mathematica
 is fundamentally different. DiracDec is implemented in Mathematica; as
 a consequence, its behavior, and in particular, its typing rules are
-constrained by the lack of typing in Mathematica. In contrast, D-Hammer
-is designed as a separate tool; as a consequence, it benefits from an
-improved representation of terms (e.g.\, AC operators with indefinite
-arity), a more expressive type system (e.g.\, dependent types), and a
-more efficient rewriting engine. D-Hammer still relies on Mathematica
-to reason about functions that are not natively supported by rewriting
-rules, but these interactions are constrained and do not have negative
-effects on the overall efficiency of the system. This is reflected in
-our experimental comparison of D-Hammer and DiracDec, which shows how
-the former outperforms the latter.
+constrained by the lack of typing in Mathematica. In contrast,
+D-Hammer is designed as a separate tool; as a consequence, it benefits
+from an improved representation of terms (e.g.\, AC operators with
+indefinite arity), a more expressive type system (e.g.\, dependent
+types), and a more efficient rewriting engine. D-Hammer still relies
+on Mathematica to reason about functions that are not natively
+supported by rewriting rules, but these interactions are constrained
+and do not have negative effects on the overall efficiency of the
+system. This is reflected in our experimental comparison of D-Hammer
+and DiracDec, which shows how the former outperforms the latter.
 
+
+\paragraph*{Comparison with ZX Calculus}
+The ZX calculus~\cite{DBLP:conf/icalp/CoeckeD08,vandewetering2020zx}
+is a popular graphical calculus for reasoning about quantum states.
+The foundations of the ZX calculus are grounded in categorical quantum
+mechanics (CQM)~\cite{DBLP:conf/lics/AbramskyC04}, which provides an
+category-theoretic foundation for quantum mechanics.  A key aspect of
+the ZX calculus and related graphical calculi is that they can be
+equipped with powerful rewriting systems. These systems support a form
+of graph rewriting, i.e.\, they exploit the graph representation of
+quantum states. Two notable properties of these systems are:
+\begin{itemize}
+\item completeness:
+\item efficiency:
+\end{itemize}
+Both Labelled Dirac Notation (LDN) and the ZX calculus share the use
+of rewriting techniques. However, it is difficult to compare the ZX
+calculus and LDN. First, they have different scopes: the ZX calculus
+mainly focuses on quantum circuits, whereas LDN aims to provide
+general support for quantum physics. This difference in scope is
+reflected in the underlying languages: for instance, many works in ZX
+calculus consider concrete sets of quantum gates, whereas LDN
+emphasizes the use of big operators, and does not attempt to provide
+specialized support for a particular set of quantum gates. As a
+result, many of the examples handled by D-Hammer cannot be formalized
+in existing ZX-calculus tools. On the contrary, D-Hammer is not
+competitive on the examples that can be verified by ZX-calculus.
+
+\gb{give a few examples in terms of size and time}
+
+\paragraph*{Comparison with path-over sums approach}
+Similarly, there exist
+completeness results and tools for the sum-over-paths representation
+of quantum states~\cite{amy2018towards,amy2023complete}.
+
+
+\paragraph*{Comparison with equivalence checking}
+
+Automata-based approaches has also been successfully applied for
+reasoning about quantum circuits~\cite{AutoQ_pldi_2023}. Instead of
+representing a set of $n$-qubit states in exponential size,
+\cite{AutoQ_pldi_2023} encode it as (finite) tree automata with much
+less (often $\mathit{poly}(n)$) transitions.  They further established
+transformers to implement the semantics of quantum gates over this
+representation, providing better scalability compared to other
+approaches. It is developed as a practical tool \textsc{autoq} with
+the capabilities for symbolic reasoning~\cite{AutoQ2023}. More
+recently, \cite{AutoQ_popl2025} further explore level-synchronized
+tree automata to encoding state, a promising model for parameterized
+verification.
+
+
+\paragraph*{Canonical forms in multi-body quantum physics}
+
+\paragraph*{Comparison with egraphs}
+Our algorithm is based on term rewriting. However, it is a challenge
+to device well-behaved and efficient term rewriting for (labelled)
+Dirac notation. An alternative to term rewriting would be to use
+equality saturation~\cite{DBLP:journals/pacmpl/WillseyNWFTP21}, a
+powerful equational reasoning technique that does not require
+existence of normal forms. Equality saturation may be particularly
+useful when considering further extensions of labelled Dirac notation.
 
 %% The first step is to formalize the language for Dirac notation. In DiracDec, the language has a concrete design, where the same syntax for different types corresponds to distinct symbols. Our goal is to transition from this concrete design to a more abstract one, which aligns more closely with the conventional Dirac notation we use and simplifies the term rewriting system.
 

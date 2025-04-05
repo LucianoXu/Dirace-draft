@@ -1,10 +1,16 @@
 
 \section{Implementation and Case Study}
-The improvement and extensions discussed above culminate in our implementation, called \textbf{D-Hammer}, a solver written in \CC. 
-It features a parser built using ANTLR4, and scalar reasoning is powered by the Mathematica Engine. Users can use commands to make definitions and assumptions in the maintained context, conduct the normalization and equivalence checking, and obtain the rewriting trace output. 
-D-Hammer can be run interactively from the command line or integrated into other \CC\ projects as a library.
-This tool has been tested on benchmarks from previous work and new examples for labelled Dirac notation, showing significant improvements in expressivity and efficiency. 
-The tool, along with example encodings, will be made open-source and publicly available.
+We present \textbf{D-Hammer}, an open-source and publicly
+available\footnote{{\textcolor{red}{URL}}} implementaion of our
+approach.  \textbf{D-Hammer} is an equational prover for Labelled
+Dirac notation written in \CC.  It features a parser built using
+ANTLR4, and scalar reasoning is powered by the Mathematica
+Engine. Users can use commands to make definitions and assumptions in
+the maintained context, conduct the normalization and equivalence
+checking, and obtain the rewriting trace output.  D-Hammer can be run
+interactively from the command line or integrated into other
+\CC\ projects as a library.
+
 
 \subsubsection{Structure and Mechanism} 
 The project consists of the following components:
@@ -124,9 +130,17 @@ The experiments are carried out using a MacBook Pro with M3 Max chip. Results ar
     \end{tabular}        
 \end{center}
 
-\subsubsection{Textbook (QCQI)}
-The 18 examples of QCQI textbook equations from DiracDec are all encoded and solved. The running time are short and close because these examples are simple and direct.
+The results show significant performance improvements. The enhanced
+efficiency primarily results from algorithmic improvements rather than
+the shift to a C++ implementation. This is supported by the fact that
+efficiency gains are more significant for larger examples, as can be
+observed in \Cref{fig: CoqQ plot}. 
 
+
+\subsubsection{Textbook (QCQI)}
+As a warm-up, we consider 18 examples from Nielsen and Chuang's
+classic texbook~\cite{nielsen2010quantum}. All examples can be encoded
+in DiracDec and D-Hammer and are solved very very efficiently.
 
 \begin{figure}
     \centering
@@ -137,12 +151,36 @@ The 18 examples of QCQI textbook equations from DiracDec are all encoded and sol
 \end{figure}
 
 \subsubsection{CoqQ}
-In terms of expressibility, D-Hammer encodes 158 examples for the CoqQ part, which is 4 fewer than DiracDec. This discrepancy arises because DiracDec supports projectors $\texttt{fst}$ and $\texttt{snd}$ on basis pairs, where $\texttt{fst} (s, t) = s$ and $\texttt{snd} (s, t) = t$. However, we found that this feature is rarely used and removed the support in D-Hammer. Regarding decidability, we improved the rewriting rules for sums in D-Hammer, and proved several more examples failed by DiracDec. 
-\Cref{fig: CoqQ plot} shows a direct comparison of their time efficiency.
-For small examples, D-Hammer is slower due to the marginal overhead. 
-However, as running time increases, D-Hammer accelerates by an average factor of 2 to 40 times.
-The relationship between efficiency improvement and example characteristics further highlights the necessity of our algorithm. 
-Notably, examples with great efficiency improvement, e.g. COQQ-129 and COQQ-148 shown in~\Cref{fig: CoqQ plot}, tend to use deeply nested sums, where our algorithm has a more pronounced effect.
+As a more substantial example, we consider the examples from
+CoqQ~\cite{Zhou2023}, an extensive formalization of quantum
+information theory and quantum programming languages in the
+Coq proof assistant.
+
+CoqQ has been used as the main benchmark for evaluating DiracDec.
+Specifically, \cite{diracdec} isolates 162 statements in CoqQ that
+are in scope of the DiracDec language.
+
+We have ported 158 out of 162 examples to D-Hammer. The remaining 4
+examples uses projectors $\texttt{fst}$ and $\texttt{snd}$ on basis
+pairs, where $\texttt{fst} (s, t) = s$ and $\texttt{snd} (s, t) =
+t$. However, we found that this feature is rarely used and removed the
+support in D-Hammer. Note that the omission of the projection rules
+has a limited influence on the performance evaluation, because the
+efficiency of the 158 examples is not affected by projection rules.
+
+D-Hammer verifies the whole 158 examples in less than 10 seconds,
+whereas DiracDec verifies 156/162 examples in more than 45 seconds.
+\Cref{fig: CoqQ plot} shows a direct comparison of the efficiency of
+the two tools. We observe that D-Hammer is slower than DiracDec on
+small examples, due to marginal overhead, but becomes faster by an
+average factor of 2 to 40 times as the running time of examples
+increases. This non-linear growth suggests that efficiency gains
+result from algorithmic improvements rather than the shift to a C++
+implementation. Furthermore, examples with great improvements,
+e.g. COQQ-129 and COQQ-148 shown in~\Cref{fig: CoqQ plot}, tend to use
+deeply nested sums, for which our algorithm is more efficient.
+
+ 
 
 % \subsubsection{Others}
 % Other examples are taken from quantum circuits and one recent paper [TODO]. Because these examples involve decomposition on concrete $\ket{0}$ and $\ket{1}$ qubit basis, resulting a lot of addition elements, our algorithm dealing with AC symbols brings along significant improvement.
@@ -184,3 +222,4 @@ A particularly noteworthy result is D-Hammer's solution to LDN-10, a highly comp
     \vspace{-0.2cm}
     \label{fig: labelled examples}
 \end{figure}
+
