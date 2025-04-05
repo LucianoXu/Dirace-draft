@@ -1341,7 +1341,7 @@ This section includes all the rewriting rules used in the system. Related rules 
 \end{ruletable}
 
 \subsection{Proof of Theorem \ref{thm: normalization}}
-As Lemma \ref{lem: axiom sound} holds for all rewriting rules, it is then sufficient to check: 1. the termination of normalization step; 2. the normalization step will not get stuck; and 3. the final step that discard variables is sound and complete, i.e., deciding labelled Dirac equality with subterms in form Eqn. (\ref{eqn:Labelled normal1}) is equivalent to deciding plain Dirac equality with subterms in Eqn. (\ref{eqn:Labelled normal1}). 1 and 2 ensures that the normalization procedure always provides $e_1 = e_2$.
+As Theorem \ref{lem: axiom sound} holds for all rewriting rules, it is then sufficient to check: 1. the termination of normalization step; 2. the normalization step will not get stuck; and 3. the final step that discard variables is sound and complete, i.e., deciding labelled Dirac equality with subterms in form Eqn. (\ref{eqn:Labelled normal1}) is equivalent to deciding plain Dirac equality with subterms in Eqn. (\ref{eqn:Labelled normal1}). 1 and 2 ensures that the normalization procedure always provides $e_1 = e_2$.
 \begin{enumerate}
   \item By checking there is no circular rules, and ordering in step 3 always terminates.
   \item We can show that if the equality is not in form (\ref{eqn:Labelled normal}), there must exists one of the rules can be further applied. Besids, ordering is always applicable.
