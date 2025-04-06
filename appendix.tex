@@ -1341,7 +1341,7 @@ This section includes all the rewriting rules used in the system. Related rules 
 \end{ruletable}
 
 \subsection{Proof of Theorem \ref{thm: normalization}}
-As Theorem \ref{lem: axiom sound} holds for all rewriting rules, it is then sufficient to check: 1. the termination of normalization step; 2. the normalization step will not get stuck; and 3. the final step that discard variables is sound and complete, i.e., deciding labelled Dirac equality with subterms in form Eqn. (\ref{eqn:Labelled normal1}) is equivalent to deciding plain Dirac equality with subterms in Eqn. (\ref{eqn:Labelled normal1}). 1 and 2 ensures that the normalization procedure always provides $e_1 = e_2$.
+As Theorem \ref{lem: axiom sound} holds for all rewriting rules, it is then sufficient to check: 1. the termination of normalization step; 2. the normalization step will not get stuck; and 3. the final step that discard variables is sound and complete, i.e., proving labelled Dirac equality with subterms in form Eqn. (\ref{eqn:Labelled normal1}) is equivalent to proving plain Dirac equality with subterms in Eqn. (\ref{eqn:Labelled normal1}). 1 and 2 ensures that the normalization procedure always provides $e_1 = e_2$.
 \begin{enumerate}
   \item By checking there is no circular rules, and ordering in step 3 always terminates.
   \item We can show that if the equality is not in form (\ref{eqn:Labelled normal}), there must exists one of the rules can be further applied. Besids, ordering is always applicable.
@@ -1355,7 +1355,7 @@ As Theorem \ref{lem: axiom sound} holds for all rewriting rules, it is then suff
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Efficient Algorithm for Deciding the equivalence}
+\section{Efficient algorithm for proving equivalence}
 \label{sec: decide}
 % The equivalence of Dirac notations are decided by normalization, which transforms equivalent expressions under a set of axioms into the same syntax. For the entire axiom set $R \cup E$ of Dirac notation, the previous algorithm conducts normalization partially on $R$ by term rewriting modulo $E$, and axioms in $E$ are checked by iterating through all permutations. This direct solution has factorial compleixty on maximum number of AC symbol arguemnts, and is observed to be critical to the low efficiency. Here we propose an efficient algorithm to perform total nomralization on $R \cup E$, and their comparison are illustrated below.
 % \[
@@ -1432,7 +1432,7 @@ As Theorem \ref{lem: axiom sound} holds for all rewriting rules, it is then suff
 Now we analyse the axioms in $E$ to understand the difficulty and solution for normalization. 
 For $\alpha$-equivalence, we want to rule out the influence of bound variable names. Therefore we use de Bruijn notation~\cite{deBruijn1972lambda}, which replaces the name with the distance from the lambda abstraction to the variable. For instance, the nominal lambda abstraction \( \lambda x. x \) is transformed into \( \lambda . \$0 \), while \( \lambda x. \lambda y. (x\ (y\ x)) \) is transformed into \( \lambda.\lambda. (\$1\ (\$0\ \$1)) \).
 
-The remaining axioms, such as AC-equivalence and SUM-SWAP, assert equivalence under permutations. A standard approach for deciding such equivalences is to normalize terms by sorting in a predefined order. For example, given the dictionary order \( a < b < c \), the term \( b + c + a \) (and any other AC-equivalent term) is normalized into \( a + b + c \). However, in our setting, two intertwined difficulties arise: how to assign an order to all terms in the language, and how to simultaneously sort for both axioms.
+The remaining axioms, such as AC-equivalence and SUM-SWAP, assert equivalence under permutations. A standard approach for proving such equivalences is to normalize terms by sorting in a predefined order. For example, given the dictionary order \( a < b < c \), the term \( b + c + a \) (and any other AC-equivalent term) is normalized into \( a + b + c \). However, in our setting, two intertwined difficulties arise: how to assign an order to all terms in the language, and how to simultaneously sort for both axioms.
 
 Consider the following two equivalent terms:
 \[
@@ -1502,7 +1502,7 @@ After sorting, the next step is the \textit{swap transformation}, which arranges
 For a term \( e \) with a sorting result \( \textsc{Sort}(e) \), the swap transformation proceeds by ordering all bound variables according to their first appearances, except in function definitions \( \lambda x \). The swap transformation then reorders the successive summations accordingly.
 \end{definition}
 
-Take the term $\sum_{i \in s_2} \sum_{j \in s_1} \bra{i} B \ket{j} \times \bra{j} A \ket{i}$ as an example. Its bound variable set $\mathcal{B} = \{i, j\}$. Assume we have $A < B$, then the sorting result will be $\sum_{i \in s_2} \sum_{j \in s_1} \bra{j} A \ket{i} \times \bra{i} B \ket{j}$. Then we decide that the order for bound variables will be $j < i$ because $j$ appears first in the body. Using the swap transformation, the sorted result will be $\sum_{j \in s_1} \sum_{i \in s_2} \bra{j} A \ket{i} \times \bra{i} B \ket{j}$.
+Take the term $\sum_{i \in s_2} \sum_{j \in s_1} \bra{i} B \ket{j} \times \bra{j} A \ket{i}$ as an example. Its bound variable set $\mathcal{B} = \{i, j\}$. Assume we have $A < B$, then the sorting result will be $\sum_{i \in s_2} \sum_{j \in s_1} \bra{j} A \ket{i} \times \bra{i} B \ket{j}$. Then we set the order for bound variables to be such that $j < i$ because $j$ appears first in the body. Using the swap transformation, the sorted result will be $\sum_{j \in s_1} \sum_{i \in s_2} \bra{j} A \ket{i} \times \bra{i} B \ket{j}$.
 
 % The order depends on there occurances in the last sorting result. If no occurance, then the order will depend on the set (for sum) and the type (for lambda abstraction only).
 
