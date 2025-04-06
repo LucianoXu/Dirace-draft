@@ -34,20 +34,48 @@ and DiracDec, which shows how the former outperforms the latter.
 
 
 \paragraph*{Comparison with ZX Calculus}
-The ZX calculus~\cite{DBLP:conf/icalp/CoeckeD08,vandewetering2020zx}
-is a popular graphical calculus for reasoning about quantum states.
-The foundations of the ZX calculus are grounded in categorical quantum
-mechanics (CQM)~\cite{DBLP:conf/lics/AbramskyC04}, which provides an
-category-theoretic foundation for quantum mechanics.  A key aspect of
-the ZX calculus and related graphical calculi is that they support a
-form of graph rewriting. Two notable properties of these rewriting
-systems are:
-\begin{itemize}
-\item completeness:
-\item efficiency:
-\end{itemize}
-Both Labelled Dirac Notation (LDN) and the ZX calculus share the use
-of rewriting techniques. However, it is difficult to compare the ZX
+The ZX calculus~\cite{DBLP:conf/icalp/CoeckeD08,coecke2011interacting}
+is a graphical calculus for quantum states. A main appeal of the ZX
+calculus is that its foundations are grounded in categorical quantum
+mechanics~\cite{DBLP:conf/lics/AbramskyC04}, a powerful framework for
+modeling and reasoning about quantum physics. Another main appeal of
+the ZX calculus is that ZX diagrams have an operational interpretation
+using graph rewriting. There is a large body of work that studies
+properties of these rewriting systems, and in particular completeness
+(a set of rules is complete if it can prove all valid identities) and
+minimality (a complete set of rules is minimal if removing a rule
+leads to incompleteness). Two main proof techniques for completeness
+are via termination, or via interpretation. In the first case, one
+shows that a rewriting system has unique normal forms and that two
+expressions are semantically equivalent iff they have the same normal
+form---there exists many relaxations of this result---whereas in the
+second case one shows completeness by exhibiting a well-behaved
+translation to another system for which completeness holds. Both proof
+techniques have been used to prove completeness for multiple settings,
+including the Clifford fragment~\cite{backens2014zx}, the
+Toffoli+Hadamard fragment~\cite{hadzi15zx}, the Clifford+T
+fragment~\cite{jeandel2018complete} and the (qubit) universal
+fragment~\cite{HNW18,JeandelPV18beyond}. Subsequent works generalize
+completeness to qudits~\cite{Poor2023} for a calculus know as ZXW
+which encompasses the ZX and ZW calculi~\cite{zwcalculus}. We refer
+the reader to~\cite{vandewetering2020zx} for a (relatively) recent
+historical and technical account of completeness results.
+
+Because they are both grounded in rewriting techniques, there are many
+similarities between prior work on the ZX calculus and our own work on
+labelled Dirac notation. We highlight some key differences. First,
+there exist a number of differences between our language and the
+concrete fragments of the ZX-calculus for which completeness has been
+studied. For instance, our language features big operators, and
+operators for dual spaces. A second difference is that we do not claim
+completeness: our main theorem shows a reduction from Labelled Dirac
+notation to Dirac notation, for which completeness is only partially
+known.
+
+
+
+
+it is difficult to compare the ZX
 calculus and LDN. First, they have different scopes: the ZX calculus
 mainly focuses on quantum circuits, whereas LDN aims to provide
 general support for quantum physics. This difference in scope is

@@ -257,12 +257,12 @@ Step 1 through 3 involve term rewriting for $R$.
 Term rewriting is the process of repeatedly reducing a term using a set of rules in the form of $l\ \reduce\ r$. The reduction works by matching the subterms with the left-hand side of a rule and replacing it with the right-hand side. 
 For example, the term $(x\times y) . \ket{t} + \ket{t}$ is matched by the rule $a.K + K\ \reduce\ (a + 1).K$, and is rewritten into $(x\times y + 1) . \ket{t}$.
 Step 1 and 3 use the same set of rewriting rules in~\Cref{sec: rewriting rules}.
-Step 2 expands variables to their abstract element-wise representation, e.g., $K \ \reduce\ \sum_{i} (\bra{i} \cdot K). \ket{i}$, which improves the decidability when dealing with sum. 
+Step 2 expands variables to their abstract element-wise representation, e.g., $K \ \reduce\ \sum_{i} (\bra{i} \cdot K). \ket{i}$, which is useful when reasoning about sums. 
 
 
 Steps 4 through 6 are specialized algorithms designed to further normalize the axiom set $E$.
 The main challenge here is the coexistence of AC-equivalence and SUM-SWAP, which means that naive sorting cannot alwasy convert equivalent terms into the same form.
-For step 4 and 5, the key observation is that in a successive sum expression \( \sum_{i \in s_1} \cdots \sum_{j \in s_n} A \), the names and order of the bound variables \( i, \dots, j \) can be freely permuted. Therefore we first ignore bound variables and normalize AC-equivalence by sorting. Afterward, the order of summation can be decided accordingly. The final step uses de Bruijn indices~\cite{deBruijn1972lambda} to resolve $\alpha$-equivalence. For further details, refer to~\Cref{sec: decide}.
+For step 4 and 5, the key observation is that in a successive sum expression \( \sum_{i \in s_1} \cdots \sum_{j \in s_n} A \), the names and order of the bound variables \( i, \dots, j \) can be freely permuted. Therefore we first ignore bound variables and normalize AC-equivalence by sorting. Afterward, the order of summation can be established accordingly. The final step uses de Bruijn indices~\cite{deBruijn1972lambda} to resolve $\alpha$-equivalence. For further details, refer to~\Cref{sec: decide}.
 
 
 \Cref{fig: normalization demo} shows the normalization outline for $(M \otimes \mathbf{1}_\mathcal{O}(T)) \cdot (\text{phi}\ T)$.

@@ -24,22 +24,22 @@ labelled Dirac notation. The main conclusions are that our approach outperforms 
 
 %% In quantum algorithm formalizations and quantum programming languages, Dirac notation is frequently used in equational proofs, which are critical, repetitive, and often time-intensive. These notations also play a key role in defining program states, operations, and assertions in quantum programming languages. To automate the verification of these programs, we need tools that can simplify and check the equivalence of preconditions. However, unlike the well-established SAT and SMT solvers for classical logic, a practical solver for Dirac notation equivalence remains an unmet need, creating a barrier for progress in several fields.
 
-%% Recently, Xu et al.~\cite{diracdec} proposed a theory for deciding the equivalence of Dirac notation, alongside a prototype implementation in Mathematica called DiracDec. They demonstrated that the equivalence of basic Dirac notation is decidable. Their algorithm, based on a pure term rewriting system, has been proven to be confluent and terminating. Despite this, there remains a gap between DiracDec and a practical solver for Dirac notation equivalence.
+%% Recently, Xu et al.~\cite{diracdec} proposed a theory for proving the equivalence of Dirac notation, alongside a prototype implementation in Mathematica called DiracDec. They demonstrated that the equivalence of basic Dirac notation is ??. Their algorithm, based on a pure term rewriting system, has been proven to be confluent and terminating. Despite this, there remains a gap between DiracDec and a practical solver for Dirac notation equivalence.
 
-%% One challenge is the efficiency of the algorithm when dealing with equivalences beyond the scope of term rewriting. DiracDec decides the entire equational theory by rewriting modulo \( E \), where \( E \) represents a set of axioms that cannot be decided by normalization alone, such as the associativity and commutativity (AC) of certain function symbols. DiracDec uses a direct but inefficient algorithm to decide these axioms, which searches through all possible permutations and exhibits factorial complexity. This inefficiency becomes particularly evident in "computational examples" containing many AC symbols, which are time-consuming to process.
+%% One challenge is the efficiency of the algorithm when dealing with equivalences beyond the scope of term rewriting. DiracDec proves the entire equational theory by rewriting modulo \( E \), where \( E \) represents a set of axioms that cannot be proved by normalization alone, such as the associativity and commutativity (AC) of certain function symbols. DiracDec uses a direct but inefficient algorithm to validate these axioms, which searches through all possible permutations and exhibits factorial complexity. This inefficiency becomes particularly evident in "computational examples" containing many AC symbols, which are time-consuming to process.
 
 %% Usability is another area where DiracDec falls short. It does not support labelled Dirac notation, which uses registers to denote subsystems and express states locally. Additionally, DiracDec's typing system only does not provide context for variable typing assumptions or the definition of symbols, which are required in practical scenarios. To avoid type checking during term rewriting, DiracDec separates symbols (e.g., multiplication) for different types, leading to unnecessary complexity. Moreover, integrating the Mathematica implementation into other projects as a solver is challenging.
 
 %% The system design of DiracDec reflects a trade-off between simplicity and efficiency. While the simplicity of term rewriting allows for strong theoretical results, it limits optimization opportunities. Building on DiracDec, this work aims to develop a practical solver. We transform the term rewriting system into a hybrid algorithm, overcoming the challenges mentioned above. Our main technical contributions are:
 %% \begin{itemize}
-%%     \item An efficient algorithm for deciding the equational theories in \( E \), based on equivalence checking through normalization, with the normal form for \( E \) being obtained via sorting.
-%%     \item Support for constant register labels, and reducing the equivalence decision of labelled Dirac notation to the unlabelled case.
+%%     \item An efficient algorithm for proving the equational theories in \( E \), based on equivalence checking through normalization, with the normal form for \( E \) being obtained via sorting.
+%%     \item Support for constant register labels, and reducing the equivalence  labelled Dirac notation to the unlabelled case.
 %%     \item A more user-friendly \CC\ solver, D-Hammer, featuring an abstract language and typing system. We also support the definition of symbols (e.g., transpose and trace) using function syntax.
 %% \end{itemize}
 
-%% We evaluated D-Hammer against the DiracDec benchmark and new examples involving labelled Dirac notation. The results show significant improvements in both decidability and efficiency compared to DiracDec.
+%% We evaluated D-Hammer against the DiracDec benchmark and new examples involving labelled Dirac notation. The results show significant improvements in both coverage and efficiency compared to DiracDec.
 
-%% % D-Hammer successfully decides all the examples that are expressable in its language, including those failed by DiracDec because of complexity or insufficient decision power.
+%% % D-Hammer successfully proves all the examples that are expressable in its language, including those failed by DiracDec because of complexity or insufficient proving power.
 
 
 \section{Motivation and Preliminaries}
