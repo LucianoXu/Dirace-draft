@@ -57,9 +57,11 @@ Toffoli+Hadamard fragment~\cite{hadzi15zx}, the Clifford+T
 fragment~\cite{jeandel2018complete} and the (qubit) universal
 fragment~\cite{HNW18,JeandelPV18beyond}. Subsequent works generalize
 completeness to qudits~\cite{Poor2023} for a calculus know as ZXW
-which encompasses the ZX and ZW calculi~\cite{zwcalculus}. We refer
-the reader to~\cite{vandewetering2020zx} for a (relatively) recent
-historical and technical account of completeness results.
+which encompasses the ZX and ZW calculi~\cite{zwcalculus}, quantum
+circuits~\cite{DBLP:conf/lics/ClementHMPV23} or optical quantum
+circuits~\cite{clement_et_al:2022}. We refer the interested reader
+to~\cite{vandewetering2020zx} for a historical and technical account
+of completeness results up to 2020.
 
 Because they are both grounded in rewriting techniques, there are many
 similarities between prior work on the ZX calculus and our own work on
@@ -70,48 +72,39 @@ studied. For instance, our language features big operators, and
 operators for dual spaces. A second difference is that we do not claim
 completeness: our main theorem shows a reduction from Labelled Dirac
 notation to Dirac notation, for which completeness is only partially
-known.
+known. From a practical point of view, many of the examples handled by
+D-Hammer cannot be formalized in existing ZX-calculus tools. On the
+contrary, D-Hammer is not competitive on the examples that can be
+verified by ZX-calculus. \gb{give a few examples in terms of size and time}
 
 
 
+\paragraph*{Comparison with quantum circuit equivalence checking tools}
+A main application of the ZX-calculus is to check equivalence of
+quantum circuits; for instance, PyZX~\cite{kissinger2020pyzx} is a
+popular Python library for automating equational reasoning in the
+ZX-calculus.
 
-it is difficult to compare the ZX
-calculus and LDN. First, they have different scopes: the ZX calculus
-mainly focuses on quantum circuits, whereas LDN aims to provide
-general support for quantum physics. This difference in scope is
-reflected in the underlying languages: for instance, many works in ZX
-calculus consider concrete sets of quantum gates, whereas LDN
-emphasizes the use of big operators, and does not attempt to provide
-specialized support for a particular set of quantum gates. As a
-result, many of the examples handled by D-Hammer cannot be formalized
-in existing ZX-calculus tools. On the contrary, D-Hammer is not
-competitive on the examples that can be verified by ZX-calculus.
-
-\gb{give a few examples in terms of size and time}
-
-\paragraph*{Comparison with path-over sums approach}
-Similarly, there exist
-completeness results and tools for the sum-over-paths representation
-of quantum states~\cite{amy2018towards,amy2023complete}.
-
-
-\paragraph*{Comparison with equivalence checking}
-
-Automata-based approaches has also been successfully applied for
-reasoning about quantum circuits~\cite{AutoQ_pldi_2023}. Instead of
-representing a set of $n$-qubit states in exponential size,
-\cite{AutoQ_pldi_2023} encode it as (finite) tree automata with much
-less (often $\mathit{poly}(n)$) transitions.  They further established
-transformers to implement the semantics of quantum gates over this
-representation, providing better scalability compared to other
-approaches. It is developed as a practical tool \textsc{autoq} with
-the capabilities for symbolic reasoning~\cite{AutoQ2023}. More
-recently, \cite{AutoQ_popl2025} further explore level-synchronized
-tree automata to encoding state, a promising model for parameterized
-verification.
+There are many other tools for equivalence checking of quantum
+circuits. Amy~\cite{amy2018towards} uses the path-sums formalism
+formalism to check circuits with thousands of T gates. A series of
+works~\cite{AutoQ_pldi_2023,AutoQ2023,AutoQ_popl2025} explores
+automata-based approaches to verify quantum circuits at scale. Their
+main idea is to encode circuits as a compact, finite tree automata,
+often with $\mathit{poly}(n)$ transitions (instead of $2^n$
+transitions), where $n$ is the number of qubits of the state. By
+providing the semantics of quantum gates over this representation,
+they achieve practical verification. Their tool \textsc{autoq} is able
+to verify circuits with over 100,00 gates, and was recently extended
+to support parametrized verification.
 
 
 \paragraph*{Canonical forms in multi-body quantum physics}
+Canonical forms play a fundamental role in quantum physics. For
+instance, \cite{perezgarcia2007,RevModPhys.93.045003,Acuaviva_2023}
+discuss canonical forms of Matrix Product States (MPS) and Tensor
+Networks respectively. An exciting direction for further work is to
+further develop automated deduction techniques for quantum physics.
 
 \paragraph*{Comparison with egraphs}
 Our algorithm is based on term rewriting. However, it is a challenge
