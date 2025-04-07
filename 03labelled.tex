@@ -1,7 +1,3 @@
-
-\newcommand {\cD } {{\mathcal{D}}}
-\newcommand {\cl } {{\mathit{cl}}}
-
 % Labelled Dirac Notation
 
 \section{Labelled Dirac Notation}
@@ -235,7 +231,7 @@ which do not involve any labels.
 %Define $T_{s,s'}$ as $\SType$ if $s=s'=\emptyset$, $\KType(\sigma_s)$ if $s'=\emptyset$, $\BType(\sigma_{s'})$ if $s=\emptyset$ and $\OType(\sigma_s,\sigma_{s'})$ otherwise (see Sec. \ref{context: sigma s}). We claim the soundness of our normalization as:
 % Then if the original equality is $\Gamma\vdash D_1 = D_2 : \cD(s,s')$, what remains to be check $\Gamma\vdash e_1 = e_2 : T_{s,s'}$.
 \paragraph*{}
-By routinely showing that Theorem \ref{lem: axiom sound} holds for the extra rules mentioned above and in Appendix \ref{sec: rewriting rules} (regard rules as equational theory), we further claim:
+We claim that Theorem \ref{lem: axiom sound} holds for the extra rules mentioned above and in Appendix \ref{sec: rewriting rules} (regard rules as equational theory), as well as the relative completeness of the normalization with respect to plain Dirac notation:
 \begin{theorem}[Soundness and Completeness of Normalization]
   \label{thm: normalization}
   Assume $\Gamma\vdash D_1 : \cD(s,s')$, $\Gamma\vdash D_2 : \cD(s,s')$
@@ -243,6 +239,16 @@ By routinely showing that Theorem \ref{lem: axiom sound} holds for the extra rul
   Let $e_1 = e_2$ be obtained by above normalization procedure on $D_1 = D_2$. Then $\Gamma\vDash D_1 = D_2$ if and only if $\Gamma\vDash e_1 = e_2$.
   %All rewriting rules for labelled Dirac notations listed here and in Appendix are sound, i.e., for any interpretation $\sem{\cdot}$, $D\reduce D'$ implies $\sem{D} = \sem{D'}$.
 \end{theorem}
+\begin{hproof}
+  \lz{
+  Checking the soundness of every rule is routine. 
+  For relative completeness, it is sufficient to show that the normalization steps can succeed for every labelled Dirac equality. To this end, we give 
+  concrete steps to rewrite every labelled Dirac notation into forms of Eqn. (1) by induction on the structure of the notation. Further noticing that reordering of labelled basis preserves the type and semantics and thus yield Eqn. (4). The detailed proof can be found in Appendix \ref{sec: rewriting rules}.
+  }
+  
+  \lz{Note that since we take a special algorithm (procedure) to rewrite equations, the relative completeness is weaker than showing the confluence and termination of all these rewriting rules.}
+\end{hproof}
+
 % \begin{proof}
 %   Notice that all rewriting rules and ordering perserve the types, so the final step eliminating labels is both sound and complete. 
 %   It is routinely to check that each rewriting rules and ordering step are sound based on the semantics. This directly leads to the soundness. For completeness, we need further check if the normalization procedure always provide $e_1 = e_2$, i.e., it never gets stuck and terminates. Step 1 is trivial. For step 2, it can be further checked that 1. there is no circular rules and thus terminates, and 2. if it is not in form (\ref{eqn:Labelled normal}), there must exists one of the rules can be further applied. For step 3, ordering is always applicable. This completes the proof.

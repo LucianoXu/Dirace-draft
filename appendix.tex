@@ -1335,18 +1335,215 @@ This section includes all the rewriting rules used in the system. Related rules 
     R-L-SORT3
     & $(X_1 \otimes \cdots \otimes {}_r\bra{i} \otimes \cdots \otimes X_n) \cdot \ket{j}_r \ \reduce\ \delta_{i,j}.(X_1 \otimes \cdots \otimes X_n)$ \\
     %
-    R-L-SORT1
+    R-L-SORT4
     & $ (X_1 \otimes \cdots \otimes {}_r\bra{i} \otimes \cdots \otimes X_n) \cdot (Y_1 \otimes \cdots \otimes \ket{j}_r \otimes \cdots \otimes Y_m) $ \\
     & $\reduce\ \delta_{i,j}.(X_1 \otimes \cdots \otimes X_n) \cdot (Y_1 \otimes \cdots \otimes Y_m)$
 \end{ruletable}
 
-\subsection{Proof of Theorem \ref{thm: normalization}}
-As Theorem \ref{lem: axiom sound} holds for all rewriting rules, it is then sufficient to check: 1. the termination of normalization step; 2. the normalization step will not get stuck; and 3. the final step that discard variables is sound and complete, i.e., proving labelled Dirac equality with subterms in form Eqn. (\ref{eqn:Labelled normal1}) is equivalent to proving plain Dirac equality with subterms in Eqn. (\ref{eqn:Labelled normal1}). 1 and 2 ensures that the normalization procedure always provides $e_1 = e_2$.
-\begin{enumerate}
-  \item By checking there is no circular rules, and ordering in step 3 always terminates.
-  \item We can show that if the equality is not in form (\ref{eqn:Labelled normal}), there must exists one of the rules can be further applied. Besids, ordering is always applicable.
-  \item Since all tensors in Eqn. (\ref{eqn:Labelled normal1}) are ordered, so the denotational semantics of LHS and RHS of Eqn. (\ref{eqn:Labelled normal1}) are exactly the semantics of LHS and RHS of Eqn. (\ref{eqn:Labelled normal2}).
-\end{enumerate}
+\subsection{Proof of Soundness in Theorem \ref{lem: axiom sound}}
+
+For the soundness of rules for labelled Dirac notation, we first notice that the semantics of $\cdot$ and $\otimes$ are bilinear functions, so the rules regarding linear properties such as generic rules, and (R-SCRD0) - (R-SUM-PUSHD2) in Table 20 are straightforward. We show the (selected, the rest are similar or easier) rest rules in Tables 20 and 21 are sound. Note that $\cdot$ is used in different scopes, we explicitly write $\circ$ for $\cdot$ for multiplication (composition) of linear operators.
+\begin{itemize}
+  \item (R-ADJDK) $\sem{({}_r\<i|)^\dagger} = \sem{{}_r\<i|}^\dagger = \<\sem{i}|^\dagger = |\sem{i}\> = \sem{|i\>_r}$.
+  \item (R-ADJD0) 
+  \begin{align*}
+    &\sem{(D_1\otimes \cdots \otimes D_n)^\dagger}
+    = \sem{(D_1\otimes \cdots \otimes D_n)}^\dagger \\
+    =\ & (\sem{\Swap_{s_1,\cdots,s_n}} \circ (\sem{D_1}\otimes\cdots\otimes\sem{D_n}) \cdot \sem{\Swap_{s'_1,\cdots,s'_n}}^\dagger)^\dagger  \\ 
+    =\ & \sem{\Swap_{s'_1,\cdots,s'_n}} \circ (\sem{D_1}\otimes\cdots\otimes\sem{D_n})^\dagger \circ \sem{\Swap_{s_1,\cdots,s_n}}^\dagger \\ 
+    =\ & \sem{\Swap_{s'_1,\cdots,s'_n}} \circ (\sem{D_1}^\dagger\otimes\cdots\otimes\sem{D_n}^\dagger) \circ \sem{\Swap_{s_1,\cdots,s_n}}^\dagger \\ 
+    =\ & \sem{\Swap_{s'_1,\cdots,s'_n}} \circ (\sem{D_1^\dagger}\otimes\cdots\otimes\sem{D_n^\dagger}) \circ \sem{\Swap_{s_1,\cdots,s_n}}^\dagger \\ 
+    =\ & \sem{D_1^\dagger\otimes \cdots \otimes D_n^\dagger}.
+  \end{align*}
+  \item (R-ADJD1) here we use (R-ADJD0): 
+  \begin{align*}
+    &\sem{(D_1 \cdot D_2)^\dagger}
+    = \sem{D_1 \cdot D_2}^\dagger \\
+    =\ & (\sem{\cl(D_1,s_2\backslash s_1')} \circ \sem{\cl(D_2,s_1'\backslash s_2)})^\dagger  \\ 
+    =\ & \sem{\cl(D_2,s_1'\backslash s_2)^\dagger} \circ \sem{\cl(D_1,s_2\backslash s_1')^\dagger}  \\ 
+    =\ & \sem{(D_2 \otimes \mathbf{1}_{s_1'\backslash s_2})^\dagger} \circ \sem{(D_1\otimes \mathbf{1}_{s_2\backslash s_1'})^\dagger}  \\ 
+    =\ & \sem{D_2^\dagger \otimes \mathbf{1}_{s_1'\backslash s_2}^\dagger} \circ \sem{D_1^\dagger \otimes \mathbf{1}_{s_2\backslash s_1'}^\dagger} \\ 
+    =\ & \sem{D_2^\dagger \otimes \mathbf{1}_{s_1'\backslash s_2}} \circ \sem{D_1^\dagger \otimes \mathbf{1}_{s_2\backslash s_1'}} \\ 
+    =\ & \sem{\cl(D_2^\dagger, s_1'\backslash s_2)} \circ \sem{\cl(D_1^\dagger, s_2\backslash s_1')} \\ 
+    =\ & \sem{D_2^\dagger \circ D_1^\dagger}
+  \end{align*}
+  since $\Gamma \vdash D_2^\dagger : \cD(s_2',s_2)$ and $\Gamma \vdash D_1^\dagger : \cD(s_1',s_1)$, and if $s = \{r_1,\cdots,r_n\}$ orderedly, then
+  \begin{align*}
+    \sem{\mathbf{1}_{s}^\dagger} & = \sem{((\mathbf{1}_\OType(\sigma_{r_1}))_{r_1}\otimes \cdots \otimes (\mathbf{1}_\OType(\sigma_{r_n}))_{r_n})^\dagger } \\
+    & = \sem{(\mathbf{1}_\OType(\sigma_{r_1}))_{r_1}^\dagger \otimes \cdots \otimes (\mathbf{1}_\OType(\sigma_{r_n}))_{r_n}^\dagger } \\
+    & = \sem{(\mathbf{1}_\OType(\sigma_{r_1}))_{r_1} \otimes \cdots \otimes (\mathbf{1}_\OType(\sigma_{r_n}))_{r_n} } \\
+    &= \sem{\mathbf{1}_{s}}
+  \end{align*}
+  where 
+  \begin{align*}
+    \sem{\mathbf{1}_\OType(\sigma_{r_i})_{r_i}^\dagger} & = 
+    (\sem{\Swap_{r_i}}\circ \sem{\mathbf{1}_\OType(\sigma_{r_i})} \circ \sem{\Swap_{r_i}}^\dagger)^\dagger \\
+    & = \sem{\Swap_{r_i}}\circ \mathbf{I}^\dagger \circ \sem{\Swap_{r_i}}^\dagger = \mathbf{I} \\
+    & = \sem{\Swap_{r_i}}\circ \mathbf{1}_\OType(\sigma_{r_i}) \circ \sem{\Swap_{r_i}}^\dagger \\
+    & = \sem{\mathbf{1}_\OType(\sigma_{r_i})_{r_i}}.
+  \end{align*}
+  since $\sem{\Swap}$ is a unitary operator.
+
+  \item (R-L-SORT0) here we use the fact that labelled tensor is commutative,
+  \begin{align*}
+    & \sem{A\cdot B} = \sem{\cl(A, s'_1)} \circ \sem{\cl(B, s_2)} = \sem{A\otimes \mathbf{1}_{s'_1}}\circ  \sem{\mathbf{1}_{s_2}\otimes B} \\
+    =\ & \sem{\Swap_{s_1,s'_1}}\circ (\sem{A}\otimes \sem{\mathbf{1}_{s'_1}})\circ \sem{\Swap_{s_2,s'_1}}^\dagger \circ \sem{\Swap_{s_2,s'_1}} \circ (\sem{\mathbf{1}_{s_2}}\otimes \sem{B}) \circ \sem{\Swap_{s_2,s'_2}} \\
+    =\ & \sem{\Swap_{s_1,s'_1}}\circ (\sem{A}\otimes \mathbf{I})\circ (\mathbf{I}\otimes \sem{B}) \circ \sem{\Swap_{s_2,s'_2}} \\
+    =\ & \sem{\Swap_{s_1,s'_1}}\circ ((\sem{A}\circ \mathbf{I})\otimes (\mathbf{I}\circ \sem{B})) \circ \sem{\Swap_{s_2,s'_2}} \\
+    =\ & \sem{\Swap_{s_1,s'_1}}\circ (\sem{A}\otimes \sem{B}) \circ \sem{\Swap_{s_2,s'_2}} \\
+    =\ & \sem{A\otimes B}.
+  \end{align*}
+  where we use the condition $s_2\cap s_1' = \emptyset$.
+
+  \item (R-L-SORT1) 
+  \begin{align*}
+    \sem{{}_r\<i|\cdot|j\>_r} &= \sem{\cl({}_r\<i|,\emptyset)} \circ \sem{\cl(|j\>_r,\emptyset)} \\
+    &= (\sem{\Swap_{\emptyset}} \circ \<\sem{i}| \circ \sem{\Swap_{r,\emptyset}}^\dagger) \circ (\sem{\Swap_{r,\emptyset}} \circ |\sem{j}\>\circ \sem{\Swap_{\emptyset}}) \\
+    &= \<\sem{i}|\circ |\sem{j}\> \\
+    &= \sem{\delta_{i,j}}
+  \end{align*}
+
+  \item (R-L-SORT4) we use the fact that labelled tensor is associative and commutative. Suppose $\Gamma \vdash X_1\otimes \cdots \otimes X_n : \cD(s_X, s_X')$ and $\Gamma \vdash Y_1\otimes \cdots \otimes Y_m : \cD(s_Y, s_Y')$.
+  \begin{align*}
+    &\sem{(X_1\otimes\cdots\otimes {}_r\<i|\otimes\cdots\otimes X_n)\cdot (Y_1\otimes\cdots\otimes |j\>_r \otimes\cdots\otimes Y_m)} \\
+    =\ & \sem{\cl({}_r\<i| \otimes (X_1\otimes\cdots\otimes X_n), s_Y\backslash s_X')}\circ 
+    \sem{\cl(|j\>_r \otimes (Y_1\otimes\cdots\otimes Y_m), s_X'\backslash s_Y)} \\
+    =\ & \sem{{}_r\<i| \otimes ((X_1\otimes\cdots\otimes X_n) \otimes \mathbf{1}_{s_Y\backslash s_X'})}\circ 
+    \sem{|j\>_r \otimes ((Y_1\otimes\cdots\otimes Y_m) \otimes \mathbf{1}_{s_X'\backslash s_Y})} \\
+    =\ & [\sem{\Swap}_{s_X \cup s_Y\backslash s_X'}\circ(\<\sem{i}| \otimes \sem{(X_1\otimes\cdots\otimes X_n) \otimes \mathbf{1}_{s_Y\backslash s_X'}})\circ \sem{\Swap}_{\{r\}, s_X' \cup s_Y\backslash s_X'}^\dagger] \\
+    & \circ [\sem{\Swap}_{\{r\}, s_Y \cup s_X'\backslash s_Y}\circ(|\sem{j}\> \otimes \sem{(Y_1\otimes\cdots\otimes Y_m) \otimes \mathbf{1}_{s_X'\backslash s_Y}})\circ \sem{\Swap}_{s_Y' \cup s_X'\backslash s_Y}^\dagger]\\
+    =\ & \sem{\Swap}_{s_X\cup s_Y\backslash s_X'}\circ(\<\sem{i}| \otimes \sem{(X_1\otimes\cdots\otimes X_n) \otimes \mathbf{1}_{s_Y\backslash s_X'}})\circ \\
+    &[\sem{\Swap}_{\{r\}, s_X'\cup s_Y}^\dagger
+     \circ \sem{\Swap}_{\{r\}, s_Y \cup s_X'}] \circ \\
+    &(|\sem{j}\> \otimes \sem{(Y_1\otimes\cdots\otimes Y_m) \otimes \mathbf{1}_{s_X'\backslash s_Y}})\circ \sem{\Swap}_{s_Y'\cup s_X'\backslash s_Y}^\dagger\\
+    =\ & \sem{\Swap}_{s_X\cup s_Y\backslash s_X'}\circ[(\<\sem{i}| \otimes \sem{(X_1\otimes\cdots\otimes X_n) \otimes \mathbf{1}_{s_Y\backslash s_X'}})\circ \\
+    &(|\sem{j}\> \otimes \sem{(Y_1\otimes\cdots\otimes Y_m) \otimes \mathbf{1}_{s_X'\backslash s_Y}})]\circ \sem{\Swap}_{s_Y'\cup s_X'\backslash s_Y}^\dagger\\
+    =\ & \sem{\Swap}_{s_X\cup s_Y\backslash s_X'}\circ[\<\sem{i}|\sem{j}\> (\sem{(X_1\otimes\cdots\otimes X_n) \otimes \mathbf{1}_{s_Y\backslash s_X'}}\circ \\
+    &\sem{(Y_1\otimes\cdots\otimes Y_m) \otimes \mathbf{1}_{s_X'\backslash s_Y}})]\circ \sem{\Swap}_{s_Y'\cup s_X'\backslash s_Y}^\dagger\\
+    =\ & \sem{\delta_{i,j}} \sem{\Swap}_{s_X\cup s_Y\backslash s_X'}\circ\sem{(X_1\otimes\cdots\otimes X_n) \otimes \mathbf{1}_{s_Y\backslash s_X'}}\circ \sem{\Swap}_{s_X'\cup s_Y}^\dagger \circ \\
+    &\sem{\Swap}_{s_Y\cup s_X'} \circ \sem{(Y_1\otimes\cdots\otimes Y_m) \otimes \mathbf{1}_{s_X'\backslash s_Y}}\circ \sem{\Swap}_{s_Y'\cup s_X'\backslash s_Y}^\dagger\\
+    =\ & \sem{\delta_{i,j}} \sem{\cl(X_1\otimes\cdots\otimes X_n, s_Y\backslash s_X')}\circ 
+    \sem{\cl(Y_1\otimes\cdots\otimes Y_m, s_X'\backslash s_Y)} \\
+    =\ & \sem{\delta_{i,j}. (X_1\otimes\cdots\otimes X_n)\cdot (Y_1\otimes\cdots\otimes Y_m)}
+  \end{align*}
+\end{itemize}
+
+For the soundness of step (3) in normalization, notice that all tensors in the form of Eqn. (2) are ordered, so the denotational semantics of LHS and RHS of Eqn. (2) are exactly the semantics of LHS and RHS of Eqn. (3).
+
+\subsection{Proof of Completeness of Normalization in Theorem \ref{thm: normalization}}
+We show that the normalization steps can succeed for every labelled Dirac equality.
+Note that since we take a special algorithm (procedure) to rewrite equations, the conclusion is weaker than showing the confluence and termination of all these rewriting rules.
+
+We first show that every labelled Dirac expression can be rewritten into Eqn. (1) by step 1 and 2. It is routine to check that every rewriting rule preserves the type (i.e., $\cD(s_1,s_2)$ of the expression) and we omit this.
+\begin{itemize}
+  \item $D \equiv |i\>_r$ or ${}_r\<i|$. It is already in form of Eqn. (1).
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  \item $D \equiv K_R$ or $B_R$ or $O_{R,R'}$. Directly by apply (R-L-EXPAND), by noticing that $\<i_R|\cdot K\>$ and $B\cdot |i_R\>$ and $\<i_R|\cdot O \cdot |i_{R'}\>$ are all scalars in plain Dirac notation (recall $|i_R\>$ and $\<i_R|$ defined in Appendix B).
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  \item $D \equiv D^{\prime\dagger}$. By induction hypothesis, $D'$ is in form of Eqn. (1), so first apply (R-ADJ2) we get:
+  $$ 
+  (\sum_{i}\cdots\sum_{j} a_1 . (\ket{i}_{p} \otimes \cdots \otimes {}_q\<j|))^\dagger
+  + \cdots +
+  (\sum_{k}\cdots\sum_{l} a_m . (\ket{k}_{r} \otimes \cdots \otimes {}_s\<l|))^\dagger$$
+  and then apply (R-SUM-PUSH2) until the innermost summation, we get:
+  $$ 
+  \sum_{i}\cdots\sum_{j} (a_1 . (\ket{i}_{p} \otimes \cdots \otimes {}_q\<j|))^\dagger
+  + \cdots +
+  \sum_{k}\cdots\sum_{l} (a_m . (\ket{k}_{r} \otimes \cdots \otimes {}_s\<l|))^\dagger.$$
+  Finally, we sequentially perform (R-ADJ1), (R-ADJD0), (R-ADJDK) and (R-ADJDB) on every innermost expression and obtain the form of Eqn. (1):
+  $$ 
+  \sum_{i}\cdots\sum_{j} a_1^* . ({}_p\<i| \otimes \cdots \otimes \ket{j}_q)
+  + \cdots +
+  \sum_{k}\cdots\sum_{l} a_m^* . ({}_r\<k| \otimes \cdots \otimes \ket{l}_s).$$
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  \item $D \equiv a.D'$. By induction hypothesis, $D'$ is in form of Eqn. (1), so first apply (R-SCR2) we get:
+  $$ 
+  a.(\sum_{i}\cdots\sum_{j} a_1 . (\ket{i}_{p} \otimes \cdots \otimes {}_q\<j|))
+  + \cdots +
+  a.(\sum_{k}\cdots\sum_{l} a_m . (\ket{k}_{r} \otimes \cdots \otimes {}_s\<l|))$$
+  and then apply (R-SUM-PUSH3) until the innermost summation, we get:
+  $$ 
+  \sum_{i}\cdots\sum_{j} a.(a_1 . (\ket{i}_{p} \otimes \cdots \otimes {}_q\<j|))
+  + \cdots +
+  \sum_{k}\cdots\sum_{l} a.(a_m . (\ket{k}_{r} \otimes \cdots \otimes {}_s\<l|))$$
+  and finally apply (R-SCR1) for every innermost summation, we have:
+  $$ 
+  \sum_{i}\cdots\sum_{j} (a \times a_1) . (\ket{i}_{p} \otimes \cdots \otimes {}_q\<j|)
+  + \cdots +
+  \sum_{k}\cdots\sum_{l} (a \times a_m) . (\ket{k}_{r} \otimes \cdots \otimes {}_s\<l|)$$
+  which is in form of Eqn. (1).
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  \item $D \equiv D_1 + \cdots + D_n$. By induction hypothesis, every $D_i$ is in form of Eqn. (1), by applying (R-FLATTEN) on every subterm, we directly rewrite $D$ into form of Eqn. (1).
+  \item $D \equiv D_1\otimes \cdots \otimes D_n$. By induction hypothesis, every $D_i$ is already rewritten in the form of Eqn. (1), we first apply (R-TSRD0) for every $D_i$, thus $D$ is now of the form of additions of subterms which are in the form of 
+  $$
+  \sum_{i}\cdots\sum_{j} a_1 . (\ket{i}_{p} \otimes \cdots \otimes {}_q\<j|)
+  \otimes \cdots \otimes
+  \sum_{k}\cdots\sum_{l} a_m . (\ket{k}_{r} \otimes \cdots \otimes {}_s\<l|).
+  $$
+  Next, we apply (R-SUM-PUSHD0) for every subterms and we get:
+  $$
+  \sum_{i}\cdots\sum_{j}\cdots\sum_{k}\cdots\sum_{l} (a_1 . (\ket{i}_{p} \otimes \cdots \otimes {}_q\<j|))
+  \otimes \cdots \otimes
+  (a_m . (\ket{k}_{r} \otimes \cdots \otimes {}_s\<l|)).
+  $$
+  Then we apply (R-SCRD0) on the innermost expressions and obtain
+  $$
+  \sum_{i}\cdots\sum_{j}\cdots\sum_{k}\cdots\sum_{l} (a_1.( \cdots (a_m . ((\ket{i}_{p} \otimes \cdots \otimes {}_q\<j|)
+  \otimes \cdots \otimes
+  (\ket{k}_{r} \otimes \cdots \otimes {}_s\<l|))) \cdots ))
+  $$
+  and finally (R-SCR1) on the innermost expressions to get
+  $$
+  \sum_{i}\cdots\sum_{j}\cdots\sum_{k}\cdots\sum_{l} (a_1\times \cdots \times a_m) . ((\ket{i}_{p} \otimes \cdots \otimes {}_q\<j|)
+  \otimes \cdots \otimes
+  (\ket{k}_{r} \otimes \cdots \otimes {}_s\<l|)).
+  $$
+  \item $D \equiv D_1 \cdot D_2$. By induction hypothesis, $D_1$ and $D_2$ are already rewritten in the form of Eqn. (1), we first apply (R-DOTD0) and then (R-DOTD1), which lead $D$ to the form of additions of subterms which are in the form of:
+  $$
+  (\sum_{i}\cdots\sum_{j} a_1 . (\ket{i}_{p} \otimes \cdots \otimes {}_q\<j|))
+  \cdot  
+  (\sum_{k}\cdots\sum_{l} a_2 . (\ket{k}_{r} \otimes \cdots \otimes {}_s\<l|)).
+  $$
+  Next, by applying (R-SUM-PUSHD1) and (R-SUM-PUSHD2) for every summation, we get the subterms as
+  $$
+  \sum_{i}\cdots\sum_{j}\sum_{k}\cdots\sum_{l} (a_1 . (\ket{i}_{p} \otimes \cdots \otimes {}_q\<j|))
+  \cdot  
+  (a_2 . (\ket{k}_{r} \otimes \cdots \otimes {}_s\<l|)).
+  $$
+  Then apply (R-SCRD1) and (R-SCRD2) on the innermost expression to obtain:
+  $$
+  \sum_{i}\cdots\sum_{j}\sum_{k}\cdots\sum_{l} (a_1 . (a_2. ((\ket{i}_{p} \otimes \cdots \otimes {}_q\<j|)
+  \cdot (\ket{k}_{r} \otimes \cdots \otimes {}_s\<l|)))).
+  $$
+  Now, we gradually apply (R-L-SORT4)\footnote{the final rule in Table 21 which has a typo of naming, i.e., it should be (R-L-SORT4) instead of (R-L-SORT1)} (or (R-L-SORT1) or (R-L-SORT2) or (R-L-SORT3) depends on the form of left part / right part of the $\cdot$) to eliminate \textbf{all} bras (in the LHS of $\cdot$) and kets (in the RHS of $\cdot$) with same labels. This will always terminate as we only have the finite number of kets and bras. Then the innermost expression is of form:
+  \begin{align*}
+    &\sum_{i}\cdots\sum_{j}\sum_{k}\cdots\sum_{l} (a_1 . ( a_2. (\delta_{?,?}. (\cdots (\delta_{?,?}. ((\ket{i_1}_{p_1} \otimes \cdots \otimes \ket{i_n}_{p_n} \otimes \\
+    &{}_{q_1}\<j_1| \otimes \cdots \otimes {}_{q_m}\<j_m|)
+  \cdot (\ket{k_1}_{r_1} \otimes \cdots \otimes \ket{k_{n'}}_{r_{n'}} \otimes {}_{s_1}\<l_1| \otimes \cdots \otimes {}_{s_{m'}}\<l_{m'}|))))))).
+  \end{align*}
+  where $?$s are some indexes (but for simplicity, we do not explicitly give the names), and we also use the fact that labelled tensor is commutative and associative and then reordering the kets and bras by kets first.
+
+  We can further apply (R-L-SORT0) to translate $\cdot$ to $\otimes$, which is guaranteed by: LHS of $\cdot$ has type $\cD(\{p_1,\cdots,p_n\},\{q_1,\cdots,q_m\})$ and RHS of $\cdot$ has type $\cD(\{r_1,\cdots,r_{n'}\}, \\ \{s_1,\cdots,s_{m'}\})$, and $\{q_1,\cdots,q_m\}\cap \{r_1,\cdots,r_{n'}\} = \emptyset$ (otherwise, suppose $q_x = r_y = t$, then ${}_{q_x}\<j_x|$ and $|k_y\>_{r_y}$ are pairs that can be eliminated by applying (R-L-SORT4) which contradicts to that all pairs have been eliminated).
+  
+  We finally apply (R-L-SCR1) for the innermost expression and get the form of Eqn. (1):
+  \begin{align*}
+    &\sum_{i}\cdots\sum_{j}\sum_{k}\cdots\sum_{l} (a_1 \times a_2 \times \delta_{?,?} \times \cdots \times \delta_{?,?}). ((\ket{i_1}_{p_1} \otimes \cdots \otimes \ket{i_n}_{p_n} \otimes \\
+    &{}_{q_1}\<j_1| \otimes \cdots \otimes {}_{q_m}\<j_m|)
+  \otimes (\ket{k_1}_{r_1} \otimes \cdots \otimes \ket{k_{n'}}_{r_{n'}} \otimes {}_{s_1}\<l_1| \otimes \cdots \otimes {}_{s_{m'}}\<l_{m'}|)).
+  \end{align*}
+  
+  \item $D \equiv \sum_s f$. By induction hypothesis, for every $i\in s$, $f(i)$ is already rewritten in the form of Eqn. (1). By applying (R-SUM-ADD0) we directly translate $D$ to the form of Eqn. (1).
+\end{itemize}
+
+The step (3) is straightforward since: 1. reordering always succeeds and terminates, 2. since $D$ is well-typed and after applying rewriting rules it is still well-typed, every subterm of additions has the same type, this ensures that every subterm of the form Eqn. (2) has the same ordered labels.
+Finally, notice that all tensors in Eqn. (2) are ordered, so the denotational semantics of LHS and RHS of Eqn. (2) are exactly the semantics of LHS and RHS of Eqn. (3).
+
+% As Theorem \ref{lem: axiom sound} holds for all rewriting rules, it is then sufficient to check: 1. the termination of normalization step; 2. the normalization step will not get stuck; and 3. the final step that discard variables is sound and complete, i.e., proving labelled Dirac equality with subterms in form Eqn. (\ref{eqn:Labelled normal1}) is equivalent to proving plain Dirac equality with subterms in Eqn. (\ref{eqn:Labelled normal1}). 1 and 2 ensures that the normalization procedure always provides $e_1 = e_2$.
+% \begin{enumerate}
+%   \item By checking there is no circular rules, and ordering in step 3 always terminates.
+%   \item We can show that if the equality is not in form (\ref{eqn:Labelled normal}), there must exists one of the rules can be further applied. Besids, ordering is always applicable.
+%   \item Since all tensors in Eqn. (\ref{eqn:Labelled normal1}) are ordered, so the denotational semantics of LHS and RHS of Eqn. (\ref{eqn:Labelled normal1}) are exactly the semantics of LHS and RHS of Eqn. (\ref{eqn:Labelled normal2}).
+% \end{enumerate}
 % \begin{proof}
 %   Notice that all rewriting rules and ordering perserve the types, so the final step eliminating labels is both sound and complete. 
 %   It is routinely to check that each rewriting rules and ordering step are sound based on the semantics. This directly leads to the soundness. For completeness, we need further check if the normalization procedure always provide $e_1 = e_2$, i.e., it never gets stuck and terminates. Step 1 is trivial. For step 2, it can be further checked that 1. there is no circular rules and thus terminates, and 2. if it is not in form (\ref{eqn:Labelled normal}), there must exists one of the rules can be further applied. For step 3, ordering is always applicable. This completes the proof.
