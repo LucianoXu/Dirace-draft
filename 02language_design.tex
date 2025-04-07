@@ -7,7 +7,7 @@ to equational reasoning. Three main ingredients of our language are:
 \item a rich typing discipline that distinguishes between scalars,
   kets, bras and operators, but supports sufficient overloading to
   remain close to standard Dirac notation;
-\item higher-order, indexed (a.k.a.\, weak dependent) types. It allows
+\item higher-order, indexed (a.k.a.\, weakly dependent) types. It allows
   to formally encode defined symbols like transpose or trace, which
   are usually used to represent the term in an abstract manner;
 \item operators with indefinite arities. Indefinite arities are
@@ -71,7 +71,7 @@ The terms above are explained in five lines.
     \( e_1\ e_2 \) denotes function application.
     \( (e_1, e_2) \) is the basis pair for product types.
     \item \textbf{scalar}: \( 0 \), \( 1 \), \( e_1 \times \cdots \times e_n \) and \( e^* \) are symbols for scalars.
-    \( \delta_{e_1, e_2} \) compares where two basis are the same and evaluates to $1$ or $0$ accordingly.
+    \( \delta_{e_1, e_2} \) compares whether two basis are the same and evaluates to $1$ or $0$ accordingly.
     \item \textbf{Dirac constant}: zero ket, zero bra, zero operator and identity operator.
     \item \textbf{Dirac function}: \( \ket{e} \) is a ket, \( \bra{t} \) is a bra, and \( e^\dagger \) denotes the conjugate transpose of \( e \). \( e_1.e_2 \) represents scaling the term \( e_2 \) by scalar \( e_1 \). \(e_1 + \cdots + e_n\) is the addition. \( e_1 \otimes e_2 \) represents tensor product, and \( e_1 \cdot e_2 \) represents the multiplication.
     \item \textbf{summation}: \( \mathbf{U}(\sigma) \) denotes the universal set with index \( \sigma \). \( e_1 \star e_2 \) represents the Cartesian product of \( e_1 \) and \( e_2 \). \( \sum_{e_1} e_2 \) is the big operator sum, modeled by folding the function \( e_2 \) over the value set \( e_1 \). Typically, the sum's body is given by an abstraction. For convenience, we also use the notation \( \sum_{x \in s} X \) to represent \( \sum_{s} \lambda x : T . X \).
