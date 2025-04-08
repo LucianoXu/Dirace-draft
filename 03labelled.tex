@@ -54,7 +54,9 @@ We further introduce new $\cdot$ for generalized composition (unified for all ki
 % Finally, $\ket{i}_r$ and ${}_r\bra{i}$ are labelled basis for the normal form of labelled Dirac notation, where $r$ are registers symbols in $\mathcal{R}$. 
 
 \paragraph*{Typing rules.}
-There are various rules for computing types and checking vadility of registers and labelled terms. Here we display some of the rules and see Appendix for all the rest.
+There are various rules for computing types and checking vadility of
+registers and labelled terms. Here we display some of the rules and
+refer the reader to Appendix for the full set of rules.\gb{which appendix? add section}
 \begin{gather*}
   \frac{
       \Gamma \vdash R : \reg(\sigma) \quad
@@ -161,8 +163,11 @@ We interpret labelled Dirac notations inductively as (assume $\Gamma\vdash D_i :
 \end{itemize}
 It can be shown that Lemma \ref{lemma:sound type system} also holds for labelled terms, i.e., $\sem{D}_v \in \sem{\cD(s,s')}_v$ given $\Gamma\vdash D : \cD(s,s')$. Following the semantics, labelled tensor is independent of its order, i.e., $\sem{D_1\otimes D_2}_v = \sem{D_2\otimes D_1}_v$ and $\sem{D_1\otimes (D_2\otimes D_3)}_v = \sem{(D_1\otimes D_2)\otimes D_3}_v$, which ensures the soundness of treating labelled tensor as an AC symbol.
 
-\subsection{Normalization}
-The normalization procedure of labelled Dirac notation allows us to eliminate all labels and thus translate the equality of labelled terms to the equality of plain Dirac terms. This is achieved by the following three steps: 
+\subsection{Elimination of labels}
+It is possible to eliminate labels from labelled Dirac expressions and
+thus to transform any equation in Labelled Dirac notation into an
+equation in plain Dirac notation. This is achieved by the following
+three steps:
 
 \paragraph*{1. Elimination of $e_R$ or $e_{R;R}$.}
 We decompose all $e_R$ or $e_{R;R}$ to the labelled basis with scalar coefficients. 
@@ -231,23 +236,40 @@ which do not involve any labels.
 %Define $T_{s,s'}$ as $\SType$ if $s=s'=\emptyset$, $\KType(\sigma_s)$ if $s'=\emptyset$, $\BType(\sigma_{s'})$ if $s=\emptyset$ and $\OType(\sigma_s,\sigma_{s'})$ otherwise (see Sec. \ref{context: sigma s}). We claim the soundness of our normalization as:
 % Then if the original equality is $\Gamma\vdash D_1 = D_2 : \cD(s,s')$, what remains to be check $\Gamma\vdash e_1 = e_2 : T_{s,s'}$.
 \paragraph*{}
-We claim that Theorem \ref{lem: axiom sound} holds for the extra rules mentioned above and in Appendix \ref{sec: rewriting rules} (regard rules as equational theory), as well as the relative completeness of the normalization with respect to plain Dirac notation:
-\begin{theorem}[Soundness and Completeness of Normalization]
+
+The procedure to eliminate labels is sound and complete, in the sense
+that expressions in Labelled Dirac notation are equivalent iff their
+translations to plain Dirac notation are equivalent.
+\begin{theorem}[Label Elimination]
   \label{thm: normalization}
-  Assume $\Gamma\vdash D_1 : \cD(s,s')$, $\Gamma\vdash D_2 : \cD(s,s')$
-  and no variables of $\DType(\cdot,\cdot)$ appear in $D_1,D_2$.
-  Let $e_1 = e_2$ be obtained by above normalization procedure on $D_1 = D_2$. Then $\Gamma\vDash D_1 = D_2$ if and only if $\Gamma\vDash e_1 = e_2$.
-  %All rewriting rules for labelled Dirac notations listed here and in Appendix are sound, i.e., for any interpretation $\sem{\cdot}$, $D\reduce D'$ implies $\sem{D} = \sem{D'}$.
+  Assume $\Gamma\vdash D_1 : \cD(s,s')$, $\Gamma\vdash D_2 :
+  \cD(s,s')$ and no variables of $\DType(\cdot,\cdot)$ appear in
+  $D_1,D_2$.  Let $e_1 = e_2$ be obtained by above normalization
+  procedure on $D_1 = D_2$.  Then $e!=e_2$ is an equation in plain
+  Dirac notation and $\Gamma\vDash D_1 = D_2$ if and only if
+  $\Gamma\vDash e_1 = e_2$.
 \end{theorem}
-\begin{hproof}
-  \lz{
-  Checking the soundness of every rule is routine. 
-  For relative completeness, it is sufficient to show that the normalization steps can succeed for every labelled Dirac equality. To this end, we give 
-  concrete steps to rewrite every labelled Dirac notation into forms of Eqn. (1) by induction on the structure of the notation. Further noticing that reordering of labelled basis preserves the type and semantics and thus yield Eqn. (4). The detailed proof can be found in Appendix \ref{sec: rewriting rules}.
-  }
+The idea of the proof is as follows: first, we define a set of proof
+rules to rewrite every labelled Dirac notation into the form of
+Eqn. (1). We prove that each rule is sound w.r.t.\, semantics, and
+that every labelled Dirac expression can be rewritten to an expression
+of the form of Eqn. (1); the proof is by induction on the structure of
+the expression. Next, we show that reordering of labelled basis
+preserves the type and semantics and thus yield expressions of the
+form of Eqn. (4), as desired. Details appear in
+Appendix~\ref{app:label_elim}.\gb{check proof is really there}
+%% \begin{hproof}
+%%   \lz{
+%%   Checking the soundness of every rule is routine. 
+%%   For relative completeness, it is sufficient to show that the normalization steps can succeed for every labelled Dirac equality. To this end, we give 
+%%   concrete steps to  by induction on the structure of the notation. Further noticing that reordering of labelled basis preserves the type and semantics and thus yield Eqn. (4). The detailed proof can be found in Appendix \ref{sec: rewriting rules}.
+%%   }
   
-  \lz{Note that since we take a special algorithm (procedure) to rewrite equations, the relative completeness is weaker than showing the confluence and termination of all these rewriting rules.}
-\end{hproof}
+%%   \lz{Note that since we take a special algorithm (procedure) to rewrite equations, the relative completeness is weaker than showing the confluence and termination of all these rewriting rules.}
+%% \end{hproof}
+
+
+%% We claim that Theorem \ref{lem: axiom sound} holds for the extra rules mentioned above and in Appendix \ref{sec: rewriting rules} (regard rules as equational theory), as well as the relative completeness of the normalization with respect to plain Dirac notation:
 
 % \begin{proof}
 %   Notice that all rewriting rules and ordering perserve the types, so the final step eliminating labels is both sound and complete. 

@@ -215,15 +215,14 @@ all valuations \( v \) that are valid w.r.t.\, \( \Gamma \).
 \begin{theorem}[Soundness of equational theory]\label{lem: axiom sound}
 If \( \Gamma \vdash e_1 = e_2 :T \) then \( \Gamma \vDash e_1 = e_2\).
 \end{theorem}
-\begin{hproof}
-  \lz{The soundness proof is routine and similar to Lemma 5.10 in \cite{diracdec}.}
-\end{hproof}
+The proof of soundess is standard: we prove that all axioms are sound,
+and that all proof rules are sound.
 
 % \begin{proof}
 % By induction on the structure of the derivation
 % \end{proof}
 Next, we formalize the motivating example~\Cref{ex: motivating} in
-plain Dirac notation.
+Dirac notation.
 \begin{example}[Motivating Example Formalization]
     \label{ex: formalizing motivating}
     Definitions and assumptions in the context \( \Gamma \) are formalized as follows:
@@ -244,7 +243,7 @@ plain Dirac notation.
 
 
 
-\subsection{Algorithm to Prove Equivalence}
+\subsection{Normalization}
 
 The equivalence of Dirac notations is established through normalization, which transforms equivalent expressions into the same syntax under a set of axioms. We employ an efficient algorithm to perform the normalization fully on $R \cup E$.
 
@@ -298,7 +297,7 @@ For step 4 and 5, the key observation is that in a successive sum expression \( 
     \annotate[yshift=0em]{below}{braket-dot}{\scriptsize{inner product}}
     \annotatetwo[yshift=0em,xshift=2cm]{below}{delta-elim-sum}{delta-elim-delta}{\scriptsize{$\delta$-elimination}}
     \annotate[yshift=0em]{below}{swapsum}{\scriptsize{sum swapping}}
-    \caption{A nomralization outline for the left-hand side of~\Cref{eq: motivating plain}. Matched subterms are marked with colors. Blue marking represents variable expansion, red marking represents rule applications, and brown marking represents normalization step 4-6.}
+    \caption{A normalization outline for the left-hand side of~\Cref{eq: motivating plain}. Matched subterms are marked with colors. Blue marking represents variable expansion, red marking represents rule applications, and brown marking represents normalization step 4-6.}
     \label{fig: normalization demo}
 \end{figure}
 

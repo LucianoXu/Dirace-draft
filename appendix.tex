@@ -1430,10 +1430,7 @@ For the soundness of rules for labelled Dirac notation, we first notice that the
 
 For the soundness of step (3) in normalization, notice that all tensors in the form of Eqn. (2) are ordered, so the denotational semantics of LHS and RHS of Eqn. (2) are exactly the semantics of LHS and RHS of Eqn. (3).
 
-\subsection{Proof of Completeness of Normalization in Theorem \ref{thm: normalization}}
-We show that the normalization steps can succeed for every labelled Dirac equality.
-Note that since we take a special algorithm (procedure) to rewrite equations, the conclusion is weaker than showing the confluence and termination of all these rewriting rules.
-
+\subsection{Proof of Label Elimination \ref{thm: normalization}}\label{app:label_elim}
 We first show that every labelled Dirac expression can be rewritten into Eqn. (1) by step 1 and 2. It is routine to check that every rewriting rule preserves the type (i.e., $\cD(s_1,s_2)$ of the expression) and we omit this.
 \begin{itemize}
   \item $D \equiv |i\>_r$ or ${}_r\<i|$. It is already in form of Eqn. (1).
