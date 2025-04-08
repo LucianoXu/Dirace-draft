@@ -1,6 +1,6 @@
 \section{Related Work}
 
-\paragraph*{Comparison with DiracDec~\cite{diracdec}}
+\paragraph*{Comparison with DiracDec}
 Xu \emph{et al}~\cite{diracdec} define a language and an associate and
 commutative rewriting system for Dirac notation, and implement their
 language and rewriting system in Mathematica. Our approach follows a
@@ -38,11 +38,12 @@ The ZX calculus~\cite{DBLP:conf/icalp/CoeckeD08,coecke2011interacting}
 is a graphical calculus for quantum states. A main appeal of the ZX
 calculus is that its foundations are grounded in categorical quantum
 mechanics~\cite{DBLP:conf/lics/AbramskyC04}, a powerful framework for
-modeling and reasoning about quantum physics. Another main appeal of
-the ZX calculus is that ZX diagrams have an operational interpretation
-using graph rewriting. There is a large body of work that studies
-properties of these rewriting systems, and in particular completeness
-(a set of rules is complete if it can prove all valid identities) and
+modeling quantum physics. Another main appeal of the ZX calculus is
+that it has a natural operational interpretation based on graph
+rewriting. There is a large body of work that defines rewriting
+systems for fragments/extensions/variants of the ZX calculus, and
+studies their theoretical properties, in particular completeness (a
+set of rules is complete if it can prove all valid identities) and
 minimality (a complete set of rules is minimal if removing a rule
 leads to incompleteness). Two main proof techniques for completeness
 are via termination, or via interpretation. In the first case, one
@@ -56,46 +57,36 @@ including the Clifford fragment~\cite{backens2014zx}, the
 Toffoli+Hadamard fragment~\cite{hadzi15zx}, the Clifford+T
 fragment~\cite{jeandel2018complete} and the (qubit) universal
 fragment~\cite{HNW18,JeandelPV18beyond}. Subsequent works generalize
-completeness to qudits~\cite{Poor2023} for a calculus know as ZXW
-which encompasses the ZX and ZW calculi~\cite{zwcalculus}, quantum
+completeness to qudits~\cite{Poor2023}, quantum
 circuits~\cite{DBLP:conf/lics/ClementHMPV23} or optical quantum
 circuits~\cite{clement_et_al:2022}. We refer the interested reader
 to~\cite{vandewetering2020zx} for a historical and technical account
 of completeness results up to 2020.
 
-Because they are both grounded in rewriting techniques, there are many
-similarities between prior work on the ZX calculus and our own work on
-labelled Dirac notation. We highlight some key differences. First,
-there exist a number of differences between our language and the
-concrete fragments of the ZX-calculus for which completeness has been
-studied. For instance, our language features big operators, and
-operators for dual spaces. A second difference is that we do not claim
-completeness: our main theorem shows a reduction from Labelled Dirac
-notation to Dirac notation, for which completeness is only partially
-known. From a practical point of view, many of the examples handled by
-D-Hammer cannot be formalized in existing ZX-calculus tools. On the
-contrary, D-Hammer is not competitive on the examples that can be
-verified by ZX-calculus, as shown in \Cref{sec:eval}. 
+There are many similarities between the ZX calculus and our formalism
+for Labelled Dirac notation. However, there are also some differences
+between our formalism and the ones used in ZX calculus. In particular,
+our language supports big operators, tensors, and various operations
+on Hilbert spaces. These features are typically not considered in
+prior work on the ZX calculus, and as a consequence many examples
+handled by D-Hammer lack an immediate translation into ZX-calculus.
+This additional generality comes with a price. On the one hand, our
+theoretical results are weaker: we do not claim completeness or
+minimality. Similarly, practical implementations of the ZX-calculus,
+such as PyZX~\cite{kissinger2020pyzx}, outperform D-Hammer on examples
+that can be handled by both tools, as shown in \Cref{sec:eval}.
 
 
-\paragraph*{Comparison with quantum circuit equivalence checking tools}
-A main application of the ZX-calculus is to check equivalence of
-quantum circuits; for instance, PyZX~\cite{kissinger2020pyzx} is a
-popular Python library for automating equational reasoning in the
-ZX-calculus.
-
-There are many other tools for equivalence checking of quantum
-circuits. Amy~\cite{amy2018towards} uses the path-sums formalism
-formalism to check circuits with thousands of T gates. A series of
-works~\cite{AutoQ_pldi_2023,AutoQ2023,AutoQ_popl2025} explores
-automata-based approaches to verify quantum circuits at scale. Their
-main idea is to encode circuits as a compact, finite tree automata,
-often with $\mathit{poly}(n)$ transitions (instead of $2^n$
-transitions), where $n$ is the number of qubits of the state. By
-providing the semantics of quantum gates over this representation,
-they achieve practical verification. Their tool \textsc{autoq} is able
-to verify circuits with over 100,00 gates, and was recently extended
-to support parametrized verification.
+\paragraph*{Comparison with other tools}
+Beyond ZX calculus, there exists many other tools for simplifying and
+proving equivalence of quantum circuits; we refer the reader to recent
+surveys~\cite{QPV-survey2021,CharetonLVVBX23} for detailed accounts.
+Notable works include~\cite{amy2018towards}, which uses the path-sums
+formalism to check circuits with 1,000 of T gates,
+and~\cite{AutoQ_pldi_2023,AutoQ2023,AutoQ_popl2025}, which uses
+automata-based approaches to verify quantum circuits at scale---their
+tool \textsc{autoq} is able to verify circuits with over 100,00 gates,
+and was recently extended to support parametrized verification.
 
 
 \paragraph*{Canonical forms in multi-body quantum physics}
