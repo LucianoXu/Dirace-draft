@@ -112,7 +112,8 @@ Here $\$0$ and $\$1$ are de Bruijn indices. The result is a ket on the $\{r_1, r
 
 \section{Evaluation}\label{sec:eval}
 We evaluate D-Hammer on several example sets, and make a comparison with the previous tool DiracDec~\cite{diracdec}.
-The experiments are carried out using a MacBook Pro with M3 Max chip. Results are summarized as follows.
+The experiments are carried out using a MacBook Pro with M3 Max chip. Results are summarized as follows, which indicates
+significant performance improvements.
 
 \begin{center}
     \begin{tabular}{c|c c c|c c c}
@@ -130,12 +131,6 @@ The experiments are carried out using a MacBook Pro with M3 Max chip. Results ar
         \hline
     \end{tabular}        
 \end{center}
-
-The results show significant performance improvements. The enhanced
-efficiency primarily results from algorithmic improvements rather than
-the shift to a \CC implementation. This is supported by the fact that
-efficiency gains are more significant for larger examples, as can be
-observed in \Cref{fig: CoqQ plot}. \gb{mentioned below?}
 
 
 \subsubsection{Textbook (QCQI)}
