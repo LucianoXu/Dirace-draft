@@ -8,12 +8,11 @@ Main changes:
 * Clarified in evaluation that efficiency gains result from
   algorithmic improvements
 
-* Expanded evaluation with comparison with PyZX and other tools.
-TABLE+TEXT
+* Expanded evaluation with comparison with ZX-calculus and other tools.
 
 * Added clarification and short explanation before and after Theorem
   2, and longer proof sketch in Appendix D.2
 
 * Added proof sketch of Theorem 1 in Appendix D.1
 
-SAY SOMETHING ABOUT MORE LDN EXAMPLES
+We also gathered around 30 additional examples of labelled Dirac notation and we are currently encoding them in the tool.

@@ -222,7 +222,7 @@ A particularly noteworthy result is D-Hammer's solution to LDN-10, a highly comp
 \subsubsection*{Equivalence checking of circuits}
 Quantum circuits are concrete computation models for qubit systems, and they can be described as unitary operators in Dirac notation. 
 D-Hammer can check the equivalence of small scaled quantum circuits through their Dirac notation representations. Nevertheless, this is not the intended application. 
-Its performance is not comparable with specialized algorithms and tools based on ZX-calculus or decision diagrams, which utilize the specific information of circuit classes to achieve better optimizations. 
+Its performance is not comparable with specialized algorithms and tools based on ZX-calculus~\cite{9868772} or decision diagrams\cite{10.1145/3394885.3431590}, which utilize the specific information of circuit classes to achieve better optimizations. 
 An evaluation of some examples is given in~\Cref{fig: circuit eval}, and~\Cref{fig: QC-5} shows one of them. D-Hammer will always time out on larger quantum circuit examples.
 
 
@@ -232,7 +232,7 @@ An evaluation of some examples is given in~\Cref{fig: circuit eval}, and~\Cref{f
     \setlength{\extrarowheight}{2pt}
     \begin{tabular}{c @{\hspace{2em}} c @{\hspace{2em}} c @{\hspace{2em}} c}
         \hline
-        example & D-Hammer & ZX-Calculus & Decision Diagrams \\
+        example & D-Hammer & ZX-Calculus~\cite{9868772} & Decision Diagrams (simulation)~\cite{10.1145/3394885.3431590} \\
         \hline
         QC-1 & 0.029 & 0.0 & 0.0 \\
         QC-2 & 0.16 & 0.00039 & 0.0038 \\
