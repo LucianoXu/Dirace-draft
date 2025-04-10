@@ -224,8 +224,8 @@ Quantum circuits is a prominent model of quantum computation. This
 model is adopted by numerous tools, which can evaluate, optimize, or
 prove equivalence of quantum circuits. These tools are based on a
 variety of approaches, based on ZX-calculus~\cite{9868772}, or
-decision diagrams\cite{10.1145/3394885.3431590}, or other formalisms
-discussed in related work. In general, these tools are aggressively
+decision diagrams~\cite{10.1145/3394885.3431590}, or other formalisms
+discussed in \Cref{sec:relwork}. In general, these tools are aggressively
 optimized to achieve scalability.
 
 Quantum circuits can also be described as unitary operators in Dirac
@@ -235,10 +235,11 @@ not the intended application of D-Hammer, we include an evaluation of
 D-Hammer on some simple examples. An evaluation of some examples is
 given in~\Cref{fig: circuit eval}, and~\Cref{fig: QC-5} shows one of
 them. As expected, D-Hammer does not perform well in comparison with
-specialized tools: it is always clearly outperformed on small quantum
-circuit examples, and it always times out on larger quantum circuit
-examples. It would be of interest to make D-Hammer more competitive on
-quantum circuits in future work.
+specialized tools: it is always outperformed, often by several order
+of magnitude, on small quantum circuit examples, and it always times
+out on larger quantum circuit examples. In the future it would be of
+interest to make D-Hammer more competitive on quantum circuits by
+adopting some of the aggressive optimizations for other works.
 
 \begin{figure}[h]
     \center
