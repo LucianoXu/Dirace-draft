@@ -1339,7 +1339,11 @@ This section includes all the rewriting rules used in the system. Related rules 
     & $\reduce\ \delta_{i,j}.(X_1 \otimes \cdots \otimes X_n) \cdot (Y_1 \otimes \cdots \otimes Y_m)$
 \end{ruletable}
 
-\subsection{Proof of Soundness in Theorem \ref{lem: axiom sound}}
+
+
+\subsection{Proof of Label Elimination \ref{thm: normalization}}\label{app:label_elim}
+
+\subsubsection{Proof of soundness}
 
 For the soundness of rules for labelled Dirac notation, we first notice that the semantics of $\cdot$ and $\otimes$ are bilinear functions, so the rules regarding linear properties such as generic rules, and (R-SCRD0) - (R-SUM-PUSHD2) in Table 20 are straightforward. We show the (selected, the rest are similar or easier) rest rules in Tables 20 and 21 are sound. Note that $\cdot$ is used in different scopes, we explicitly write $\circ$ for $\cdot$ for multiplication (composition) of linear operators.
 \begin{itemize}
@@ -1429,7 +1433,7 @@ For the soundness of rules for labelled Dirac notation, we first notice that the
 
 For the soundness of step (3) in normalization, notice that all tensors in the form of Eqn. (2) are ordered, so the denotational semantics of LHS and RHS of Eqn. (2) are exactly the semantics of LHS and RHS of Eqn. (3).
 
-\subsection{Proof of Label Elimination \ref{thm: normalization}}\label{app:label_elim}
+\subsubsection{Proof of normal form}
 We first show that every labelled Dirac expression can be rewritten into Eqn. (1) by step 1 and 2. It is routine to check that every rewriting rule preserves the type (i.e., $\cD(s_1,s_2)$ of the expression) and we omit this.
 \begin{itemize}
   \item $D \equiv |i\>_r$ or ${}_r\<i|$. It is already in form of Eqn. (1).
