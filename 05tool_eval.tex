@@ -67,7 +67,7 @@ Finally, D-Hammer uses a prover to host the computation. The prover maintains a 
     \item \texttt{\textcolor{NavyBlue}{Def} ID := term.} It defines the \texttt{ID} as the \texttt{term}, using the \textbf{W-Def} typing rule.
     \item \texttt{\textcolor{NavyBlue}{Var} ID := term.} It make an assumption of \texttt{ID} with the \texttt{term} as type, using the \textbf{W-Assume} typing rules.
     \item \texttt{\textcolor{NavyBlue}{Check} term.} Type checking the \texttt{term} and output the result.
-    \item \texttt{\textcolor{NavyBlue}{Normalize} term.} Normalize the \texttt{term} using the algorithm introduced in~\Cref{sec: decide}.
+    \item \texttt{\textcolor{NavyBlue}{Normalize} term.} Normalize the \texttt{term} using the algorithm in Appendix E.
     \item \texttt{\textcolor{NavyBlue}{CheckEq} term \textcolor{NavyBlue}{with} term.} Check the equivalence of the two terms calculating and comparing their normal forms.
 \end{itemize}
 The prover will type check the terms for each command. We can also use \texttt{\textcolor{NavyBlue}{Normalize} term \textcolor{NavyBlue}{with trace}.} to output the proof trace during normalization. The proof trace is a sequence of records, including the rule or transformation appied, the position of application, and the pre- and post-transformation terms. The record helps understand the normalization procedure better, and can be turned into verified proofs in theorem provers in the future.
@@ -213,7 +213,7 @@ A particularly noteworthy result is D-Hammer's solution to LDN-10, a highly comp
         LDN-16 & theorem & 0.08 & \scriptsize{\( M_{prq}\ket{\textrm{GHZ}}_{prq} = N_{rq} \ket{\textrm{GHZ}}_{pqr}, M \triangleq \sum_{ij}\ket{ij}\bra{ij}\otimes U_{ij} \cdots \)} \\
         \hline
     \end{tabular}
-    \caption{Part of examples for labelled Dirac notations. See~\Cref{sec: examples for labelled} for the full list.}
+    \caption{Part of examples for labelled Dirac notations. See Appendix F for the full list.}
     \vspace{-0.2cm}
     \label{fig: labelled examples}
 \end{figure}

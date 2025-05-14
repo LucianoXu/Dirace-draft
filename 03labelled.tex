@@ -56,7 +56,7 @@ We further introduce new $\cdot$ for generalized composition (unified for all ki
 \paragraph*{Typing rules.}
 There are various rules for computing types and checking vadility of
 registers and labelled terms. Here we display some of the rules and
-refer the reader to~\Cref{sec: full typing rules} for the full set of rules.
+refer the reader to Appendix A for the full set of rules.
 \begin{gather*}
   \frac{
       \Gamma \vdash R : \reg(\sigma) \quad
@@ -141,7 +141,7 @@ Since $\cR$ is given, we let $\sigma_r : \Index$ denote type of $r$, i.e.,  $\Ga
 \begin{definition}[Cylindrical Extension]
   For any $D : \cD(s_1,s_2)$ and $s$ that disjoint with both $s_1$ and $s_2$, we define $\cl(D,s) \triangleq D\otimes \mathbf{1}_{s}$ of type $\cD(s_1\cup s, s_2\cup s)$.
 \end{definition}
-Formally, we equip $\cR$ with a default order, such as the alphabetical order of names. For any valid register $R$, there exists the operator $\Swap_R$ that sorts $R$; for example, $\Swap_{(q,p)} \triangleq \sum_{i\in \bU(\sigma_p)}\sum_{j\in \bU(\sigma_q)}|i\>\<j|\otimes |j\>\<i|$. We can further define $\Swap_{s_1,s_2,\cdots}$ for merging disjoint sets orderly. See Appendix \ref{sec: full denotational sem} for details.
+Formally, we equip $\cR$ with a default order, such as the alphabetical order of names. For any valid register $R$, there exists the operator $\Swap_R$ that sorts $R$; for example, $\Swap_{(q,p)} \triangleq \sum_{i\in \bU(\sigma_p)}\sum_{j\in \bU(\sigma_q)}|i\>\<j|\otimes |j\>\<i|$. We can further define $\Swap_{s_1,s_2,\cdots}$ for merging disjoint sets orderly. See Appendix B for details.
 
 For given context $\Gamma$ and any valuation $v$,
 we interpret 
@@ -178,7 +178,7 @@ Take operator as an example:
     \sum_{i_{r'_1}\in\bU(\sigma_{r'_1})}\cdots \sum_{i_{r'_{n'}}\in\bU(\sigma_{r'_{n'}})} \\
     & \qquad (\<i_R|\cdot O\cdot |i_{R'}\>).(|i_{r_1}\>_{r_1}\otimes\cdots\otimes|i_{r_n}\>_{r_n} \otimes {}_{r'_1}\<i_{r'_1}|\otimes\cdots\otimes{}_{r'_{n'}}\<i_{r'_{n'}}|).
 \end{align*}
-where $|i_R\>$ and $\<i_{R'}|$ are constructed by tensoring the basis according to the structure of $R$ (see Appendix \ref{sec: full denotational sem}). The rules for $e_R$ (ket and bra) are similar.
+where $|i_R\>$ and $\<i_{R'}|$ are constructed by tensoring the basis according to the structure of $R$ (see Appendix B). The rules for $e_R$ (ket and bra) are similar.
 %This step reduces all labelled terms $e_R$ or $e_{R;R}$.
 
 \paragraph*{2. Rewriting to normal form.}
@@ -256,7 +256,7 @@ that every labelled Dirac expression can be rewritten to an expression
 of the form of Eqn. (1); the proof is by induction on the structure of
 the expression. Next, we show that reordering of labelled basis
 preserves the type and semantics and thus yield expressions of the
-form of Eqn. (4), as desired. Details appear in~\Cref{app:label_elim}.
+form of Eqn. (4), as desired. Details appear in Appendix D.1.
 %% \begin{hproof}
 %%   \lz{
 %%   Checking the soundness of every rule is routine. 

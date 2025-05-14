@@ -95,7 +95,7 @@ We use a context \( \Gamma \) to preserve the assumptions \( x : T \) and defini
     \end{align*}
 \end{definition}
 Definitions refer to symbols that can be expanded or unfolded, and typically represent abstract concepts. such as transpose or trace in Dirac notation. Assumptions, on the other hand, define the types of variables.
-We say an expression \( t \) has type \( X \) in context \( \Gamma \) if the typing judgment \( \Gamma \vdash t : X \) can be proven through the rules in~\Cref{sec: full typing rules}. These are two instances:
+We say an expression \( t \) has type \( X \) in context \( \Gamma \) if the typing judgment \( \Gamma \vdash t : X \) can be proven through the rules in Appendix A. These are two instances:
 \begin{gather*}
     \frac{\Gamma \vdash t : \Basis(\sigma)}{\Gamma \vdash \ket{t} : \KType(\sigma)},
     \qquad
@@ -152,7 +152,7 @@ $\sem{K_1 \otimes K_2} \equiv \sem{K_1} \otimes \sem{K_2}$, is
 obtained by first calculating the semantics $\sem{K_1}$ and
 $\sem{K_2}$ as vectors, and then take the vector tensor product as
 result.  The complete interpretation of terms and types is provided
-in~\Cref{sec: full denotational sem}.
+in Appendix B.
 
 % One special case is the delta function \( \delta_{s,t} \), which is interpreted as:
 % \[
@@ -184,7 +184,7 @@ that abstracts these concepts.
 
 \subsubsection{Axiomatic semantics} 
 
-The proof system for equivalence is based on equational logic, together with axioms that describe the properties of Dirac notation. A full list of these axioms can be found in~\Cref{sec: full axioms}. The axioms cover fundamental aspects of linear spaces, as well as other structures like the tensor and inner products. For example, we have the absorption law for zero symbols:
+The proof system for equivalence is based on equational logic, together with axioms that describe the properties of Dirac notation. A full list of these axioms can be found in Appendix C. The axioms cover fundamental aspects of linear spaces, as well as other structures like the tensor and inner products. For example, we have the absorption law for zero symbols:
 \(X \cdot \mathbf{0} = \mathbf{0},\)
 and the bilinearity of the dot product:
 \begin{align*}
@@ -259,13 +259,13 @@ The equivalence of Dirac notations is established through normalization, which t
 Step 1 through 3 involve term rewriting for $R$. 
 Term rewriting is the process of repeatedly reducing a term using a set of rules in the form of $l\ \reduce\ r$. The reduction works by matching the subterms with the left-hand side of a rule and replacing it with the right-hand side. 
 For example, the term $(x\times y) . \ket{t} + \ket{t}$ is matched by the rule $a.K + K\ \reduce\ (a + 1).K$, and is rewritten into $(x\times y + 1) . \ket{t}$.
-Step 1 and 3 use the same set of rewriting rules in~\Cref{sec: rewriting rules}.
+Step 1 and 3 use the same set of rewriting rules in Appendix D.
 Step 2 expands variables to their abstract element-wise representation, e.g., $K \ \reduce\ \sum_{i} (\bra{i} \cdot K). \ket{i}$, which is useful when reasoning about sums. 
 
 
 Steps 4 through 6 are specialized algorithms designed to further normalize the axiom set $E$.
 The main challenge here is the coexistence of AC-equivalence and SUM-SWAP, which means that naive sorting cannot alwasy convert equivalent terms into the same form.
-For step 4 and 5, the key observation is that in a successive sum expression \( \sum_{i \in s_1} \cdots \sum_{j \in s_n} A \), the names and order of the bound variables \( i, \dots, j \) can be freely permuted. Therefore we first ignore bound variables and normalize AC-equivalence by sorting. Afterward, the order of summation can be established accordingly. The final step uses de Bruijn indices~\cite{deBruijn1972lambda} to resolve $\alpha$-equivalence. For further details, refer to~\Cref{sec: decide}.
+For step 4 and 5, the key observation is that in a successive sum expression \( \sum_{i \in s_1} \cdots \sum_{j \in s_n} A \), the names and order of the bound variables \( i, \dots, j \) can be freely permuted. Therefore we first ignore bound variables and normalize AC-equivalence by sorting. Afterward, the order of summation can be established accordingly. The final step uses de Bruijn indices~\cite{deBruijn1972lambda} to resolve $\alpha$-equivalence. For further details, refer to Appendix E.
 
 
 \Cref{fig: normalization demo} shows the normalization outline for $(M \otimes \mathbf{1}_\mathcal{O}(T)) \cdot (\text{phi}\ T)$.
