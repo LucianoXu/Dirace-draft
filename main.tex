@@ -9,7 +9,17 @@
 % \usepackage[margin=0.8in]{geometry}
 
 
+% \usepackage{showframe} % print page margins, remove when positioning is satisfying
+\usepackage{graphicx} % necessary for inserting .pdfs
+\usepackage{hyperref} % "available" badge is a link to the actual DOI
+\usepackage[firstpage]{draftwatermark} % free badge placement
 
+\SetWatermarkAngle{280}
+
+\SetWatermarkText{\raisebox{9cm}{
+\hspace{4.8cm}
+\href{https://doi.org/10.5281/zenodo.15206045}{\includegraphics{1-available}}
+}}
 
 \usepackage{color}
 \usepackage{amsmath}
